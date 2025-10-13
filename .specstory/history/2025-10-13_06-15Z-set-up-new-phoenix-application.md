@@ -11870,3 +11870,192 @@ Note: Title bar uses banding (no gradients) to match greyscale and HyperCard rul
 
 ---
 
+_**User (2025-10-13 06:15Z)**_
+
+Please create a rollback position here. Then proceed with: Create the master layout system with banner menu and dual-window structure.
+
+This layout will be used across all pages in the application.
+
+LAYOUT STRUCTURE:
+┌─────────────────────────────────────────────┐
+│ BANNER MENU (fixed top, 44px height)       │
+│ [HyperArk] [Characters ▾] [Database]      │
+│            [Garden] [Living Web]            │
+├──────────────┬──────────────────────────────┤
+│              │                              │
+│  LEFT        │  RIGHT                       │
+│  WINDOW      │  WINDOW                      │
+│  300px       │  Remaining width             │
+│              │                              │
+│  (Context)   │  (Main Content)             │
+│              │                              │
+└──────────────┴──────────────────────────────┘
+
+TASKS:
+
+1. Create lib/green_man_tavern_web/components/layouts/master.html.heex
+
+This layout should have:
+- Fixed banner at top (44px height, neutral-grey background)
+- Left window (300px fixed width, white background, 2px border)
+- Right window (remaining width, white background, 2px border)
+- Both windows scroll independently
+- Shared border between windows (no gap)
+
+Banner menu items:
+- "🍃 HyperArk" (logo/home, left side)
+- "Characters ▾" (dropdown, will implement interaction later)
+- "Database"
+- "Garden"
+- "Living Web"
+
+All menu items should be styled as MacUI buttons but inline in the banner.
+
+
+2. Create CSS in assets/css/app.css for the layout:
+
+/* Master Layout */
+.master-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.banner-menu {
+  height: 44px;
+  background: var(--neutral-grey);
+  border-bottom: 2px solid var(--dark-grey);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.banner-menu-item {
+  font-family: 'Geneva', 'Helvetica', 'Arial', sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--pure-black);
+  padding: 6px 12px;
+  background: linear-gradient(180deg, var(--off-white) 0%, var(--light-grey) 100%);
+  border: 2px solid;
+  border-top-color: var(--pure-white);
+  border-left-color: var(--pure-white);
+  border-right-color: var(--dark-grey);
+  border-bottom-color: var(--dark-grey);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.banner-menu-item:hover {
+  background: linear-gradient(180deg, var(--pure-white) 0%, var(--off-white) 100%);
+}
+
+.banner-logo {
+  font-size: 14px;
+  font-weight: bold;
+  margin-right: 16px;
+}
+
+.content-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.left-window {
+  width: 300px;
+  flex-shrink: 0;
+  background: var(--pure-white);
+  border-right: 2px solid var(--medium-grey);
+  overflow-y: auto;
+  padding: 16px;
+  box-shadow: 2px 0 0 var(--dark-grey);
+}
+
+.right-window {
+  flex: 1;
+  background: var(--pure-white);
+  overflow-y: auto;
+  padding: 16px;
+}
+
+
+3. Update lib/green_man_tavern_web/components/layouts/root.html.heex
+
+Make it use the master layout structure. The root layout should contain:
+- The master-layout div wrapper
+- Banner menu
+- Content container with left and right windows
+- The @inner_content should go in the RIGHT window
+- Left window content should be passed via assigns (we'll populate later)
+
+
+4. For now, left window should show placeholder content:
+
+<div class="left-window">
+  <h3 style="font-weight: bold; margin-bottom: 8px;">Context</h3>
+  <p style="font-size: 11px; color: var(--medium-grey);">
+    Left window content will appear here based on the current page.
+  </p>
+</div>
+
+
+5. Make the banner menu items functional links:
+- HyperArk → "/"
+- Database → "/database" (will create later)
+- Garden → "/garden" (will create later)  
+- Living Web → "/living-web" (will create later)
+- Characters dropdown → Just styled for now, functionality later
+
+Use Phoenix link helpers: <.link navigate={~p"/"} class="banner-menu-item">HyperArk</.link>
+
+
+6. Test that the layout renders by updating the home page
+
+In lib/green_man_tavern_web/controllers/page_html/home.html.heex, replace content with:
+
+<div class="p-8">
+  <h1 class="text-2xl font-bold mb-4" style="font-family: var(--font-mac);">
+    Welcome to The Green Man Tavern
+  </h1>
+  
+  <MacUI.card header="Test Card">
+    <p class="mb-4">This is a test of the HyperCard aesthetic.</p>
+    <MacUI.button label="Test Button" />
+  </MacUI.card>
+  
+  <div class="mt-4">
+    <MacUI.text_field name="test" placeholder="Test input field" />
+  </div>
+  
+  <div class="mt-4">
+    <MacUI.checkbox name="test_check" label="Test checkbox" checked={false} />
+  </div>
+</div>
+
+
+VERIFICATION:
+- Banner appears at top with all menu items
+- Left window (300px) appears on left
+- Right window takes remaining space
+- Both windows have white backgrounds and borders
+- Home page content appears in right window
+- Can see test components (card, button, input, checkbox)
+- Layout is greyscale only
+- No compilation errors
+
+---
+
+_**Assistant (default)**_
+
+
+
+---
+
