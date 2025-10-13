@@ -1,0 +1,22 @@
+<div class="master-layout">
+  <div class="banner-menu">
+    <.link navigate={~p"/"} class="banner-menu-item banner-logo">🍃 HyperArk</.link>
+    <a href="#" class="banner-menu-item" aria-haspopup="true" aria-expanded="false">Characters ▾</a>
+    <.link navigate={~p"/database"} class="banner-menu-item">Database</.link>
+    <.link navigate={~p"/garden"} class="banner-menu-item">Garden</.link>
+    <.link navigate={~p"/living-web"} class="banner-menu-item">Living Web</.link>
+  </div>
+  <div class="content-container">
+    <div class="left-window">
+      <h3 style="font-weight: bold; margin-bottom: 8px;">Context</h3>
+      <p style="font-size: 11px; color: var(--medium-grey);">
+        Left window content will appear here based on the current page.
+      </p>
+    </div>
+    <div class="right-window">
+      <%= @inner_content %>
+    </div>
+  </div>
+</div>
+
+

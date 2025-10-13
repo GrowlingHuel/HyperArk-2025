@@ -73,6 +73,15 @@ defmodule GreenManTavernWeb.Layouts do
   end
 
   @doc """
+  Master layout: banner + dual-window structure.
+  """
+  def master(assigns) do
+    ~H"""
+    <%= Phoenix.View.render_to_iodata(__MODULE__, "master.html", assigns) %>
+    """
+  end
+
+  @doc """
   Shows the flash group with standard titles and content.
 
   ## Examples
