@@ -10381,3 +10381,102 @@ The database is properly configured and ready for your Phoenix application. All 
 
 ---
 
+_**User (2025-10-13 06:15Z)**_
+
+Configure Tailwind CSS for a strict HyperCard/Classic Macintosh aesthetic.
+
+IMPORTANT: This project uses GREYSCALE ONLY. No color except black, white, and greys.
+
+Tasks:
+
+1. In assets/css/app.css, ADD this AFTER the Tailwind imports (after @tailwind directives):
+
+/* HyperCard Aesthetic - Greyscale Palette */
+:root {
+  --pure-black: #000000;
+  --dark-grey: #333333;
+  --medium-grey: #666666;
+  --neutral-grey: #999999;
+  --light-grey: #CCCCCC;
+  --off-white: #EEEEEE;
+  --pure-white: #FFFFFF;
+  
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  
+  --font-xs: 10px;
+  --font-sm: 12px;
+  --font-md: 14px;
+  --font-lg: 16px;
+  --font-xl: 18px;
+  --font-2xl: 24px;
+}
+
+body {
+  font-family: 'Geneva', 'Helvetica', 'Arial', sans-serif;
+  font-size: var(--font-sm);
+  color: var(--pure-black);
+  background: var(--light-grey);
+  margin: 0;
+  padding: 0;
+}
+
+2. In assets/tailwind.config.js, UPDATE the theme section to extend with our greyscale palette:
+
+module.exports = {
+  content: [
+    "./js/**/*.js",
+    "../lib/green_man_tavern_web.ex",
+    "../lib/green_man_tavern_web/**/*.*ex"
+  ],
+  theme: {
+    extend: {
+      colors: {
+        'pure-black': '#000000',
+        'dark-grey': '#333333',
+        'medium-grey': '#666666',
+        'neutral-grey': '#999999',
+        'light-grey': '#CCCCCC',
+        'off-white': '#EEEEEE',
+        'pure-white': '#FFFFFF',
+      },
+      fontFamily: {
+        'mac': ['Chicago', 'Monaco', 'Courier New', 'monospace'],
+        'system': ['Geneva', 'Helvetica', 'Arial', 'sans-serif'],
+      },
+      spacing: {
+        '1': '4px',
+        '2': '8px',
+        '3': '12px',
+        '4': '16px',
+        '6': '24px',
+        '8': '32px',
+      }
+    },
+  },
+  plugins: [
+    require("@tailwindcss/forms")
+  ]
+}
+
+3. Verify the configuration:
+   - Run: mix phx.server
+   - Check that Tailwind compiles without errors
+   - Verify custom colors are available
+
+4. Report any errors or warnings
+
+REMEMBER: This is a GREYSCALE-ONLY project. No blues, greens, reds, or any other colors.
+
+---
+
+_**Assistant (default)**_
+
+
+
+---
+
