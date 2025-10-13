@@ -15210,3 +15210,344 @@ Tool use: **apply_patch**
 
 ---
 
+_**User (2025-10-13 06:15Z)**_
+
+Cursor Prompt 5B: Refine to Classic Mac Aesthetic
+First, let's commit current state:
+bashcd ~/Projects/green_man_tavern
+git add .
+git commit -m "Checkpoint before 5B refinements"
+git tag -a v0.1.4-pre-refinement -m "Before classic Mac refinements"
+
+CURSOR PROMPT 5B: Refine to Classic Macintosh Aesthetic
+Refine the UI to match authentic late 80s/early 90s Macintosh System 7 aesthetic.
+
+REFERENCE: HyperArk 1.png and The Island of Dr Moreau screenshots
+
+CRITICAL CHANGES:
+
+---
+
+## TASK 1: Equal Width Windows (50/50 Split)
+
+Update assets/css/app.css:
+
+Change:
+```css
+.left-window {
+  width: 300px;
+  flex-shrink: 0;
+  /* ... */
+}
+
+.right-window {
+  flex: 1;
+  /* ... */
+}
+To:
+css.left-window {
+  flex: 1;
+  min-width: 0;
+  /* ... existing styles ... */
+}
+
+.right-window {
+  flex: 1;
+  min-width: 0;
+  /* ... existing styles ... */
+}
+Both windows should now be equal width (50% each).
+
+TASK 2: Simplify Title Bars
+Update .mac-title-bar in assets/css/app.css:
+css.mac-title-bar {
+  height: 20px;
+  background: #CCCCCC; /* Solid grey, no pattern */
+  border-bottom: 1px solid #000; /* Changed from 2px to 1px */
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  flex-shrink: 0;
+}
+Keep close boxes EXACTLY as Dr Moreau image (14×14px with X).
+
+TASK 3: Darker Main Background
+Update body background in assets/css/app.css:
+cssbody {
+  font-family: Monaco, "Courier New", monospace;
+  font-size: 12px;
+  color: #000;
+  background: #D0D0D0; /* Changed from #CCC to medium grey */
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  font-smooth: never;
+  text-rendering: optimizeSpeed;
+}
+Also update .banner-menu background:
+css.banner-menu {
+  height: 44px;
+  background: #CCCCCC; /* Solid grey */
+  border-bottom: 2px solid #000;
+  /* ... rest unchanged ... */
+}
+
+TASK 4: Implement Pixel-Perfect Font
+Add to the <head> section of lib/green_man_tavern_web/components/layouts/root.html.heex:
+heex<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+Update font stack in assets/css/app.css:
+css:root {
+  --font-mac: 'Press Start 2P', Monaco, "Courier New", monospace;
+}
+
+body {
+  font-family: 'Press Start 2P', Monaco, "Courier New", monospace;
+  font-size: 8px; /* Pixel font needs smaller size */
+  line-height: 1.6; /* More space between lines for readability */
+  color: #000;
+  background: #D0D0D0;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  font-smooth: never;
+  text-rendering: optimizeSpeed;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* Adjust other text sizes for pixel font */
+h1 { font-size: 12px; line-height: 1.4; }
+h2 { font-size: 10px; line-height: 1.4; }
+h3 { font-size: 9px; line-height: 1.4; }
+p, div { font-size: 8px; line-height: 1.6; }
+
+.mac-window-title {
+  font-family: 'Press Start 2P', Monaco, monospace;
+  font-size: 8px;
+  font-weight: normal; /* Pixel fonts don't need bold */
+  color: #000;
+}
+
+.banner-menu-item {
+  font-family: 'Press Start 2P', Monaco, monospace;
+  font-size: 8px;
+  font-weight: normal;
+  /* ... rest unchanged ... */
+}
+
+TASK 5: Update Banner to Match HyperArk 1.png
+Update lib/green_man_tavern_web/components/layouts/master.html.heex banner section:
+heex<div class="banner-menu">
+  <span class="banner-logo">🍃 HyperArk</span>
+  <.link navigate={~p"/"} class="banner-menu-item">Tavern</.link>
+  <.link navigate={~p"/database"} class="banner-menu-item">Database</.link>
+  <.link navigate={~p"/garden"} class="banner-menu-item">Garden</.link>
+  <.link navigate={~p"/living-web"} class="banner-menu-item">Living Web</.link>
+</div>
+Remove "Characters ▾" dropdown for now. Keep buttons simple and flat.
+Update banner CSS in assets/css/app.css:
+css.banner-logo {
+  font-size: 10px;
+  font-weight: normal;
+  margin-right: 20px;
+  color: #000;
+}
+
+.banner-menu-item {
+  font-family: 'Press Start 2P', Monaco, monospace;
+  font-size: 8px;
+  font-weight: normal;
+  color: #000;
+  padding: 6px 12px;
+  background: #CCCCCC;
+  border: 2px solid #000;
+  border-right: 1px solid #666;
+  border-bottom: 1px solid #666;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.banner-menu-item:hover {
+  background: #DDDDDD;
+}
+
+.banner-menu-item:active {
+  background: #999999;
+  border-top: 1px solid #666;
+  border-left: 1px solid #666;
+  border-right: 2px solid #000;
+  border-bottom: 2px solid #000;
+}
+
+TASK 6: Remove All Shadows & Use 1px Borders
+Update window borders in assets/css/app.css:
+css.mac-window-chrome {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #000; /* Changed from 2px to 1px */
+  background: #FFF;
+  height: 100%;
+  box-shadow: none; /* Remove all shadows */
+}
+
+.left-window {
+  flex: 1;
+  min-width: 0;
+  background: #FFF;
+  border-right: 1px solid #000; /* Changed from 2px */
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.right-window {
+  flex: 1;
+  min-width: 0;
+  background: #FFF;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+/* Remove shadows from cards */
+.mac-card {
+  border: 1px solid #000;
+  background: #FFF;
+  padding: 12px;
+  margin-bottom: 8px;
+  box-shadow: none;
+}
+
+TASK 7: Compact Spacing (Classic Mac Density)
+Update button padding:
+css/* Update button component */
+.mac-button {
+  padding: 4px 10px; /* Slightly tighter than before */
+  font-size: 8px;
+  /* ... rest unchanged ... */
+}
+Update card padding:
+css.mac-card {
+  padding: 8px; /* Reduced from 12px */
+  margin-bottom: 6px; /* Reduced from 8px */
+}
+Update window content padding:
+css.mac-window-content {
+  flex: 1;
+  overflow: auto;
+  padding: 6px; /* Reduced from 8px */
+}
+
+TASK 8: Fix Tavern Image Path
+Update lib/green_man_tavern_web/components/layouts/master.html.heex:
+Change the tavern image path from:
+heex<img src="/images/tavern_scene.png" alt="Green Man Tavern" />
+To:
+heex<img src="/images/the_tavern.png" alt="Green Man Tavern" style="width: 100%; display: block;" />
+ALSO ensure the image is copied to the correct location.
+Create a task to copy assets:
+
+Copy assets_temp/character_portraits/the_tavern.png to priv/static/images/the_tavern.png
+Copy all character images from assets_temp/character_portraits/ to priv/static/images/characters/
+
+Run these commands in terminal:
+bashmkdir -p priv/static/images/characters
+cp assets_temp/character_portraits/the_tavern.png priv/static/images/
+cp assets_temp/character_portraits/*.png priv/static/images/characters/
+
+TASK 9: Update Component Sizes for Pixel Font
+Since pixel font is smaller, update input fields:
+css.mac-text-field {
+  padding: 6px 8px;
+  font-size: 8px;
+  line-height: 1.4;
+  /* ... rest unchanged ... */
+}
+
+.mac-checkbox {
+  width: 12px; /* Slightly smaller */
+  height: 12px;
+}
+
+.mac-checkbox-label {
+  font-size: 8px;
+  margin-left: 6px;
+}
+
+TASK 10: Ensure Complete Flat Look
+Double-check ALL gradients are removed:
+Search for and remove any:
+
+linear-gradient()
+box-shadow (except for :none)
+border-radius (except for checkboxes which can be 0)
+Any rgba() or transparency
+
+Everything should be:
+
+Solid colors only
+Sharp 1px or 2px borders
+No anti-aliasing
+No smooth transitions
+Completely flat
+
+
+VERIFICATION
+After all changes:
+
+Copy images to correct location (terminal commands above)
+Run: mix compile
+Run: mix phx.server
+Visit: localhost:4000
+
+Should see:
+
+✅ 50/50 window split (equal widths)
+✅ Pixel-perfect font throughout (Press Start 2P)
+✅ Darker grey background (#D0D0D0)
+✅ Solid grey title bars (no stripes)
+✅ 1px borders on windows
+✅ NO shadows anywhere
+✅ Tavern image visible in left window
+✅ Banner matches HyperArk 1.png layout
+✅ Compact, dense spacing
+✅ Completely flat aesthetic
+
+The UI should now look like authentic System 7 / early 90s Mac.
+Report compilation errors or visual issues.
+
+---
+
+## 🖼️ Image Setup
+
+**Before running the prompt, copy the images:**
+```bash
+cd ~/Projects/green_man_tavern
+
+# Create images directory
+mkdir -p priv/static/images/characters
+
+# Copy tavern scene
+cp assets_temp/character_portraits/the_tavern.png priv/static/images/
+
+# Copy all character portraits
+cp assets_temp/character_portraits/*.png priv/static/images/characters/
+
+# Verify
+ls -la priv/static/images/
+ls -la priv/static/images/characters/
+
+# Commit the images
+git add priv/static/images/
+git commit -m "Add tavern scene and character portrait assets"
+
+
+
+---
+
+_**Assistant (default)**_
+
+
+
+---
+
