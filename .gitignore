@@ -35,3 +35,7 @@ green_man_tavern-*.tar
 npm-debug.log
 /assets/node_modules/
 
+
+# LibreOffice/OpenOffice lock files
+.~lock.*#
+
