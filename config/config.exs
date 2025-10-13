@@ -9,7 +9,7 @@ import Config
 
 config :green_man_tavern,
   ecto_repos: [GreenManTavern.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime_usec]
 
 # Configures the endpoint
 config :green_man_tavern, GreenManTavernWeb.Endpoint,
