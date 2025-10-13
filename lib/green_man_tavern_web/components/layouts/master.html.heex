@@ -8,13 +8,25 @@
   </div>
   <div class="content-container">
     <div class="left-window">
-      <h3 style="font-weight: bold; margin-bottom: 8px;">Context</h3>
-      <p style="font-size: 11px; color: var(--medium-grey);">
-        Left window content will appear here based on the current page.
-      </p>
+      <GreenManTavernWeb.Components.MacUI.window_chrome title={assigns[:left_window_title] || "Tavern"} closable={false}>
+        <div class="tavern-scene-sticky">
+          <img src="/images/tavern_scene.png" alt="Green Man Tavern" style="width: 100%; display: block;" />
+        </div>
+        <div class="character-content">
+          <%= if assigns[:left_content] do %>
+            <%= @left_content %>
+          <% else %>
+            <p style="font-size: 11px; color: #666; padding: 8px;">
+              Select a character to begin.
+            </p>
+          <% end %>
+        </div>
+      </GreenManTavernWeb.Components.MacUI.window_chrome>
     </div>
     <div class="right-window">
-      <%= @inner_content %>
+      <GreenManTavernWeb.Components.MacUI.window_chrome title={assigns[:right_window_title] || "Main"} closable={false}>
+        <%= @inner_content %>
+      </GreenManTavernWeb.Components.MacUI.window_chrome>
     </div>
   </div>
 </div>

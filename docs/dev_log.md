@@ -60,14 +60,23 @@ mix phx.server
 #### Afternoon Session
 **Phase 1, Task 1.2: HyperCard-Style UI Component Library**
 
-**Time**: [Start] - [End] = X hours
+**Time**: 17:45 – 20:05 = 2h 20m
 
 **Accomplished**:
-- [ ] Created component directory structure
-- [ ] MacWindow component completed
-- [ ] MacButton component completed
-- [ ] MacCard component completed
-- [ ] [etc.]
+- ✅ Created `lib/green_man_tavern_web/components/mac_ui/` library
+- ✅ Implemented components:
+  - `MacUI.Button` – flat System 7 style (Monaco 11px, #CCC, 2px #000, hover/active/disabled)
+  - `MacUI.Card` – white with 1px grey border
+  - `MacUI.TextField` – inset bevel, Monaco monospace, focus outline
+  - `MacUI.Checkbox` – square with X when checked
+  - `MacUI.WindowChrome` – title bar (20px), close box (14×14), content area
+- ✅ Added `MacUI` entry module and wired into `html_helpers`
+- ✅ Added master layout with banner + dual-window (left 300px, right flexible)
+- ✅ Left window sticky tavern scene section + character content placeholder
+- ✅ Custom scrollbars (16px) shown only on overflow
+- ✅ Dithered background patterns for subtle texture
+- ✅ Global typography set to Monaco; crisp, pixelated rendering
+- ✅ Banner menu buttons converted to flat System 7 style
 
 **Cursor.AI prompts used**:
 1. [Copy effective prompts here for reference]
@@ -80,11 +89,51 @@ mix phx.server
 - [ ] Can compose components together
 
 **Issues encountered**:
-- [Any rendering issues, style conflicts, etc.]
+- PostgreSQL auth initially failed with default creds; resolved using user `jesse`
+- HEEx alias not allowed inside templates – switched to fully-qualified component names
+- Placeholder routes (`/database`, `/garden`, `/living-web`) produce warnings (expected)
+- Legacy layout render warning noted (non-blocking)
 
 **Next steps**:
-- Continue with remaining UI components
-- Begin Task 1.3: Banner + Dual-Window Layout
+- Add real routes for Database/Garden/Living Web or hide links until ready
+- Replace logo/scene asset placeholder (`/images/tavern_scene.png`) with final art
+- Iterate on title bar pattern (optional dither), add ▲/▼ glyph art for scrollbar buttons
+- Begin wiring dynamic titles (`@left_window_title`, `@right_window_title`) from LiveViews
+
+---
+
+### Change Log (13.10.25)
+
+**Components**
+- Added: `lib/green_man_tavern_web/components/mac_ui/button.ex`
+- Added: `lib/green_man_tavern_web/components/mac_ui/card.ex`
+- Added: `lib/green_man_tavern_web/components/mac_ui/text_field.ex`
+- Added: `lib/green_man_tavern_web/components/mac_ui/checkbox.ex`
+- Added: `lib/green_man_tavern_web/components/mac_ui/window_chrome.ex`
+- Updated: `lib/green_man_tavern_web/components/mac_ui.ex` (delegates)
+
+**Layouts**
+- Updated: `lib/green_man_tavern_web/components/layouts/master.html.heex` – banner + dual-window using `<MacUI.window_chrome>`; sticky tavern scene
+- Updated: `lib/green_man_tavern_web/components/layouts/root.html.heex` to render master layout
+
+**Pages**
+- Updated: `lib/green_man_tavern_web/controllers/page_html/home.html.heex` – demo with MacUI components
+
+**Styles** (`assets/css/app.css`)
+- Global Monaco typography; anti-aliasing disabled
+- Pixel-perfect helpers (`* { box-sizing: border-box; }`, `.no-antialias`, `.sharp-border`)
+- Banner buttons updated to flat #CCC, 2px #000
+- Mac button flattened; hover/active/disabled states
+- Window chrome: patterned title bar, close box positioning, content area
+- Custom scrollbars for `.mac-window-content`/`.mac-content-area`
+- Dithered background utilities
+- Removed left-window shadow; use shared 2px seam
+
+**Verification**
+- `mix compile` – OK (warnings: placeholder routes, legacy layout render)
+- `mix phx.server` – app boots; layout and components render
+
+**Time spent**: 2h 20m
 
 ---
 

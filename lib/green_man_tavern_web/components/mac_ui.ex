@@ -11,7 +11,8 @@ defmodule GreenManTavernWeb.Components.MacUI do
     Button,
     Card,
     TextField,
-    Checkbox
+    Checkbox,
+    WindowChrome
   }
 
   # Re-expose function components
@@ -20,4 +21,5 @@ defmodule GreenManTavernWeb.Components.MacUI do
   defdelegate card(assigns), to: Card
   defdelegate text_field(assigns), to: TextField
   defdelegate checkbox(assigns), to: Checkbox
+  defdelegate window_chrome(assigns), to: WindowChrome
 end
