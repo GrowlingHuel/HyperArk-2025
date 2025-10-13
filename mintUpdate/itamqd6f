@@ -1,0 +1,16 @@
+10.13@16:38 ++ Launching Update Manager
+10.13@16:38 ++ Changes to the package cache detected, triggering refresh
+10.13@16:38 ++ Initial refresh will happen in 0 day(s), 0 hour(s) and 10 minute(s)
+10.13@16:38 ++ Inhibited power management
+10.13@16:38 ++ Starting refresh (local only)
+10.13@16:38 ++ System is up to date
+10.13@16:38 ++ Refresh finished
+10.13@16:38 ++ Resumed power management
+10.13@16:48 ++ Update Manager is in tray mode, performing initial refresh
+10.13@16:48 ++ Inhibited power management
+10.13@16:48 ++ Starting refresh (retrieving lists of updates from remote servers)
+10.13@16:48 ++ Refreshing available Flatpak updates
+10.13@16:49 ++ System is up to date
+10.13@16:49 ++ Refresh finished
+10.13@16:49 ++ Resumed power management
+10.13@16:49 ++ Recurring refresh will happen in 0 day(s), 1 hour(s) and 59 minute(s)

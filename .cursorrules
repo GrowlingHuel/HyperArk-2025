@@ -1,0 +1,103 @@
+# Green Man Tavern - Cursor AI Rules
+
+## Project Overview
+Phoenix LiveView application for a permaculture-based RPG game.
+Desktop-only (no mobile responsive for V1).
+Strict HyperCard/Classic Macintosh aesthetic.
+
+## Critical Design Constraints (NEVER VIOLATE)
+1. GREYSCALE ONLY - No color except black/white/greys (#000, #333, #666, #999, #CCC, #EEE, #FFF)
+2. BANNER + DUAL-WINDOW LAYOUT - Every page must use this structure
+3. HYPERCARD AESTHETIC - Bevel effects, sharp corners, system fonts, no modern UI
+4. NO ROUNDED CORNERS - border-radius: 0 (except radio buttons)
+5. NO SMOOTH ANIMATIONS - Instant or stepped only
+6. NO GRADIENTS - Except for subtle button bevels
+7. SYSTEM FONTS ONLY - 'Geneva', 'Monaco', 'Chicago', 'Helvetica', 'Arial'
+
+## File Organization
+- Components: lib/green_man_tavern_web/components/
+- LiveViews: lib/green_man_tavern_web/live/
+- Contexts: lib/green_man_tavern/
+- Schemas: lib/green_man_tavern/{context}/
+- Tests: test/ (mirror lib structure)
+
+## Code Style
+- Follow Elixir Style Guide
+- Use function components for all UI
+- LiveView for all interactive pages
+- Ecto for all database operations
+- Tailwind utilities + custom CSS (no inline styles)
+- Clear, descriptive variable names
+- Comments for complex logic only
+
+## When Creating Components
+1. Check docs/style_guide.md FIRST
+2. Use only approved greyscale colors
+3. Implement all interactive states (default, hover, active, disabled, focus)
+4. Ensure keyboard accessibility
+5. Add proper ARIA labels
+6. Match HyperCard reference aesthetic
+
+## Before Responding to Any Request
+1. Will this violate greyscale aesthetic? (If yes, refuse)
+2. Will this break banner + dual-window layout? (If yes, refuse)
+3. Does this match HyperCard style? (If no, modify to match)
+4. Is this using approved fonts only? (If no, fix)
+
+## Testing Requirements
+- Test all business logic (contexts)
+- Test LiveView mount and handle_event functions
+- Test database queries and associations
+- Don't need E2E tests yet
+
+## Database Rules
+- Always use Ecto.Changeset for validation
+- Add database indexes for foreign keys
+- Use JSONB for flexible data (profile_data, personality_traits, etc.)
+- Never store sensitive data unencrypted
+- Use timestamps on all tables
+
+## LiveView Patterns
+- Keep socket assigns minimal
+- Use temporary assigns for large lists
+- Handle errors gracefully with flash messages
+- Always implement handle_info for PubSub
+- Use LiveComponent for complex, reusable pieces
+
+## When Stuck or Uncertain
+1. Check docs/style_guide.md
+2. Check docs/rebuild_plan.md for architecture
+3. Check docs/project_brief.md for requirements
+4. Ask user before making major decisions
+5. Prefer simple solutions over clever ones
+
+## Common Mistakes to Avoid
+- ❌ Adding color "just a little bit"
+- ❌ Using rounded corners "because it looks better"
+- ❌ Implementing responsive breakpoints
+- ❌ Using modern UI components (Material, Bootstrap, etc.)
+- ❌ Smooth animations or transitions
+- ❌ Inline styles
+- ❌ Direct database queries in LiveView (use contexts)
+
+## MindsDB Integration (Future)
+- Will connect to MindsDB for AI agents
+- All agent calls through dedicated context module
+- Cache responses when possible (5 min TTL)
+- Handle timeouts gracefully (30s max)
+- Provide fallback responses
+
+## Success Criteria for Any Generated Code
+1. ✅ Compiles without errors or warnings
+2. ✅ Matches HyperCard aesthetic exactly
+3. ✅ Uses only greyscale colors
+4. ✅ Keyboard accessible
+5. ✅ Follows Elixir conventions
+6. ✅ Has proper error handling
+7. ✅ Includes tests for business logic
+8. ✅ Documented with clear comments where needed
+
+## Remember
+This is a 55-day project to build V1. Stay focused on the rebuild plan.
+Quality over speed, but maintain momentum.
+When in doubt, stick to the style guide religiously.
