@@ -1,32 +1,37 @@
 <div class="master-layout">
   <div class="banner-menu">
-    <.link navigate={~p"/"} class="banner-menu-item banner-logo">🍃 HyperArk</.link>
-    <a href="#" class="banner-menu-item" aria-haspopup="true" aria-expanded="false">Characters ▾</a>
-    <.link navigate={~p"/database"} class="banner-menu-item">Database</.link>
-    <.link navigate={~p"/garden"} class="banner-menu-item">Garden</.link>
-    <.link navigate={~p"/living-web"} class="banner-menu-item">Living Web</.link>
+    <span class="banner-logo">🍃 HyperArk</span>
+    
+    <div class="banner-menu-items">
+      <.link navigate={~p"/"} class="banner-menu-item">Tavern</.link>
+      <.link navigate={~p"/database"} class="banner-menu-item">Database</.link>
+      <.link navigate={~p"/garden"} class="banner-menu-item">Garden</.link>
+      <.link navigate={~p"/living-web"} class="banner-menu-item">Living Web</.link>
+    </div>
   </div>
   <div class="content-container">
     <div class="left-window">
-      <GreenManTavernWeb.Components.MacUI.window_chrome title={assigns[:left_window_title] || "Tavern"} closable={false}>
-        <div class="tavern-scene-sticky">
-          <img src="/images/tavern_scene.png" alt="Green Man Tavern" style="width: 100%; display: block;" />
+      <div class="mac-title-bar">
+        <div class="mac-close-box">×</div>
+        <span class="mac-window-title">Tavern</span>
+      </div>
+      <div class="mac-window-content">
+        <div style="margin-bottom: 12px;">
+          <img src="/images/the_tavern.png" alt="Green Man Tavern" style="width: 100%; display: block; border: 1px solid #000;" />
         </div>
-        <div class="character-content">
-          <%= if assigns[:left_content] do %>
-            <%= @left_content %>
-          <% else %>
-            <p style="font-size: 11px; color: #666; padding: 8px;">
-              Select a character to begin.
-            </p>
-          <% end %>
+        <div style="padding: 8px;">
+          <p style="font-size: 12px; margin-bottom: 8px;">Select a character to begin.</p>
         </div>
-      </GreenManTavernWeb.Components.MacUI.window_chrome>
+      </div>
     </div>
     <div class="right-window">
-      <GreenManTavernWeb.Components.MacUI.window_chrome title={assigns[:right_window_title] || "Main"} closable={false}>
+      <div class="mac-title-bar">
+        <div class="mac-close-box">×</div>
+        <span class="mac-window-title">Main</span>
+      </div>
+      <div class="mac-window-content">
         <%= @inner_content %>
-      </GreenManTavernWeb.Components.MacUI.window_chrome>
+      </div>
     </div>
   </div>
 </div>

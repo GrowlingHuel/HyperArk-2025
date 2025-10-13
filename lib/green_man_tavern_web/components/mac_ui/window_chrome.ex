@@ -15,10 +15,7 @@ defmodule GreenManTavernWeb.Components.MacUI.WindowChrome do
     <div class="mac-window-chrome">
       <div class="mac-title-bar">
         <%= if @closable do %>
-          <button type="button" class="mac-close-box" aria-label="Close">
-            <!-- draw an "X" via text for now -->
-            ×
-          </button>
+          <button type="button" class="mac-close-box" aria-label="Close">×</button>
         <% end %>
         <div class="mac-window-title truncate">{@title}</div>
       </div>

@@ -130,23 +130,34 @@
   --font-2xl: 24px;
 
   /* system font stacks */
-  --font-mac: Monaco, "Courier New", monospace;
+  --font-mac: Chicago, Monaco, "Courier New", monospace;
+  --font-system: Geneva, "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 body {
-  font-family: Monaco, "Courier New", monospace;
-  font-size: 12px;
+  font-family: var(--font-system);
+  font-size: 12px; /* BACK to readable size */
+  line-height: 1.4;
   color: #000;
-  background: #CCC;
-  -webkit-font-smoothing: none;
+  background: #CCCCCC; /* Medium grey */
+  -webkit-font-smoothing: antialiased; /* ENABLE anti-aliasing for Geneva */
   -moz-osx-font-smoothing: grayscale;
-  font-smooth: never;
-  text-rendering: optimizeSpeed;
   margin: 0;
   padding: 0;
 }
 
-/* Add variants based on LiveView classes */
+/* Reset default text sizes */
+h1 { font-size: 18px; font-weight: bold; }
+h2 { font-size: 16px; font-weight: bold; }
+h3 { font-size: 14px; font-weight: bold; }
+p { font-size: 12px; }
+
+/* Chicago font utility */
+.chicago-font {
+  font-family: Chicago, "Arial Black", sans-serif;
+  font-weight: bold;
+  -webkit-font-smoothing: none;
+}
 @custom-variant phx-click-loading (.phx-click-loading&, .phx-click-loading &);
 @custom-variant phx-submit-loading (.phx-submit-loading&, .phx-submit-loading &);
 @custom-variant phx-change-loading (.phx-change-loading&, .phx-change-loading &);
@@ -168,74 +179,94 @@ body {
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  gap: 2px; /* Minimal 2px gap */
+  background: #CCCCCC;
 }
 
 .banner-menu {
-  height: 44px;
-  background: var(--neutral-grey);
-  border-bottom: 2px solid var(--dark-grey);
+  height: 40px;
+  background: #D9D9D9;
+  border-top: 1px solid #000;    /* ADD: top border */
+  border-left: 1px solid #000;   /* ADD: left border */
+  border-right: 1px solid #000;  /* ADD: right border */
+  border-bottom: 2px solid #000; /* KEEP: bottom border (thicker) */
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 12px;
-  gap: 8px;
   flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  margin-bottom: 0; /* No extra margin */
 }
 
 .banner-menu-item {
-  font-family: Monaco, monospace;
+  font-family: Geneva, Helvetica, Arial, sans-serif;
   font-size: 11px;
-  font-weight: bold;
+  font-weight: normal;
   color: #000;
-  padding: 4px 12px;
-  background: #CCC;
-  border: 2px solid #000;
+  padding: 5px 12px;
+  background: linear-gradient(180deg, #EFEFEF 0%, #D0D0D0 100%);
+  border-top: 1px solid #FFFFFF;
+  border-left: 1px solid #FFFFFF;
+  border-right: 1px solid #808080;
+  border-bottom: 1px solid #808080;
   cursor: pointer;
   text-decoration: none;
   display: inline-block;
-  -webkit-font-smoothing: none;
+  line-height: 1;
 }
 
 .banner-menu-item:hover {
-  background: #DDD;
+  background: linear-gradient(180deg, #FFFFFF 0%, #E0E0E0 100%);
 }
 
 .banner-menu-item:active {
-  background: #AAA;
-  transform: translate(1px, 1px);
+  background: linear-gradient(180deg, #C0C0C0 0%, #B0B0B0 100%);
+  border-top: 1px solid #808080;
+  border-left: 1px solid #808080;
+  border-right: 1px solid #FFFFFF;
+  border-bottom: 1px solid #FFFFFF;
+  transform: translate(0, 0); /* Don't shift, just invert borders */
 }
 
 .banner-logo {
+  font-family: Chicago, "Arial Black", sans-serif;
   font-size: 14px;
   font-weight: bold;
-  margin-right: 16px;
+  color: #000;
+  flex-shrink: 0;
+}
+
+.banner-menu-items {
+  display: flex;
+  gap: 6px; /* Space between buttons */
+  align-items: center;
 }
 
 .content-container {
   display: flex;
   flex: 1;
   overflow: hidden;
+  background: #CCCCCC; /* This shows through as the gap */
+  gap: 8px; /* 8px visible gap between windows */
+  padding: 8px; /* 8px space around all edges */
 }
 
 .left-window {
-  width: 300px;
-  flex-shrink: 0;
-  background: var(--pure-white);
-  border: 2px solid var(--medium-grey);
-  border-right: 0; /* shared seam */
-  overflow-y: auto;
-  padding: 16px;
+  flex: 1;
+  min-width: 0;
+  background: #FFF;
+  border: 1px solid #000; /* Full border on all sides */
+  display: flex;
+  flex-direction: column;
 }
 
 .right-window {
   flex: 1;
-  background: var(--pure-white);
-  border: 2px solid var(--medium-grey);
-  border-left: 0; /* shared seam */
-  overflow-y: auto;
-  padding: 16px;
+  min-width: 0;
+  background: #FFF;
+  border: 1px solid #000; /* Full border on all sides */
+  display: flex;
+  flex-direction: column;
 }
 /* ===== Mac UI Utilities (Greyscale, no gradients except subtle button bevels) ===== */
 .mac-shadow-hard {
@@ -271,10 +302,10 @@ body {
 
 /* Button */
 .mac-button {
-  font-family: 'Monaco', 'Courier New', monospace;
-  font-weight: 700;
-  font-size: 11px;
-  padding: 4px 12px;
+  font-family: var(--font-system);
+  font-weight: normal;
+  font-size: 12px;
+  padding: 6px 12px;
   color: #000;
   background: #CCC;
   border: 2px solid #000;
@@ -299,9 +330,9 @@ body {
 
 /* Text Field */
 .mac-textfield {
-  font-family: 'Monaco', 'Courier New', monospace;
+  font-family: Monaco, "Courier New", monospace;
   font-size: 12px;
-  padding: 6px 8px;
+  padding: 4px 6px;
   color: var(--pure-black);
   background: var(--pure-white);
   border: 2px solid var(--medium-grey);
@@ -323,8 +354,8 @@ body {
 /* Checkbox */
 .mac-checkbox {
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 12px; /* Slightly smaller */
+  height: 12px;
   border: 1px solid var(--medium-grey);
   background: var(--pure-white);
   display: inline-block;
@@ -352,78 +383,90 @@ body {
   border-color: var(--light-grey);
 }
 
+.mac-checkbox-label {
+  font-size: 8px;
+  margin-left: 6px;
+}
+
 /* Window Chrome */
 .mac-window-chrome {
   display: flex;
   flex-direction: column;
-  border: 2px solid #000;
+  border: 1px solid #000; /* Changed from 2px to 1px */
   background: #FFF;
   height: 100%;
+  box-shadow: none; /* Remove all shadows */
 }
 
 .mac-title-bar {
   height: 20px;
-  background: repeating-linear-gradient(180deg, #000 0px, #000 1px, #FFF 1px, #FFF 2px);
+  /* Horizontal dash pattern across entire bar */
+  background: 
+    repeating-linear-gradient(
+      0deg,
+      #000000 0px,
+      #000000 1px,
+      #FFFFFF 1px,
+      #FFFFFF 2px
+    );
   border-top: 1px solid #000;
-  border-left: 1px solid #000;
-  border-right: 1px solid #000;
-  border-bottom: 2px solid #000;
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 0 4px 0 24px; /* leave room for close box */
-  flex-shrink: 0;
-}
-
-.mac-close-box {
-  width: 14px;
-  height: 14px;
-  border: 1px solid #000;
-  background: #EEE;
-  cursor: pointer;
-  position: absolute;
-  left: 3px;
-  top: 3px;
+  border-bottom: 1px solid #000;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  padding: 0 24px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.mac-close-box {
+  position: absolute;
+  left: 4px;
+  top: 3px;
+  width: 13px;
+  height: 13px;
+  border: 1px solid #000;
+  background: #FFFFFF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
   line-height: 1;
   font-weight: bold;
+  color: #000;
+  z-index: 2; /* Above the dashed background */
 }
 
 .mac-close-box:hover {
-  background: #FFF;
+  background: #E0E0E0;
 }
 
 .mac-close-box:active {
-  background: #CCC;
+  background: #B0B0B0;
 }
 
 .mac-window-title {
-  font-family: Monaco, "Courier New", monospace;
-  font-size: 10px;
+  font-family: Chicago, "Arial Black", sans-serif;
+  font-size: 12px;
   font-weight: bold;
   color: #000;
+  text-align: center;
   -webkit-font-smoothing: none;
-  -moz-osx-font-smoothing: grayscale;
+  
+  /* White background behind text */
+  background: #FFFFFF;
+  padding: 1px 6px; /* smaller background so dashes remain visible */
+  position: relative;
+  z-index: 1;
+  /* no borders on the text itself; bar borders/dashes stay visible */
 }
 
 .mac-window-content {
   flex: 1;
   overflow: auto;
-  padding: 8px;
-  background-image: 
-    repeating-linear-gradient(
-      0deg,
-      #FAFAFA 0px, #FAFAFA 1px,
-      #FFFFFF 1px, #FFFFFF 2px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      #FAFAFA 0px, #FAFAFA 1px,
-      #FFFFFF 1px, #FFFFFF 2px
-    );
+  padding: 12px; /* Comfortable padding like HyperArk 1.png */
+  background: #FFF;
 }
 
 /* Support spec alias name */
