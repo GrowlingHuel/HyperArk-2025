@@ -18,32 +18,34 @@ Each entry should include:
 
 ---
 
-## Week 1: Foundation (Days 1-5)
-
-### Day 1 - [Date]
+### Day 1 – [13.10.25]
 
 #### Morning Session
 **Phase 1, Task 1.1: Phoenix Project Initialization**
 
-**Time**: [Start] - [End] = X hours
+**Time**: [5:00pm] – [5:45pm] = 45 minutes
 
 **Accomplished**:
-- [ ] Created new Phoenix project
-- [ ] PostgreSQL database configured
-- [ ] Basic routing established
-- [ ] LiveView configured
-- [ ] Successfully ran `mix phx.server`
+- ✅ Created new Phoenix project
+- ✅ PostgreSQL database configured (user: jesse)
+- ✅ Basic routing established
+- ✅ LiveView configured
+- ✅ Successfully ran `mix phx.server`
+- ✅ Verified localhost:4000 accessible
 
 **Commands executed**:
 ```bash
-# Record actual commands used
-```
+mix phx.new . --app green_man_tavern --database postgres --live
+mix deps.get
+mix ecto.create
+mix ecto.migrate
+mix phx.server
 
 **Issues encountered**:
-- None yet / [Describe any issues]
+- None yet / [needed to change postgres details: using [my name]]
 
 **Solutions**:
-- [How issues were resolved]
+- [changed postgres login details as above]
 
 **Files created/modified**:
 - `mix.exs`
