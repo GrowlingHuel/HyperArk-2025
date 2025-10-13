@@ -137,3 +137,125 @@ body {
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
 /* This file is for your main application CSS */
+/* ===== Mac UI Utilities (Greyscale, no gradients except subtle button bevels) ===== */
+.mac-shadow-hard {
+  /* hard drop shadow from top-left light source */
+  box-shadow: 2px 2px 0 0 var(--pure-black);
+}
+
+/* Window */
+.mac-window {
+  background: var(--pure-white);
+  border: 2px solid var(--medium-grey);
+}
+.mac-window-titlebar {
+  /* No gradients per project rules: use banding lines to simulate depth */
+  background: var(--light-grey);
+  position: relative;
+}
+.mac-window-titlebar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* create subtle banding with top and bottom lines */
+  box-shadow:
+    inset 0 1px 0 0 var(--off-white),
+    inset 0 -1px 0 0 var(--medium-grey);
+  pointer-events: none;
+}
+.mac-titlebar-close {
+  border: 1px solid var(--medium-grey);
+  background: var(--off-white);
+  color: var(--pure-black);
+}
+
+/* Button */
+.mac-button {
+  font-family: 'Geneva', 'Helvetica', 'Arial', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 6px 16px;
+  color: var(--pure-black);
+  background: var(--off-white);
+  border: 2px solid var(--medium-grey);
+  /* raised bevel: light top/left, dark bottom/right */
+  box-shadow:
+    inset 1px 1px 0 0 var(--pure-white),
+    inset -1px -1px 0 0 var(--medium-grey);
+  cursor: pointer;
+  user-select: none;
+  border-radius: 0;
+}
+.mac-button:hover:not(:disabled) {
+  background: var(--light-grey);
+}
+.mac-button:active:not(:disabled) {
+  /* invert bevel to appear pressed */
+  box-shadow:
+    inset -1px -1px 0 0 var(--pure-white),
+    inset 1px 1px 0 0 var(--medium-grey);
+  transform: translateY(1px);
+}
+.mac-button-disabled,
+.mac-button:disabled {
+  background: var(--light-grey);
+  color: var(--medium-grey);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Text Field */
+.mac-textfield {
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 12px;
+  padding: 6px 8px;
+  color: var(--pure-black);
+  background: var(--pure-white);
+  border: 2px solid var(--medium-grey);
+  /* inset bevel: dark top/left, light bottom/right */
+  box-shadow:
+    inset 1px 1px 0 0 var(--medium-grey),
+    inset -1px -1px 0 0 var(--off-white);
+  border-radius: 0;
+}
+.mac-textfield:focus {
+  outline: 2px solid var(--pure-black);
+  outline-offset: -4px;
+}
+.mac-textfield:disabled {
+  background: var(--off-white);
+  color: var(--medium-grey);
+}
+
+/* Checkbox */
+.mac-checkbox {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--medium-grey);
+  background: var(--pure-white);
+  display: inline-block;
+  vertical-align: middle;
+  position: relative;
+  margin: 0;
+}
+.mac-checkbox:checked {
+  background: var(--pure-black);
+}
+.mac-checkbox:checked::after {
+  /* X mark */
+  content: "×";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -59%);
+  color: var(--pure-white);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+}
+.mac-checkbox:disabled {
+  background: var(--off-white);
+  border-color: var(--light-grey);
+}
+
