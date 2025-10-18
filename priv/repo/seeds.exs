@@ -9,3 +9,6 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
+
+# Import character seeds
+Code.eval_file("priv/repo/seeds/characters.exs")
