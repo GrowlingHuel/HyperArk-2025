@@ -18,6 +18,7 @@ defmodule GreenManTavernWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    live "/characters/:character_name", CharacterLive
   end
 
   # Other scopes may use custom stacks.

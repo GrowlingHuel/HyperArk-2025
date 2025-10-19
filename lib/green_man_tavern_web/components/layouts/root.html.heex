@@ -27,10 +27,103 @@
         window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
         
         window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
+        
+        // Characters dropdown functionality
+        document.addEventListener("click", function(event) {
+          const dropdown = document.getElementById("characters-dropdown");
+          const dropdownContainer = event.target.closest(".dropdown-container");
+          
+          if (dropdownContainer) {
+            // Clicked inside dropdown container
+            if (event.target.classList.contains("dropdown-button")) {
+              // Toggle dropdown
+              dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+            }
+          } else {
+            // Clicked outside dropdown - close it
+            if (dropdown) {
+              dropdown.style.display = "none";
+            }
+          }
+        });
       })();
     </script>
   </head>
   <body>
-    <.master inner_content={@inner_content} />
+    <div class="master-layout">
+      <.banner_menu current_character={assigns[:character]} />
+      <div class="content-container">
+        <div class="left-window">
+          <div class="mac-title-bar">
+            <div class="mac-close-box">×</div>
+            <span class="mac-window-title">{assigns[:left_window_title] || "Tavern"}</span>
+          </div>
+          
+          <div class="mac-window-content">
+            <!-- Always show tavern image -->
+            <div style="margin-bottom: 12px;">
+              <img src="/images/the_tavern.png" alt="Green Man Tavern" style="width: 100%; display: block; border: 1px solid #000;" />
+            </div>
+            
+            <!-- Show character content if character is selected, otherwise show default message -->
+            <%= if assigns[:character] do %>
+              <!-- Character content will be rendered here by the LiveView -->
+              {@inner_content}
+            <% else %>
+              <!-- Default tavern message -->
+              <div style="padding: 8px; border-top: 1px solid #CCC;">
+                <p style="font-size: 12px; color: #666; margin-bottom: 8px;">
+                  Welcome to the Green Man Tavern! Select a character from the dropdown above to begin your journey.
+                </p>
+                <p style="font-size: 11px; color: #999;">
+                  Each character has unique knowledge and perspectives to share about permaculture and sustainable living.
+                </p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        <div class="right-window">
+          <div class="mac-title-bar">
+            <div class="mac-close-box">×</div>
+            <span class="mac-window-title">{assigns[:right_window_title] || "Main"}</span>
+          </div>
+          <div class="mac-window-content">
+            <%= if assigns[:character] do %>
+              <!-- Right window content - shows results/consequences of character interactions -->
+              <div style="padding: 16px;">
+                <h2 style="font-family: Chicago, 'Arial Black', sans-serif; font-size: 18px; margin-bottom: 12px;">
+                  Interaction Results
+                </h2>
+                
+                <div style="border: 1px solid #CCC; padding: 12px; background: #F9F9F9;">
+                  <p style="font-size: 12px; color: #666; margin-bottom: 8px;">
+                    Chat with <%= assigns[:character].name %> in the left window to see results here.
+                  </p>
+                  <p style="font-size: 11px; color: #999;">
+                    This area will show:
+                  </p>
+                  <ul style="font-size: 11px; color: #666; margin-left: 16px; margin-top: 4px;">
+                    <li>Living Web updates (new systems suggested)</li>
+                    <li>Garden recommendations</li>
+                    <li>Database entries</li>
+                    <li>Quest notifications</li>
+                  </ul>
+                </div>
+              </div>
+            <% else %>
+              <!-- Default right window content -->
+              <div style="padding: 16px;">
+                <h2 style="font-family: Chicago, 'Arial Black', sans-serif; font-size: 18px; margin-bottom: 12px;">
+                  Welcome
+                </h2>
+                <p style="font-size: 12px; color: #666;">
+                  Select a character to begin your permaculture journey.
+                </p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

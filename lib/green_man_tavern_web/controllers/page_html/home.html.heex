@@ -1,18 +1,29 @@
-<div style="padding: 12px;">
-  <h1 style="font-family: Chicago, 'Arial Black', sans-serif; font-size: 18px; margin-bottom: 16px;">
+<div style="padding: 16px;">
+  <h1 style="font-family: Chicago, 'Arial Black', sans-serif; font-size: 24px; margin-bottom: 16px;">
     Welcome to The Green Man Tavern
   </h1>
   
-  <GreenManTavernWeb.Components.MacUI.card header="Test Card">
-    <p style="margin-bottom: 12px;">This is a test of the HyperCard aesthetic.</p>
-    <GreenManTavernWeb.Components.MacUI.button label="Test Button" />
-  </GreenManTavernWeb.Components.MacUI.card>
-  
-  <div style="margin-top: 12px;">
-    <GreenManTavernWeb.Components.MacUI.text_field name="test" placeholder="Test input field" />
-  </div>
-  
-  <div style="margin-top: 12px;">
-    <GreenManTavernWeb.Components.MacUI.checkbox name="test_check" label="Test checkbox" checked={false} />
+  <p style="margin-bottom: 24px; line-height: 1.6;">
+    Choose a character to guide your permaculture journey. Each of The Seven Seekers 
+    offers unique wisdom and perspective.
+  </p>
+
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+    <%= for character <- @characters do %>
+      <.link 
+        navigate={~p"/characters/#{String.downcase(String.replace(character.name, " ", "-"))}"} 
+        style="text-decoration: none; color: inherit;"
+      >
+        <div style="border: 2px solid #000; padding: 12px; background: #FFF; cursor: pointer; transition: background 0.2s;" 
+             onmouseover="this.style.background='#F5F5F5'" 
+             onmouseout="this.style.background='#FFF'">
+          <p style="font-weight: bold; margin-bottom: 4px;"><%= character.name %></p>
+          <p style="font-size: 11px; color: #666; margin-bottom: 8px;"><%= character.archetype %></p>
+          <p style="font-size: 10px; color: #999;">
+            Trust: <%= String.capitalize(character.trust_requirement) %>
+          </p>
+        </div>
+      </.link>
+    <% end %>
   </div>
 </div>
