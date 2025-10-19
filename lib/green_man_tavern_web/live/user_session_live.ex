@@ -89,6 +89,7 @@ defmodule GreenManTavernWeb.UserSessionLive do
 
     socket =
       socket
+      |> Phoenix.LiveView.put_root_layout(html: {GreenManTavernWeb.Layouts, :auth})
       |> assign(:form, to_form(changeset, as: "user"))
       |> assign(:email, email)
       |> assign(:trigger_submit, false)

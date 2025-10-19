@@ -22,6 +22,7 @@ defmodule GreenManTavernWeb.Router do
     pipe_through [:browser, :redirect_if_user_is_authenticated]
 
     live "/register", UserRegistrationLive, :new
+    post "/register", UserRegistrationController, :create
     live "/login", UserSessionLive, :new
     post "/login", UserSessionController, :create
   end

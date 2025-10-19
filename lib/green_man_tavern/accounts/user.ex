@@ -49,8 +49,8 @@ defmodule GreenManTavern.Accounts.User do
   """
   def session_changeset(user, attrs) do
     user
-    |> cast(attrs, [:email, :password])
-    |> validate_required([:email, :password])
+    |> cast(attrs, [:email])
+    |> validate_required([:email])
   end
 
   @doc """
