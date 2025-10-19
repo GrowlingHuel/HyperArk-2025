@@ -4,6 +4,7 @@ defmodule GreenManTavernWeb.BannerMenuComponent do
   alias GreenManTavern.Characters
 
   attr :current_character, :map, default: nil
+  attr :current_user, :map, default: nil
 
   def banner_menu(assigns) do
     characters = Characters.list_characters()
@@ -41,6 +42,19 @@ defmodule GreenManTavernWeb.BannerMenuComponent do
         <.link navigate={~p"/database"} class="banner-menu-item">Database</.link>
         <.link navigate={~p"/garden"} class="banner-menu-item">Garden</.link>
         <.link navigate={~p"/living-web"} class="banner-menu-item">Living Web</.link>
+
+        <!-- Authentication Section -->
+        <div class="banner-auth-section">
+          <%= if @current_user do %>
+            <!-- User is logged in -->
+            <span class="banner-user-info">Welcome, <%= @current_user.email %></span>
+            <.link navigate={~p"/logout"} class="banner-menu-item">Logout</.link>
+          <% else %>
+            <!-- User is not logged in -->
+            <.link navigate={~p"/login"} class="banner-menu-item">Login</.link>
+            <.link navigate={~p"/register"} class="banner-menu-item">Register</.link>
+          <% end %>
+        </div>
       </div>
     </div>
     """

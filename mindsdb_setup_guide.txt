@@ -1,0 +1,372 @@
+# MindsDB Setup & Integration Guide - Green Man Tavern
+
+## PART 1: Get MindsDB Running (LOCAL)
+
+### Step 1: Start Docker Desktop
+```bash
+# Open Docker Desktop application from your apps menu
+# Wait for "Docker Desktop is running" message
+```
+
+### Step 2: Start MindsDB Container
+**In Docker Desktop GUI:**
+- Find MindsDB container in container list
+- Click ▶️ (play button) to start it
+- Wait until status shows "Running"
+- Click on port 47334 to open web UI
+- OR go to: http://localhost:47334
+
+### Step 3: Configure API Key
+- In MindsDB web UI, enter your Google Gemini API key
+- Model: gemini-2.0-flash-exp
+- Save configuration
+
+---
+
+## PART 2: Upload Knowledge Base (PDFs)
+
+### In MindsDB Web UI:
+
+1. **Click "Datasources" or "Files" in left sidebar**
+2. **Click "Upload File"**
+3. **Upload ONE PDF first to test** (e.g., homesteadinghandbook.pdf)
+4. **Verify upload successful:**
+   ```sql
+   SHOW TABLES FROM files;
+   ```
+5. **Check file content:**
+   ```sql
+   SELECT * FROM files.homesteadinghandbookPDF LIMIT 10;
+   ```
+
+### Upload All PDFs (Later):
+- Repeat upload for all permaculture PDFs
+- Each becomes a table: files.filename
+- Can query all: `SELECT * FROM files.tablename`
+
+---
+
+## PART 3: Create The Grandmother Agent
+
+### In MindsDB SQL Editor:
+
+```sql
+CREATE MODEL grandmother_agent
+PREDICT answer
+USING
+  engine = 'langchain',
+  model_name = 'gemini-2.0-flash-exp',
+  question_column = 'question',
+  context_column = 'context',
+  prompt_template = 'You are The Grandmother, keeper of ancestral knowledge and traditional methods from the permaculture tradition. You are patient, experienced, warm, and deeply rooted in cultural wisdom.
+
+Context from knowledge base:
+{{context}}
+
+User question: {{question}}
+
+Respond as The Grandmother would: patient, warm, sharing traditional wisdom with gentle guidance. Keep responses under 200 words. Use a conversational, grandmotherly tone.';
+```
+
+### Verify Agent Created:
+```sql
+SHOW MODELS;
+-- Wait for STATUS to change from "generating" to "complete"
+-- May take 1-5 minutes
+```
+
+### Test The Grandmother:
+```sql
+SELECT answer
+FROM grandmother_agent
+WHERE question = 'Hello Grandmother, what is the best way to start composting?'
+AND context = (SELECT content FROM files.homesteadinghandbookPDF LIMIT 1);
+```
+
+---
+
+## PART 4: Create Remaining 6 Agents
+
+### Template for Each Character:
+
+```sql
+CREATE MODEL [character]_agent
+PREDICT answer
+USING
+  engine = 'langchain',
+  model_name = 'gemini-2.0-flash-exp',
+  question_column = 'question',
+  context_column = 'context',
+  prompt_template = 'You are [Character Name], [archetype description]. You are [personality traits].
+
+Context from knowledge base:
+{{context}}
+
+User question: {{question}}
+
+Respond as [Character Name] would: [style guidance]. Keep responses under 200 words.';
+```
+
+### All 7 Agents to Create:
+
+1. **grandmother_agent** (Elder Wisdom - patient, warm, traditional)
+2. **student_agent** (Knowledge Seeker - curious, methodical, asks questions)
+3. **farmer_agent** (Food Producer - practical, hands-on, direct)
+4. **robot_agent** (Tech Integration - efficient, data-driven, systematic)
+5. **alchemist_agent** (Plant Processor - experimental, transformative, mysterious)
+6. **survivalist_agent** (Resilience Expert - strategic, prepared, resourceful)
+7. **hobo_agent** (Nomadic Wisdom - creative, unconventional, adaptable)
+
+---
+
+## PART 5: Connect Phoenix to MindsDB
+
+### Add Dependencies to mix.exs:
+
+```elixir
+defp deps do
+  [
+    # ... existing deps ...
+    {:myxql, "~> 0.6.0"},  # MySQL client for MindsDB
+    {:db_connection, "~> 2.4"}
+  ]
+end
+```
+
+```bash
+mix deps.get
+```
+
+### Configure Connection (config/dev.exs):
+
+```elixir
+config :green_man_tavern, GreenManTavern.MindsDB,
+  hostname: "localhost",
+  port: 47335,  # MindsDB MySQL port
+  username: "mindsdb",
+  password: "",
+  database: "mindsdb"
+```
+
+### Create MindsDB Client Module:
+
+**lib/green_man_tavern/mindsdb/client.ex:**
+
+```elixir
+defmodule GreenManTavern.MindsDB.Client do
+  @moduledoc """
+  Client for querying MindsDB agents
+  """
+
+  def query_agent(agent_name, question, context \\ "") do
+    # Build SQL query
+    sql = """
+    SELECT answer
+    FROM #{agent_name}
+    WHERE question = '#{escape_sql(question)}'
+    AND context = '#{escape_sql(context)}'
+    """
+
+    # Execute via MyXQL
+    case MyXQL.query(get_connection(), sql, []) do
+      {:ok, %{rows: [[answer]]}} -> {:ok, answer}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp get_connection do
+    # Connection config from app config
+    MyXQL.start_link(
+      hostname: "localhost",
+      port: 47335,
+      username: "mindsdb",
+      password: "",
+      database: "mindsdb"
+    )
+  end
+
+  defp escape_sql(str) do
+    String.replace(str, "'", "''")
+  end
+end
+```
+
+### Create Context Builder:
+
+**lib/green_man_tavern/mindsdb/context_builder.ex:**
+
+```elixir
+defmodule GreenManTavern.MindsDB.ContextBuilder do
+  @moduledoc """
+  Builds context for MindsDB agents from user data
+  """
+
+  def build_context(user) do
+    """
+    User Profile:
+    - Climate Zone: #{user.profile_data["climate_zone"]}
+    - Space Type: #{user.profile_data["space_type"]}
+    - Skill Level: #{user.profile_data["skill_level"]}
+    - Active Systems: #{get_user_systems(user)}
+    - Current Projects: #{get_user_projects(user)}
+    """
+  end
+
+  defp get_user_systems(user) do
+    # Query user_systems and join with systems table
+    # Return comma-separated list of system names
+  end
+
+  defp get_user_projects(user) do
+    # Query user_projects table
+    # Return list of active projects
+  end
+end
+```
+
+---
+
+## PART 6: Update CharacterLive for AI Chat
+
+### Modify character_live.ex:
+
+```elixir
+defmodule GreenManTavernWeb.CharacterLive do
+  use GreenManTavernWeb, :live_view
+  alias GreenManTavern.MindsDB.Client
+  alias GreenManTavern.MindsDB.ContextBuilder
+
+  def handle_event("send_message", %{"message" => msg}, socket) do
+    user = socket.assigns.current_user
+    character = socket.assigns.character
+    
+    # Build user context
+    context = ContextBuilder.build_context(user)
+    
+    # Query MindsDB agent
+    agent_name = "#{character.mindsdb_agent_name}"
+    
+    case Client.query_agent(agent_name, msg, context) do
+      {:ok, response} ->
+        # Add to conversation history
+        messages = socket.assigns.messages ++ [
+          %{role: "user", content: msg},
+          %{role: "assistant", content: response}
+        ]
+        
+        {:noreply, assign(socket, messages: messages)}
+        
+      {:error, _reason} ->
+        # Show error to user
+        {:noreply, put_flash(socket, :error, "The character is not responding. Please try again.")}
+    end
+  end
+end
+```
+
+---
+
+## PART 7: Testing Checklist
+
+### Test Each Agent in MindsDB UI First:
+
+```sql
+-- Test grandmother
+SELECT answer FROM grandmother_agent 
+WHERE question = 'What is composting?' 
+AND context = (SELECT content FROM files.homesteadinghandbookPDF LIMIT 1);
+
+-- Test student  
+SELECT answer FROM student_agent
+WHERE question = 'How do I learn about permaculture?'
+AND context = (SELECT content FROM files.homesteadinghandbookPDF LIMIT 1);
+
+-- Repeat for all 7 agents
+```
+
+### Test Phoenix Connection:
+
+```bash
+# In iex -S mix
+iex> GreenManTavern.MindsDB.Client.query_agent("grandmother_agent", "Hello", "")
+# Should return {:ok, "response text"}
+```
+
+### Test in Browser:
+
+1. Navigate to /characters/the-grandmother
+2. Type message in chat
+3. Should get AI response
+4. Verify personality matches character
+
+---
+
+## TROUBLESHOOTING
+
+### MindsDB Agent Stuck on "generating":
+
+```sql
+-- Drop and recreate
+DROP MODEL grandmother_agent;
+
+-- Then create again with same SQL
+-- Or try simpler prompt first
+```
+
+### Phoenix Can't Connect to MindsDB:
+
+```bash
+# Check MindsDB is running:
+# In browser: http://localhost:47334
+
+# Check port 47335 is open:
+lsof -i :47335
+
+# Restart MindsDB container in Docker Desktop
+```
+
+### Agent Responses Don't Match Personality:
+
+```sql
+-- Update the prompt template:
+UPDATE grandmother_agent
+SET prompt_template = 'New improved prompt...';
+```
+
+### Context Not Being Used:
+
+```sql
+-- Verify context query works:
+SELECT content FROM files.homesteadinghandbookPDF LIMIT 1;
+
+-- Should return text content from PDF
+```
+
+---
+
+## QUICK REFERENCE: Agent Names
+
+Map these in your database `characters.mindsdb_agent_name`:
+
+- The Grandmother → `grandmother_agent`
+- The Student → `student_agent`  
+- The Farmer → `farmer_agent`
+- The Robot → `robot_agent`
+- The Alchemist → `alchemist_agent`
+- The Survivalist → `survivalist_agent`
+- The Hobo → `hobo_agent`
+
+---
+
+## NEXT STEPS AFTER INTEGRATION
+
+1. Add conversation history tracking (user_conversations table)
+2. Implement project extraction from conversations (user_projects table)
+3. Add trust level progression (increase with each interaction)
+4. Create quest generation from agent suggestions
+5. Link agent suggestions to Living Web updates
+
+---
+
+**Last Updated:** 2025-01-20
+**Status:** Ready for implementation once MindsDB agents complete generation

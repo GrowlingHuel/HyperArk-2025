@@ -1,6 +1,8 @@
 defmodule GreenManTavernWeb.Router do
   use GreenManTavernWeb, :router
 
+  import GreenManTavernWeb.UserAuth
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -8,17 +10,35 @@ defmodule GreenManTavernWeb.Router do
     plug :put_root_layout, html: {GreenManTavernWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug :fetch_current_user
   end
 
   pipeline :api do
     plug :accepts, ["json"]
   end
 
+  # Routes for unauthenticated users
+  scope "/", GreenManTavernWeb do
+    pipe_through [:browser, :redirect_if_user_is_authenticated]
+
+    live "/register", UserRegistrationLive, :new
+    live "/login", UserSessionLive, :new
+    post "/login", UserSessionController, :create
+  end
+
+  # Routes for authenticated users
+  scope "/", GreenManTavernWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    live "/characters/:character_name", CharacterLive
+  end
+
+  # Public routes (no authentication required)
   scope "/", GreenManTavernWeb do
     pipe_through :browser
 
     get "/", PageController, :home
-    live "/characters/:character_name", CharacterLive
+    delete "/logout", UserSessionController, :delete
   end
 
   # Other scopes may use custom stacks.

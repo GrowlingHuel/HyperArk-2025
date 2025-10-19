@@ -6,6 +6,7 @@ defmodule GreenManTavern.Characters do
   import Ecto.Query, warn: false
   alias GreenManTavern.Repo
   alias GreenManTavern.Characters.Character
+  alias GreenManTavern.Characters.UserCharacter
 
   @doc """
   Returns the list of characters.
@@ -156,5 +157,167 @@ defmodule GreenManTavern.Characters do
     name
     |> String.downcase()
     |> String.replace(" ", "-")
+  end
+
+  # Trust System Functions
+
+  @doc """
+  Gets or creates a user-character relationship.
+
+  ## Examples
+
+      iex> get_or_create_user_character(1, 2)
+      {:ok, %UserCharacter{}}
+
+  """
+  def get_or_create_user_character(user_id, character_id) do
+    case get_user_character(user_id, character_id) do
+      nil -> create_user_character(%{user_id: user_id, character_id: character_id})
+      user_character -> {:ok, user_character}
+    end
+  end
+
+  @doc """
+  Gets a user-character relationship.
+
+  ## Examples
+
+      iex> get_user_character(1, 2)
+      %UserCharacter{}
+
+      iex> get_user_character(1, 999)
+      nil
+
+  """
+  def get_user_character(user_id, character_id) do
+    from(uc in UserCharacter,
+      where: uc.user_id == ^user_id and uc.character_id == ^character_id
+    )
+    |> Repo.one()
+  end
+
+  @doc """
+  Creates a user-character relationship.
+
+  ## Examples
+
+      iex> create_user_character(%{user_id: 1, character_id: 2})
+      {:ok, %UserCharacter{}}
+
+      iex> create_user_character(%{user_id: 1, character_id: 2})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_user_character(attrs \\ %{}) do
+    %UserCharacter{}
+    |> UserCharacter.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a user-character relationship.
+
+  ## Examples
+
+      iex> update_user_character(user_character, %{trust_level: 50})
+      {:ok, %UserCharacter{}}
+
+      iex> update_user_character(user_character, %{trust_level: -1})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_user_character(%UserCharacter{} = user_character, attrs) do
+    user_character
+    |> UserCharacter.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Updates user's trust level with a character.
+
+  ## Examples
+
+      iex> update_user_character_trust(1, 2, 5)
+      {:ok, %UserCharacter{}}
+
+  """
+  def update_user_character_trust(user_id, character_id, trust_delta) do
+    case get_or_create_user_character(user_id, character_id) do
+      {:ok, user_character} ->
+        user_character
+        |> UserCharacter.increase_trust(trust_delta)
+        |> Repo.update()
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  @doc """
+  Gets all user-character relationships for a user.
+
+  ## Examples
+
+      iex> get_user_character_relationships(1)
+      [%UserCharacter{}, ...]
+
+  """
+  def get_user_character_relationships(user_id) do
+    from(uc in UserCharacter,
+      where: uc.user_id == ^user_id,
+      preload: [:character],
+      order_by: [desc: uc.trust_level]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Gets all user-character relationships for a character.
+
+  ## Examples
+
+      iex> get_character_user_relationships(1)
+      [%UserCharacter{}, ...]
+
+  """
+  def get_character_user_relationships(character_id) do
+    from(uc in UserCharacter,
+      where: uc.character_id == ^character_id,
+      preload: [:user],
+      order_by: [desc: uc.trust_level]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Checks if a user has sufficient trust with a character.
+
+  ## Examples
+
+      iex> has_sufficient_trust?(1, 2)
+      true
+
+  """
+  def has_sufficient_trust?(user_id, character_id) do
+    case get_user_character(user_id, character_id) do
+      nil -> false
+      user_character -> user_character.is_trusted
+    end
+  end
+
+  @doc """
+  Gets the trust level between a user and character.
+
+  ## Examples
+
+      iex> get_trust_level(1, 2)
+      25
+
+  """
+  def get_trust_level(user_id, character_id) do
+    case get_user_character(user_id, character_id) do
+      nil -> 0
+      user_character -> user_character.trust_level
+    end
   end
 end

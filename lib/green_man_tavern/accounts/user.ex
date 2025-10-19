@@ -1,9 +1,11 @@
 defmodule GreenManTavern.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
+  import Bcrypt, only: [hash_pwd_salt: 1, verify_pass: 2, no_user_verify: 0]
 
   schema "users" do
     field :email, :string
+    field :password, :string, virtual: true
     field :hashed_password, :string
     field :confirmed_at, :naive_datetime
     field :profile_data, :map, default: %{}
@@ -18,7 +20,7 @@ defmodule GreenManTavern.Accounts.User do
     has_many :user_projects, GreenManTavern.Projects.UserProject
     has_many :conversations, GreenManTavern.Conversations.ConversationHistory
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc """
@@ -26,8 +28,29 @@ defmodule GreenManTavern.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email])
+    |> cast(attrs, [:email, :password])
     |> validate_email(opts)
+    |> validate_password(opts)
+  end
+
+  @doc """
+  A user changeset for general updates.
+  """
+  def changeset(user, attrs) do
+    user
+    |> cast(attrs, [:email, :profile_data, :xp, :level, :primary_character_id])
+    |> validate_email(validate_email: false)
+    |> validate_number(:xp, greater_than_or_equal_to: 0)
+    |> validate_number(:level, greater_than_or_equal_to: 1)
+  end
+
+  @doc """
+  A user changeset for session (login).
+  """
+  def session_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:email, :password])
+    |> validate_required([:email, :password])
   end
 
   @doc """
@@ -53,11 +76,11 @@ defmodule GreenManTavern.Accounts.User do
   """
   def valid_password?(%GreenManTavern.Accounts.User{hashed_password: hashed_password}, password)
       when is_binary(hashed_password) and byte_size(password) > 0 do
-    Bcrypt.verify_pass(password, hashed_password)
+    verify_pass(password, hashed_password)
   end
 
   def valid_password?(_, _) do
-    Bcrypt.no_user_verify()
+    no_user_verify()
     false
   end
 
@@ -95,17 +118,14 @@ defmodule GreenManTavern.Accounts.User do
 
   defp validate_password(changeset, opts) do
     changeset
-    |> validate_required([:hashed_password])
-    |> validate_length(:hashed_password, min: 12, max: 72)
-    |> validate_format(:hashed_password, ~r/[a-z]/, message: "at least one lower case character")
-    |> validate_format(:hashed_password, ~r/[A-Z]/, message: "at least one upper case character")
-    |> validate_format(:hashed_password, ~r/[!?@#$%^&*_0-9]/, message: "at least one digit or punctuation character")
+    |> validate_required([:password])
+    |> validate_length(:password, min: 6, max: 72)
     |> maybe_hash_password(opts)
   end
 
   defp maybe_hash_password(changeset, opts) do
     hash_password? = Keyword.get(opts, :hash_password, true)
-    password = get_change(changeset, :hashed_password)
+    password = get_change(changeset, :password)
 
     if hash_password? && password && changeset.valid? do
       # If using Bcrypt, then further validate it is at most 72 bytes long
@@ -113,7 +133,7 @@ defmodule GreenManTavern.Accounts.User do
 
       changeset
       # If using Bcrypt, the `password` value will be hashed by `validate_password/2`
-      |> put_change(:hashed_password, Bcrypt.hash_pwd_salt(password))
+      |> put_change(:hashed_password, hash_pwd_salt(password))
       |> delete_change(:password)
     else
       changeset

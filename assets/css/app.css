@@ -24,7 +24,7 @@
    The heroicons installation itself is managed by your mix.exs */
 @plugin "../vendor/heroicons";
 
-/* daisyUI Tailwind Plugin. You can update this file by fetching the latest version with:
+/* daisyUI Tailwind Plugin. You can update this file by fetching the latest version with:jsjsjsjsjsjsjsjs
    curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui.js
    Make sure to look at the daisyUI changelog: https://daisyui.com/docs/changelog/ */
 @plugin "../vendor/daisyui" {
@@ -32,7 +32,7 @@
 }
 
 /* daisyUI theme plugin. You can update this file by fetching the latest version with:
-  curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui-theme.js
+  curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui-theme.jsjsjsjs
   We ship with two themes, a light one inspired on Phoenix colors and a dark one inspired
   on Elixir colors. Build your own at: https://daisyui.com/theme-generator/ */
 @plugin "../vendor/daisyui-theme" {
@@ -240,6 +240,24 @@ p { font-size: 12px; }
   display: flex;
   gap: 6px; /* Space between buttons */
   align-items: center;
+}
+
+/* Authentication section in banner */
+.banner-auth-section {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.banner-user-info {
+  font-family: 'Geneva', 'Helvetica', 'Arial', sans-serif;
+  font-size: 11px;
+  color: #333;
+  padding: 5px 8px;
+  background: #F0F0F0;
+  border: 1px solid #999;
+  border-radius: 0;
 }
 
 /* Characters Dropdown Styles */
@@ -612,5 +630,187 @@ p { font-size: 12px; }
   background: #CCC;
   border: 1px solid #000;
   display: block;
+}
+
+/* ===== AUTHENTICATION STYLES ===== */
+/* HyperCard-inspired authentication forms with greyscale styling */
+
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #EEE;
+  padding: 20px;
+}
+
+.auth-window {
+  background: #FFF;
+  border: 2px solid #000;
+  border-radius: 0;
+  box-shadow: 4px 4px 0px #000;
+  padding: 30px;
+  width: 100%;
+  max-width: 400px;
+  font-family: 'Geneva', 'Helvetica', 'Arial', sans-serif;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 1px solid #CCC;
+  padding-bottom: 20px;
+}
+
+.auth-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #000;
+  margin: 0 0 8px 0;
+  font-family: 'Chicago', 'Geneva', sans-serif;
+}
+
+.auth-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  font-family: 'Geneva', 'Helvetica', sans-serif;
+}
+
+.auth-form {
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 2px solid #000;
+  border-radius: 0;
+  background: #FFF;
+  color: #000;
+  font-size: 14px;
+  font-family: 'Monaco', 'Courier', monospace;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  background: #FFF;
+  border-color: #333;
+  box-shadow: inset 1px 1px 2px #CCC;
+}
+
+.form-input::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #000;
+  font-family: 'Geneva', 'Helvetica', sans-serif;
+}
+
+.checkbox-input {
+  margin-right: 8px;
+  transform: scale(1.2);
+}
+
+.checkbox-text {
+  user-select: none;
+}
+
+.form-actions {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #EFEFEF 0%, #D0D0D0 100%);
+  border: 2px solid #000;
+  border-radius: 0;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #000;
+  cursor: pointer;
+  font-family: 'Chicago', 'Geneva', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 2px 2px 0px #000;
+  transition: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(180deg, #F5F5F5 0%, #DDDDDD 100%);
+  box-shadow: 3px 3px 0px #000;
+}
+
+.btn-primary:active {
+  background: linear-gradient(180deg, #D0D0D0 0%, #C0C0C0 100%);
+  box-shadow: 1px 1px 0px #000;
+  transform: translate(1px, 1px);
+}
+
+.btn-primary:disabled {
+  background: #CCC;
+  color: #666;
+  cursor: not-allowed;
+  box-shadow: 1px 1px 0px #999;
+}
+
+.auth-footer {
+  text-align: center;
+  border-top: 1px solid #CCC;
+  padding-top: 20px;
+}
+
+.auth-link-text {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  font-family: 'Geneva', 'Helvetica', sans-serif;
+}
+
+.auth-link {
+  color: #000;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.auth-link:hover {
+  color: #333;
+  text-decoration: none;
+}
+
+/* Error states */
+.form-input.error {
+  border-color: #000;
+  background: #FFF;
+  box-shadow: inset 2px 2px 4px #CCC;
+}
+
+.error-message {
+  color: #000;
+  font-size: 12px;
+  margin-top: 4px;
+  font-family: 'Monaco', 'Courier', monospace;
+  font-weight: bold;
+}
+
+/* Success states */
+.success-message {
+  color: #000;
+  font-size: 12px;
+  margin-top: 4px;
+  font-family: 'Monaco', 'Courier', monospace;
+  font-weight: bold;
 }
 

@@ -91,21 +91,22 @@
     </div>
     
     <!-- Chat input -->
-    <div style="display: flex; gap: 4px;">
+    <form phx-submit="send_message" style="display: flex; gap: 4px;">
       <input 
         type="text" 
-        phx-keydown="send_message" 
+        name="message"
         phx-change="update_message"
         value={@current_message}
         placeholder="Type your message..."
         style="flex: 1; padding: 6px; border: 1px solid #CCC; font-size: 11px; font-family: Monaco, monospace;"
       />
       <button 
+        type="submit"
         phx-click="send_message"
         style="padding: 6px 12px; background: linear-gradient(180deg, #EFEFEF 0%, #D0D0D0 100%); border: 1px solid #CCC; font-size: 11px; cursor: pointer;"
       >
         Send
       </button>
-    </div>
+    </form>
   </div>
 </div>
