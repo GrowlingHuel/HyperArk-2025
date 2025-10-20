@@ -28,7 +28,13 @@ defmodule GreenManTavern.MindsDB.Client do
     IO.puts("🎯 CALLING MINDSDB: #{agent_name} with: #{message}")
     # For now, return a mock response
     # TODO: Implement actual MindsDB API integration
-    {:ok, "Hello! I'm #{agent_name}. You said: #{message}. Context: #{context}"}
+
+    # Simulate occasional errors for testing
+    if String.contains?(message, "error") do
+      {:error, "Simulated MindsDB error"}
+    else
+      {:ok, "Hello! I'm #{agent_name}. You said: #{message}. Context: #{context}"}
+    end
   end
 
   @doc """

@@ -10,7 +10,9 @@ defmodule GreenManTavern.Repo.Migrations.CreateUserQuests do
       add :started_at, :naive_datetime
       add :completed_at, :naive_datetime
 
-      timestamps()
+      # Manual timestamp fields using PostgreSQL's NOW() to avoid Elixir 1.18.2 bug
+      add :inserted_at, :naive_datetime, null: false, default: fragment("NOW()")
+      add :updated_at, :naive_datetime, null: false, default: fragment("NOW()")
     end
 
     create index(:user_quests, [:user_id])

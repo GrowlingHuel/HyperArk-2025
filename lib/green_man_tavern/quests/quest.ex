@@ -14,8 +14,6 @@ defmodule GreenManTavern.Quests.Quest do
 
     belongs_to :character, GreenManTavern.Characters.Character
     has_many :user_quests, GreenManTavern.Quests.UserQuest
-
-    timestamps()
   end
 
   @doc false

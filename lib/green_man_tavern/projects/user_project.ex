@@ -11,8 +11,6 @@ defmodule GreenManTavern.Projects.UserProject do
     field :notes, :string
 
     belongs_to :user, GreenManTavern.Accounts.User
-
-    timestamps(type: :utc_datetime)
   end
 
   @doc false

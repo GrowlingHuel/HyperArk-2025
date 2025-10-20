@@ -12,7 +12,9 @@ defmodule GreenManTavern.Repo.Migrations.CreateUserSystems do
       add :location_notes, :text
       add :implemented_at, :naive_datetime
 
-      timestamps()
+      # Manual timestamp fields using PostgreSQL's NOW() to avoid Elixir 1.18.2 bug
+      add :inserted_at, :naive_datetime, null: false, default: fragment("NOW()")
+      add :updated_at, :naive_datetime, null: false, default: fragment("NOW()")
     end
 
     create index(:user_systems, [:user_id])

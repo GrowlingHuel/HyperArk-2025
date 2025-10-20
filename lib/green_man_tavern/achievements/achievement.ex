@@ -11,8 +11,6 @@ defmodule GreenManTavern.Achievements.Achievement do
     field :rarity, :string
 
     has_many :user_achievements, GreenManTavern.Achievements.UserAchievement
-
-    timestamps()
   end
 
   @doc false

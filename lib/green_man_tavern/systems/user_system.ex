@@ -12,8 +12,6 @@ defmodule GreenManTavern.Systems.UserSystem do
 
     belongs_to :user, GreenManTavern.Accounts.User
     belongs_to :system, GreenManTavern.Systems.System
-
-    timestamps()
   end
 
   @doc false

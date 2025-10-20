@@ -8,6 +8,7 @@ defmodule GreenManTavernWeb.UserAuth do
 
   import Plug.Conn
   import Phoenix.Controller
+  import Phoenix.LiveView, only: [push_navigate: 2]
 
   alias GreenManTavern.Accounts
 
@@ -160,10 +161,10 @@ defmodule GreenManTavernWeb.UserAuth do
   def on_mount(:mount_current_user, _params, session, socket) do
     socket = Phoenix.LiveView.attach_hook(socket, :current_user, :handle_info, fn
       :logout, socket ->
-        {:cont, socket |> Phoenix.LiveView.assign(:current_user, nil) |> Phoenix.LiveView.push_navigate(to: "/")}
+        {:cont, %{socket | assigns: Map.put(socket.assigns, :current_user, nil)}}
     end)
 
-    {:cont, Phoenix.LiveView.assign(socket, :current_user, get_user_from_session(session))}
+    {:cont, %{socket | assigns: Map.put(socket.assigns, :current_user, get_user_from_session(session))}}
   end
 
   def on_mount(:ensure_authenticated, _params, session, socket) do
@@ -177,7 +178,7 @@ defmodule GreenManTavernWeb.UserAuth do
         {:halt, socket}
 
       user ->
-        {:cont, Phoenix.LiveView.assign(socket, :current_user, user)}
+        {:cont, %{socket | assigns: Map.put(socket.assigns, :current_user, user)}}
     end
   end
 

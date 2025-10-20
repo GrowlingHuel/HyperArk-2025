@@ -6,6 +6,7 @@ defmodule GreenManTavern.Accounts.User do
   schema "users" do
     field :email, :string
     field :password, :string, virtual: true
+    field :password_confirmation, :string, virtual: true
     field :hashed_password, :string
     field :confirmed_at, :naive_datetime
     field :profile_data, :map, default: %{}
@@ -19,8 +20,6 @@ defmodule GreenManTavern.Accounts.User do
     has_many :user_achievements, GreenManTavern.Achievements.UserAchievement
     has_many :user_projects, GreenManTavern.Projects.UserProject
     has_many :conversations, GreenManTavern.Conversations.ConversationHistory
-
-    timestamps(type: :utc_datetime)
   end
 
   @doc """
@@ -49,8 +48,8 @@ defmodule GreenManTavern.Accounts.User do
   """
   def session_changeset(user, attrs) do
     user
-    |> cast(attrs, [:email])
-    |> validate_required([:email])
+    |> cast(attrs, [:email, :password])
+    |> validate_required([:email, :password])
   end
 
   @doc """
@@ -67,7 +66,7 @@ defmodule GreenManTavern.Accounts.User do
   Confirms the account by setting `confirmed_at`.
   """
   def confirm_changeset(user) do
-    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    now = DateTime.utc_now() |> DateTime.to_naive() |> NaiveDateTime.truncate(:second)
     change(user, confirmed_at: now)
   end
 

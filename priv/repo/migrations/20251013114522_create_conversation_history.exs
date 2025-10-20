@@ -9,7 +9,9 @@ defmodule GreenManTavern.Repo.Migrations.CreateConversationHistory do
       add :message_content, :text, null: false
       add :extracted_projects, :jsonb, default: fragment("'[]'::jsonb")
 
-      timestamps()
+      # Manual timestamp fields using PostgreSQL's NOW() to avoid Elixir 1.18.2 bug
+      add :inserted_at, :naive_datetime, null: false, default: fragment("NOW()")
+      add :updated_at, :naive_datetime, null: false, default: fragment("NOW()")
     end
 
     create index(:conversation_history, [:user_id])

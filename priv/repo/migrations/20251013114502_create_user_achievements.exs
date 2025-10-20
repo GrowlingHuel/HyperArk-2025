@@ -7,7 +7,9 @@ defmodule GreenManTavern.Repo.Migrations.CreateUserAchievements do
       add :achievement_id, references(:achievements, on_delete: :delete_all), null: false
       add :unlocked_at, :naive_datetime, null: false
 
-      timestamps()
+      # Manual timestamp fields using PostgreSQL's NOW() to avoid Elixir 1.18.2 bug
+      add :inserted_at, :naive_datetime, null: false, default: fragment("NOW()")
+      add :updated_at, :naive_datetime, null: false, default: fragment("NOW()")
     end
 
     create unique_index(:user_achievements, [:user_id, :achievement_id])

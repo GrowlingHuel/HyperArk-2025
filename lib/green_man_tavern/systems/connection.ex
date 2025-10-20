@@ -10,8 +10,6 @@ defmodule GreenManTavern.Systems.Connection do
     belongs_to :from_system, GreenManTavern.Systems.System
     belongs_to :to_system, GreenManTavern.Systems.System
     has_many :user_connections, GreenManTavern.Systems.UserConnection
-
-    timestamps()
   end
 
   @doc false

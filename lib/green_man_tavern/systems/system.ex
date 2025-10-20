@@ -17,8 +17,6 @@ defmodule GreenManTavern.Systems.System do
     has_many :user_systems, GreenManTavern.Systems.UserSystem
     has_many :connections_from, GreenManTavern.Systems.Connection, foreign_key: :from_system_id
     has_many :connections_to, GreenManTavern.Systems.Connection, foreign_key: :to_system_id
-
-    timestamps()
   end
 
   @doc false

@@ -8,8 +8,6 @@ defmodule GreenManTavern.Systems.UserConnection do
 
     belongs_to :user, GreenManTavern.Accounts.User
     belongs_to :connection, GreenManTavern.Systems.Connection
-
-    timestamps()
   end
 
   @doc false

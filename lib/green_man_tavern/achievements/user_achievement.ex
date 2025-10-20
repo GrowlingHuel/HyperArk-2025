@@ -7,8 +7,6 @@ defmodule GreenManTavern.Achievements.UserAchievement do
 
     belongs_to :user, GreenManTavern.Accounts.User
     belongs_to :achievement, GreenManTavern.Achievements.Achievement
-
-    timestamps()
   end
 
   @doc false

@@ -13,7 +13,9 @@ defmodule GreenManTavern.Repo.Migrations.CreateQuests do
       add :instructions, :jsonb, default: fragment("'[]'::jsonb")
       add :success_criteria, :jsonb, default: fragment("'{}'::jsonb")
 
-      timestamps()
+      # Manual timestamp fields using PostgreSQL's NOW() to avoid Elixir 1.18.2 bug
+      add :inserted_at, :naive_datetime, null: false, default: fragment("NOW()")
+      add :updated_at, :naive_datetime, null: false, default: fragment("NOW()")
     end
 
     create index(:quests, [:character_id])

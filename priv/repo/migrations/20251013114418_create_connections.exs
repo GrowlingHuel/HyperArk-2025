@@ -9,7 +9,9 @@ defmodule GreenManTavern.Repo.Migrations.CreateConnections do
       add :flow_label, :string
       add :description, :text
 
-      timestamps()
+      # Manual timestamp fields using PostgreSQL's NOW() to avoid Elixir 1.18.2 bug
+      add :inserted_at, :naive_datetime, null: false, default: fragment("NOW()")
+      add :updated_at, :naive_datetime, null: false, default: fragment("NOW()")
     end
 
     create index(:connections, [:from_system_id])

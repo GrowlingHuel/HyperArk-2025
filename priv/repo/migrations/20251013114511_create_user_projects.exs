@@ -11,7 +11,9 @@ defmodule GreenManTavern.Repo.Migrations.CreateUserProjects do
       add :related_systems, :map, default: %{}  # JSONB array of system_ids
       add :notes, :text
 
-      timestamps()
+      # Manual timestamp fields using PostgreSQL's NOW() to avoid Elixir 1.18.2 bug
+      add :inserted_at, :naive_datetime, null: false, default: fragment("NOW()")
+      add :updated_at, :naive_datetime, null: false, default: fragment("NOW()")
     end
 
     create index(:user_projects, [:user_id])

@@ -22,7 +22,7 @@ defmodule GreenManTavernWeb.UserSessionLive do
           id="login-form"
           phx-submit="save"
           phx-change="validate"
-          phx-trigger-action={@trigger_submit}
+          phx-hook="redirect"
           class="auth-form"
         >
           <div class="form-group">
@@ -89,18 +89,15 @@ defmodule GreenManTavernWeb.UserSessionLive do
 
     socket =
       socket
-      |> Phoenix.LiveView.put_root_layout(html: {GreenManTavernWeb.Layouts, :auth})
+      |> assign(:is_auth_page, true)
       |> assign(:form, to_form(changeset, as: "user"))
       |> assign(:email, email)
-      |> assign(:trigger_submit, false)
 
     {:ok, socket}
   end
 
   def handle_event("validate", %{"user" => user_params}, socket) do
-    changeset =
-      %{}
-      |> Accounts.change_user_session(user_params)
+    changeset = Accounts.change_user_session(user_params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, form: to_form(changeset, as: "user"))}
@@ -109,22 +106,24 @@ defmodule GreenManTavernWeb.UserSessionLive do
   def handle_event("save", %{"user" => user_params}, socket) do
     %{"email" => email, "password" => password} = user_params
 
-    if user = Accounts.get_user_by_email_and_password(email, password) do
-      socket =
-        socket
-        |> assign(:trigger_submit, true)
-        |> assign(:form, to_form(Accounts.change_user_session(user_params), as: "user"))
+    case Accounts.authenticate_user(email, password) do
+      {:ok, user} ->
+        # Store user info in session and redirect to controller to set session
+        socket =
+          socket
+          |> put_flash(:info, "Welcome back!")
+          |> Phoenix.LiveView.push_event("redirect", %{to: "/login/process?user_id=#{user.id}"})
 
-      {:noreply, socket}
-    else
-      # Show an error toast without clearing the form
-      changeset =
-        %{}
-        |> Accounts.change_user_session(user_params)
-        |> Map.put(:action, :insert)
-        |> add_error(:email, "Invalid email or password")
+        {:noreply, socket}
 
-      {:noreply, assign(socket, form: to_form(changeset, as: "user"))}
+      {:error, :invalid_credentials} ->
+        # Show an error without clearing the form
+        changeset =
+          Accounts.change_user_session(user_params)
+          |> Map.put(:action, :insert)
+          |> add_error(:email, "Invalid email or password")
+
+        {:noreply, assign(socket, form: to_form(changeset, as: "user"))}
     end
   end
 

@@ -10,8 +10,6 @@ defmodule GreenManTavern.Conversations.ConversationHistory do
 
     belongs_to :user, GreenManTavern.Accounts.User
     belongs_to :character, GreenManTavern.Characters.Character
-
-    timestamps()
   end
 
   @doc false

@@ -16,8 +16,6 @@ defmodule GreenManTavern.Characters.Character do
     has_many :user_characters, GreenManTavern.Characters.UserCharacter
     has_many :quests, GreenManTavern.Quests.Quest
     has_many :conversations, GreenManTavern.Conversations.ConversationHistory
-
-    timestamps()
   end
 
   @doc false

@@ -52,7 +52,12 @@
   <body>
     <div class="master-layout">
       <.banner_menu current_character={assigns[:character]} current_user={assigns[:current_user]} />
-      <div class="content-container">
+      <%= if assigns[:is_auth_page] do %>
+        <!-- Auth pages - simple layout -->
+        {@inner_content}
+      <% else %>
+        <!-- Regular pages - dual window layout -->
+        <div class="content-container">
         <div class="left-window">
           <div class="mac-title-bar">
             <div class="mac-close-box">×</div>
@@ -65,13 +70,20 @@
               <img src="/images/the_tavern.png" alt="Green Man Tavern" style="width: 100%; display: block; border: 1px solid #000;" />
             </div>
             
-            <!-- Show character content if character is selected, auth pages, or default message -->
+            <!-- Show character content if character is selected, otherwise show default message -->
             <%= if assigns[:character] do %>
               <!-- Character content will be rendered here by the LiveView -->
               {@inner_content}
             <% else %>
-              <!-- For auth pages or other content, just render the inner content -->
-              {@inner_content}
+              <!-- Default tavern message -->
+              <div style="padding: 8px; border-top: 1px solid #CCC;">
+                <p style="font-size: 12px; color: #666; margin-bottom: 8px;">
+                  Welcome to the Green Man Tavern! Select a character from the dropdown above to begin your journey.
+                </p>
+                <p style="font-size: 11px; color: #999;">
+                  Each character has unique knowledge and perspectives to share about permaculture and sustainable living.
+                </p>
+              </div>
             <% end %>
           </div>
         </div>
@@ -117,6 +129,7 @@
           </div>
         </div>
       </div>
+      <% end %>
     </div>
   </body>
 </html>

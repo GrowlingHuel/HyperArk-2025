@@ -10,8 +10,6 @@ defmodule GreenManTavern.Quests.UserQuest do
 
     belongs_to :user, GreenManTavern.Accounts.User
     belongs_to :quest, GreenManTavern.Quests.Quest
-
-    timestamps()
   end
 
   @doc false

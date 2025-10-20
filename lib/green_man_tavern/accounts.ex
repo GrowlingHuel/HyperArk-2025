@@ -184,8 +184,15 @@ defmodule GreenManTavern.Accounts do
   Gets a user by session token.
   """
   def get_user_by_session_token(token) do
-    # For now, return nil - implement session tokens later
-    nil
+    # Extract user ID from token format: "session_#{user_id}_#{unique_integer}"
+    case String.split(token, "_") do
+      ["session", user_id_str, _unique_integer] ->
+        case Integer.parse(user_id_str) do
+          {user_id, ""} -> get_user!(user_id)
+          _ -> nil
+        end
+      _ -> nil
+    end
   end
 
   @doc """
@@ -199,7 +206,7 @@ defmodule GreenManTavern.Accounts do
   @doc """
   Deletes a session token.
   """
-  def delete_session_token(token) do
+  def delete_session_token(_token) do
     # For now, just return :ok - implement session token deletion later
     :ok
   end
@@ -245,8 +252,7 @@ defmodule GreenManTavern.Accounts do
 
   """
   def change_user_session(attrs \\ %{}) do
-    %User{}
-    |> User.session_changeset(attrs)
+    User.session_changeset(%User{}, attrs)
   end
 
   @doc """
@@ -258,7 +264,7 @@ defmodule GreenManTavern.Accounts do
       {:ok, %{to: "user@example.com", subject: "Confirmation instructions"}}
 
   """
-  def deliver_user_confirmation_instructions(user, url_fun) do
+  def deliver_user_confirmation_instructions(user, _url_fun) do
     # For now, just return success - implement email delivery later
     {:ok, %{to: user.email, subject: "Confirmation instructions"}}
   end

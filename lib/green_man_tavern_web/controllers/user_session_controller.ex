@@ -43,6 +43,24 @@ defmodule GreenManTavernWeb.UserSessionController do
     end
   end
 
+  def process_login(conn, params) do
+    user_id = params["user_id"] || Phoenix.Flash.get(conn.assigns.flash, :user_id)
+
+    if user_id do
+      # Get the user and log them in
+      user = Accounts.get_user!(user_id)
+
+      conn
+      |> put_flash(:info, "Welcome back!")
+      |> UserAuth.log_in_user(user, %{})
+    else
+      # No temporary user data, redirect back to login
+      conn
+      |> put_flash(:error, "Login session expired. Please try again.")
+      |> redirect(to: ~p"/login")
+    end
+  end
+
   def delete(conn, _params) do
     conn
     |> put_flash(:info, "Logged out successfully.")

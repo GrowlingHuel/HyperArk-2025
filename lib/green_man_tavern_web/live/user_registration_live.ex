@@ -23,7 +23,6 @@ defmodule GreenManTavernWeb.UserRegistrationLive do
           id="registration-form"
           phx-submit="save"
           phx-change="validate"
-          phx-trigger-action={@trigger_submit}
           class="auth-form"
         >
           <div class="form-group">
@@ -88,8 +87,7 @@ defmodule GreenManTavernWeb.UserRegistrationLive do
 
     socket =
       socket
-      |> Phoenix.LiveView.put_root_layout(html: {GreenManTavernWeb.Layouts, :auth})
-      |> assign(:trigger_submit, false)
+      |> assign(:is_auth_page, true)
       |> assign(:form, to_form(changeset))
 
     {:ok, socket}
@@ -113,8 +111,12 @@ defmodule GreenManTavernWeb.UserRegistrationLive do
             &url(~p"/users/confirm/#{&1}")
           )
 
-        changeset = Accounts.change_user_registration(user)
-        {:noreply, assign(socket, trigger_submit: true, form: to_form(changeset))}
+        socket =
+          socket
+          |> put_flash(:info, "User created successfully. Please check your email for confirmation instructions.")
+          |> Phoenix.LiveView.push_navigate(to: ~p"/")
+
+        {:noreply, socket}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}

@@ -11,7 +11,9 @@ defmodule GreenManTavern.Repo.Migrations.CreateUserCharacters do
       add :interaction_count, :integer, default: 0
       add :is_trusted, :boolean, default: false
 
-      timestamps()
+      # Manual timestamp fields using PostgreSQL's NOW() to avoid Elixir 1.18.2 bug
+      add :inserted_at, :naive_datetime, null: false, default: fragment("NOW()")
+      add :updated_at, :naive_datetime, null: false, default: fragment("NOW()")
     end
 
     create unique_index(:user_characters, [:user_id, :character_id])

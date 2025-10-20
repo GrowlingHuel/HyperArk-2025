@@ -25,13 +25,18 @@ defmodule GreenManTavernWeb.Router do
     post "/register", UserRegistrationController, :create
     live "/login", UserSessionLive, :new
     post "/login", UserSessionController, :create
+    get "/login/process", UserSessionController, :process_login
   end
 
   # Routes for authenticated users
   scope "/", GreenManTavernWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    live "/characters/:character_name", CharacterLive
+    live_session :require_authenticated_user,
+      on_mount: [{GreenManTavernWeb.UserAuth, :ensure_authenticated}] do
+
+      live "/characters/:character_name", CharacterLive
+    end
   end
 
   # Public routes (no authentication required)
