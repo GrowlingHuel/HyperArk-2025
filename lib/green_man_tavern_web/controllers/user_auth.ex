@@ -9,6 +9,7 @@ defmodule GreenManTavernWeb.UserAuth do
   import Plug.Conn
   import Phoenix.Controller
   import Phoenix.LiveView, only: [push_navigate: 2]
+  import Phoenix.Token
 
   alias GreenManTavern.Accounts
 

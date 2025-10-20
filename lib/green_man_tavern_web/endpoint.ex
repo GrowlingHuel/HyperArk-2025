@@ -7,7 +7,10 @@ defmodule GreenManTavernWeb.Endpoint do
   @session_options [
     store: :cookie,
     key: "_green_man_tavern_key",
-    signing_salt: "1DDWx4YS",
+    signing_salt: System.get_env("SESSION_SIGNING_SALT", "1DDWx4YS"),
+    max_age: 60 * 60 * 24 * 60,
+    http_only: true,
+    secure: Application.compile_env(:green_man_tavern, :environment) != :dev,
     same_site: "Lax"
   ]
 

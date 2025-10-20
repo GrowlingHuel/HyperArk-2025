@@ -3,7 +3,7 @@ import Config
 # Configure your database
 config :green_man_tavern, GreenManTavern.Repo,
   username: "jesse",
-  password: "jesse",
+  password: System.get_env("DATABASE_PASSWORD", "jesse"),
   hostname: "localhost",
   database: "green_man_tavern_dev",
   stacktrace: true,
@@ -23,7 +23,7 @@ config :green_man_tavern, GreenManTavernWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "2jT4fSivaSbnqHr6+sf/mOxfFgUqNsvdKdarts2Rf++sTrpYgXWeF6oW1g4i1rTf",
+  secret_key_base: System.get_env("SECRET_KEY_BASE", "2jT4fSivaSbnqHr6+sf/mOxfFgUqNsvdKdarts2Rf++sTrpYgXWeF6oW1g4i1rTf"),
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:green_man_tavern, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:green_man_tavern, ~w(--watch)]}

@@ -48,7 +48,7 @@ defmodule GreenManTavernWeb.BannerMenuComponent do
           <%= if @current_user do %>
             <!-- User is logged in -->
             <span class="banner-user-info">Welcome, <%= @current_user.email %></span>
-            <.link navigate={~p"/logout"} class="banner-menu-item">Logout</.link>
+            <.link href={~p"/logout"} method="delete" class="banner-menu-item">Logout</.link>
           <% else %>
             <!-- User is not logged in -->
             <.link navigate={~p"/login"} class="banner-menu-item">Login</.link>

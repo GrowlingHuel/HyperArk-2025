@@ -9,7 +9,8 @@ import Config
 
 config :green_man_tavern,
   ecto_repos: [GreenManTavern.Repo],
-  generators: [timestamp_type: :utc_datetime_usec]
+  generators: [timestamp_type: :utc_datetime_usec],
+  environment: config_env()
 
 # Configures the endpoint
 config :green_man_tavern, GreenManTavernWeb.Endpoint,
@@ -20,7 +21,16 @@ config :green_man_tavern, GreenManTavernWeb.Endpoint,
     layout: false
   ],
   pubsub_server: GreenManTavern.PubSub,
-  live_view: [signing_salt: "64kWefz5"]
+  live_view: [signing_salt: System.get_env("LIVE_VIEW_SIGNING_SALT", "64kWefz5")],
+  session: [
+    store: :cookie,
+    key: "_green_man_tavern_key",
+    signing_salt: System.get_env("SESSION_SIGNING_SALT", "1DDWx4YS"),
+    max_age: 60 * 60 * 24 * 60,  # 60 days
+    http_only: true,              # Prevents JavaScript access (XSS protection)
+    secure: Application.compile_env(:green_man_tavern, :environment) != :dev,  # HTTPS-only in production
+    same_site: "Lax"              # CSRF protection
+  ]
 
 # Configures the mailer
 #

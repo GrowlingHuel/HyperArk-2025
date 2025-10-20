@@ -8,40 +8,48 @@ defmodule GreenManTavern.Conversations do
   alias GreenManTavern.Conversations.ConversationHistory
 
   @doc """
-  Returns the list of conversation entries.
+  Returns the list of conversation entries for the given user.
+
+  This function is user-scoped for security and privacy.
 
   ## Examples
 
-      iex> list_conversation_entries()
+      iex> list_conversation_entries(123)
       [%ConversationHistory{}, ...]
 
   """
-  def list_conversation_entries do
-    Repo.all(ConversationHistory)
+  def list_conversation_entries(user_id) when is_integer(user_id) do
+    from(ch in ConversationHistory, where: ch.user_id == ^user_id)
+    |> Repo.all()
   end
 
   @doc """
-  Gets a single conversation entry.
+  Gets a single conversation entry for the given user.
 
-  Raises `Ecto.NoResultsError` if the Conversation entry does not exist.
+  Raises `Ecto.NoResultsError` if the Conversation entry does not exist or
+  does not belong to the given user.
 
   ## Examples
 
-      iex> get_conversation_entry!(123)
+      iex> get_conversation_entry!(123, 456)
       %ConversationHistory{}
 
-      iex> get_conversation_entry!(456)
+      iex> get_conversation_entry!(456, 456)
       ** (Ecto.NoResultsError)
 
   """
-  def get_conversation_entry!(id), do: Repo.get!(ConversationHistory, id)
+  def get_conversation_entry!(id, user_id) when is_integer(id) and is_integer(user_id) do
+    Repo.get_by!(ConversationHistory, id: id, user_id: user_id)
+  end
 
   @doc """
-  Creates a conversation entry.
+  Creates a conversation entry for the given user.
+
+  This function requires user_id to be present in attrs for security.
 
   ## Examples
 
-      iex> create_conversation_entry(%{field: value})
+      iex> create_conversation_entry(%{user_id: 1, field: value})
       {:ok, %ConversationHistory{}}
 
       iex> create_conversation_entry(%{field: bad_value})
@@ -55,37 +63,53 @@ defmodule GreenManTavern.Conversations do
   end
 
   @doc """
-  Updates a conversation entry.
+  Updates a conversation entry for the given user.
+
+  This function verifies ownership before updating for security.
 
   ## Examples
 
-      iex> update_conversation_entry(conversation, %{field: new_value})
+      iex> update_conversation_entry(conversation, user_id, %{field: new_value})
       {:ok, %ConversationHistory{}}
 
-      iex> update_conversation_entry(conversation, %{field: bad_value})
+      iex> update_conversation_entry(conversation, user_id, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_conversation_entry(%ConversationHistory{} = conversation, attrs) do
-    conversation
-    |> ConversationHistory.changeset(attrs)
-    |> Repo.update()
+  def update_conversation_entry(%ConversationHistory{} = conversation, user_id, attrs)
+      when is_integer(user_id) do
+    # Verify ownership before updating
+    if conversation.user_id == user_id do
+      conversation
+      |> ConversationHistory.changeset(attrs)
+      |> Repo.update()
+    else
+      {:error, :unauthorized}
+    end
   end
 
   @doc """
-  Deletes a conversation entry.
+  Deletes a conversation entry for the given user.
+
+  This function verifies ownership before deleting for security.
 
   ## Examples
 
-      iex> delete_conversation_entry(conversation)
+      iex> delete_conversation_entry(conversation, user_id)
       {:ok, %ConversationHistory{}}
 
-      iex> delete_conversation_entry(conversation)
-      {:error, %Ecto.Changeset{}}
+      iex> delete_conversation_entry(conversation, user_id)
+      {:error, :unauthorized}
 
   """
-  def delete_conversation_entry(%ConversationHistory{} = conversation) do
-    Repo.delete(conversation)
+  def delete_conversation_entry(%ConversationHistory{} = conversation, user_id)
+      when is_integer(user_id) do
+    # Verify ownership before deleting
+    if conversation.user_id == user_id do
+      Repo.delete(conversation)
+    else
+      {:error, :unauthorized}
+    end
   end
 
   @doc """
@@ -154,17 +178,20 @@ defmodule GreenManTavern.Conversations do
   end
 
   @doc """
-  Gets all conversations for a character.
+  Gets all conversations for a character scoped to the given user.
+
+  This function is user-scoped for security and privacy.
 
   ## Examples
 
-      iex> get_character_conversations(1)
+      iex> get_character_conversations(123, 1)
       [%ConversationHistory{}, ...]
 
   """
-  def get_character_conversations(character_id) do
+  def get_character_conversations(user_id, character_id)
+      when is_integer(user_id) and is_integer(character_id) do
     from(ch in ConversationHistory,
-      where: ch.character_id == ^character_id,
+      where: ch.user_id == ^user_id and ch.character_id == ^character_id,
       order_by: [desc: ch.inserted_at]
     )
     |> Repo.all()
@@ -173,13 +200,16 @@ defmodule GreenManTavern.Conversations do
   @doc """
   Deletes old conversation entries older than the specified days.
 
+  WARNING: This is an admin-only function that affects ALL users' data.
+  Use with extreme caution in production.
+
   ## Examples
 
       iex> cleanup_old_conversations(30)
       {5, nil}
 
   """
-  def cleanup_old_conversations(days) do
+  def cleanup_old_conversations(days) when is_integer(days) and days > 0 do
     cutoff_date = DateTime.utc_now() |> DateTime.add(-days, :day)
 
     from(ch in ConversationHistory,
