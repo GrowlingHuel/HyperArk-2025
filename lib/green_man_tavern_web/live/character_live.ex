@@ -145,7 +145,7 @@ defmodule GreenManTavernWeb.CharacterLive do
     IO.puts("Message: #{message}")
 
     # Build context for MindsDB query
-    context = ContextBuilder.build_user_context(user_id, character)
+    context = ContextBuilder.build_character_context(user_id, character.id)
 
     # Debug logging before MindsDB call
     IO.puts("=== CALLING MINDSDB ===")

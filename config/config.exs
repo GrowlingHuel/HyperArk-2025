@@ -12,6 +12,16 @@ config :green_man_tavern,
   generators: [timestamp_type: :utc_datetime_usec],
   environment: config_env()
 
+# MindsDB Configuration Namespace
+config :green_man_tavern,
+  mindsdb: [
+    host: "localhost",
+    port: 47335,
+    user: "mindsdb",
+    password: "mindsdb",
+    database: "mindsdb"
+  ]
+
 # Configures the endpoint
 config :green_man_tavern, GreenManTavernWeb.Endpoint,
   url: [host: "localhost"],

@@ -86,3 +86,11 @@ config :phoenix_live_view,
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+# MindsDB Configuration for Development
+config :green_man_tavern,
+  mindsdb_host: "localhost",
+  mindsdb_port: 47340,
+  mindsdb_user: "mindsdb",
+  mindsdb_password: "mindsdb",
+  mindsdb_database: "mindsdb"
