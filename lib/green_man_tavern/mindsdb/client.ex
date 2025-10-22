@@ -107,28 +107,16 @@ defmodule GreenManTavern.MindsDB.Client do
     """
   end
 
-  defp decode_body(body) do
+  defp decode_body(body) when is_binary(body) do
     case Jason.decode(body) do
-      {:ok, %{"data" => data}} when is_list(data) and length(data) > 0 ->
-        # MindsDB returns data as a list - handle different formats
-        first_item = List.first(data)
-        
-        cond do
-          # If first item is a string, that's the answer
-          is_binary(first_item) ->
-            {:ok, first_item}
-          
-          # If first item is a map, try to get "answer" key
-          is_map(first_item) and Map.has_key?(first_item, "answer") ->
-            {:ok, Map.get(first_item, "answer")}
-          
-          # If first item is a map without "answer", get first value
-          is_map(first_item) ->
-            answer = first_item |> Map.values() |> List.first()
+      {:ok, %{"data" => data, "type" => "table"}} when is_list(data) ->
+        # MindsDB returns: %{"data" => [[answer_string]], "type" => "table"}
+        # Extract the first row, first column
+        case data do
+          [[answer | _] | _] when is_binary(answer) ->
             {:ok, answer}
-          
-          true ->
-            {:error, "Unexpected data format: #{inspect(data)}"}
+          _ ->
+            {:error, "Unexpected data structure: #{inspect(data)}"}
         end
       
       {:ok, %{"error" => error}} ->
@@ -142,7 +130,6 @@ defmodule GreenManTavern.MindsDB.Client do
     end
   end
 
-  defp decode_body(%{"data" => _} = map), do: decode_body(Jason.encode!(map))
 
   defp sanitize_agent_name(name) when is_binary(name) do
     allowed = [
