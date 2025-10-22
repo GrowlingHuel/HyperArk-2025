@@ -110,18 +110,35 @@ defmodule GreenManTavern.MindsDB.Client do
   defp decode_body(body) when is_binary(body) do
     case Jason.decode(body) do
       {:ok, %{"data" => data}} when is_list(data) and length(data) > 0 ->
-        first = hd(data)
-        {:ok, Map.get(first, "answer")}
+        case data do
+          # Format 1: List of strings (direct answer)
+          [answer | _] when is_binary(answer) ->
+            {:ok, answer}
+
+          # Format 2: List of maps with "answer" key
+          [%{"answer" => answer} | _] ->
+            {:ok, answer}
+
+          # Format 3: List of maps, take first value
+          [first_map | _] when is_map(first_map) ->
+            answer = first_map |> Map.values() |> List.first()
+            {:ok, answer}
+
+          _ ->
+            {:error, "Unexpected data format: #{inspect(data)}"}
+        end
 
       {:ok, %{"data" => []}} ->
         {:error, "No data returned from agent"}
 
-      {:ok, other} ->
-        Logger.warning("mindsdb.unexpected_body", body: inspect(other))
-        {:error, "Unexpected response"}
+      {:ok, %{"error" => error}} ->
+        {:error, "MindsDB error: #{error}"}
 
-      {:error, err} ->
-        {:error, "Failed to decode response: #{inspect(err)}"}
+      {:ok, response} ->
+        {:error, "Unexpected response format: #{inspect(response)}"}
+
+      {:error, error} ->
+        {:error, "JSON decode error: #{inspect(error)}"}
     end
   end
 
