@@ -13,6 +13,7 @@ defmodule GreenManTavern.Systems.System do
     field :icon_name, :string
     field :space_required, :string
     field :skill_level, :string
+    field :color_scheme, :string
 
     has_many :user_systems, GreenManTavern.Systems.UserSystem
     has_many :connections_from, GreenManTavern.Systems.Connection, foreign_key: :from_system_id
@@ -32,7 +33,8 @@ defmodule GreenManTavern.Systems.System do
       :default_outputs,
       :icon_name,
       :space_required,
-      :skill_level
+      :skill_level,
+      :color_scheme
     ])
     |> validate_required([:name, :system_type, :category])
     |> validate_inclusion(:system_type, ["resource", "process", "storage"])
