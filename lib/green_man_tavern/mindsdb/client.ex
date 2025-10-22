@@ -107,36 +107,36 @@ defmodule GreenManTavern.MindsDB.Client do
     """
   end
 
-  defp decode_body(body) when is_binary(body) do
+  defp decode_body(body) do
     case Jason.decode(body) do
       {:ok, %{"data" => data}} when is_list(data) and length(data) > 0 ->
-        case data do
-          # Format 1: List of strings (direct answer)
-          [answer | _] when is_binary(answer) ->
+        # MindsDB returns data as a list - handle different formats
+        first_item = List.first(data)
+        
+        cond do
+          # If first item is a string, that's the answer
+          is_binary(first_item) ->
+            {:ok, first_item}
+          
+          # If first item is a map, try to get "answer" key
+          is_map(first_item) and Map.has_key?(first_item, "answer") ->
+            {:ok, Map.get(first_item, "answer")}
+          
+          # If first item is a map without "answer", get first value
+          is_map(first_item) ->
+            answer = first_item |> Map.values() |> List.first()
             {:ok, answer}
-
-          # Format 2: List of maps with "answer" key
-          [%{"answer" => answer} | _] ->
-            {:ok, answer}
-
-          # Format 3: List of maps, take first value
-          [first_map | _] when is_map(first_map) ->
-            answer = first_map |> Map.values() |> List.first()
-            {:ok, answer}
-
-          _ ->
+          
+          true ->
             {:error, "Unexpected data format: #{inspect(data)}"}
         end
-
-      {:ok, %{"data" => []}} ->
-        {:error, "No data returned from agent"}
-
+      
       {:ok, %{"error" => error}} ->
         {:error, "MindsDB error: #{error}"}
-
+      
       {:ok, response} ->
         {:error, "Unexpected response format: #{inspect(response)}"}
-
+      
       {:error, error} ->
         {:error, "JSON decode error: #{inspect(error)}"}
     end

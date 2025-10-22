@@ -27332,3 +27332,183 @@ _**Assistant (default)**_
 
 ---
 
+I'll update the response parsing in `lib/green_man_tavern/mindsdb/client.ex` to handle multiple possible data formats from the MindsDB API, then commit the change.
+
+---
+
+Tool use: **apply_patch**
+
+<details>
+        <summary>Apply patch for /home/jesse/Desktop/NEWEST 13.10.25 GreenMan Tavern/lib/green_man_tavern/mindsdb/client.ex</summary>
+      
+
+```diff
+*** Begin Patch
+*** Update File: lib/green_man_tavern/mindsdb/client.ex
+@@
+-  defp decode_body(body) when is_binary(body) do
+-    case Jason.decode(body) do
+-      {:ok, %{"data" => data}} when is_list(data) and length(data) > 0 ->
+-        first = hd(data)
+-        {:ok, Map.get(first, "answer")}
+-
+-      {:ok, %{"data" => []}} ->
+-        {:error, "No data returned from agent"}
+-
+-      {:ok, other} ->
+-        Logger.warning("mindsdb.unexpected_body", body: inspect(other))
+-        {:error, "Unexpected response"}
+-
+-      {:error, err} ->
+-        {:error, "Failed to decode response: #{inspect(err)}"}
+-    end
+-  end
++  defp decode_body(body) when is_binary(body) do
++    case Jason.decode(body) do
++      {:ok, %{"data" => data}} when is_list(data) and length(data) > 0 ->
++        case data do
++          # Format 1: List of strings (direct answer)
++          [answer | _] when is_binary(answer) ->
++            {:ok, answer}
++
++          # Format 2: List of maps with "answer" key
++          [%{"answer" => answer} | _] ->
++            {:ok, answer}
++
++          # Format 3: List of maps, take first value
++          [first_map | _] when is_map(first_map) ->
++            answer = first_map |> Map.values() |> List.first()
++            {:ok, answer}
++
++          _ ->
++            {:error, "Unexpected data format: #{inspect(data)}"}
++        end
++
++      {:ok, %{"data" => []}} ->
++        {:error, "No data returned from agent"}
++
++      {:ok, %{"error" => error}} ->
++        {:error, "MindsDB error: #{error}"}
++
++      {:ok, response} ->
++        {:error, "Unexpected response format: #{inspect(response)}"}
++
++      {:error, error} ->
++        {:error, "JSON decode error: #{inspect(error)}"}
++    end
++  end
+*** End Patch
+```
+
+---
+
+Tool use: **read_lints**
+
+<details>
+          <summary>Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `/home/jesse/Desktop/NEWEST 13.10.25 GreenMan Tavern/lib/green_man_tavern/mindsdb/client.ex`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+
+---
+
+Tool use: **run_terminal_cmd**
+
+```bash
+git add -A && git commit -m "fix(mindsdb): robust decode_body to handle string list, map list, and error payloads from MindsDB HTTP API"
+```
+
+```
+[master 83ae166] fix(mindsdb): robust decode_body to handle string list, map list, and error payloads from MindsDB HTTP API
+ 5 files changed, 301 insertions(+), 7 deletions(-)
+ rewrite .elixir_ls/build/test/lib/green_man_tavern/.mix/compile.elixir (99%)
+ rewrite .elixir_ls/build/test/lib/green_man_tavern/ebin/Elixir.GreenManTavern.MindsDB.Client.beam (81%)
+
+```
+
+---
+
+Tool use: **run_terminal_cmd**
+
+```bash
+git tag -a rollback-after-mindsdb-decode-fix -m "Rollback point: after fixing MindsDB HTTP decode to support multiple formats"
+```
+
+---
+
+Updated the MindsDB HTTP client response parsing.
+
+- `lib/green_man_tavern/mindsdb/client.ex`: `decode_body/1` now handles:
+  - List of strings: ["answer", ...]
+  - List of maps with "answer": [%{"answer" => "answer"}, ...]
+  - List of maps (fallback: takes first value)
+  - Error payloads: %{"error" => "..."}
+  - Empty data: %{"data" => []}
+
+Rollback point created: rollback-after-mindsdb-decode-fix
+
+You’re set to handle MindsDB’s varying response formats.
+
+---
+
+_**User (2025-10-22 07:50Z)**_
+
+Fix the decode_body function in the MindsDB client - the current code is trying to call Map.get on a list.
+
+TASK:
+Open lib/green_man_tavern/mindsdb/client.ex
+
+Find line 114 (the decode_body function) and replace the ENTIRE function with this:
+
+defp decode_body(body) do
+  case Jason.decode(body) do
+    {:ok, %{"data" => data}} when is_list(data) and length(data) > 0 ->
+      # MindsDB returns data as a list - handle different formats
+      first_item = List.first(data)
+      
+      cond do
+        # If first item is a string, that's the answer
+        is_binary(first_item) ->
+          {:ok, first_item}
+        
+        # If first item is a map, try to get "answer" key
+        is_map(first_item) and Map.has_key?(first_item, "answer") ->
+          {:ok, Map.get(first_item, "answer")}
+        
+        # If first item is a map without "answer", get first value
+        is_map(first_item) ->
+          answer = first_item |> Map.values() |> List.first()
+          {:ok, answer}
+        
+        true ->
+          {:error, "Unexpected data format: #{inspect(data)}"}
+      end
+    
+    {:ok, %{"error" => error}} ->
+      {:error, "MindsDB error: #{error}"}
+    
+    {:ok, response} ->
+      {:error, "Unexpected response format: #{inspect(response)}"}
+    
+    {:error, error} ->
+      {:error, "JSON decode error: #{inspect(error)}"}
+  end
+end
+
+The key change: we check if first_item is a STRING first (is_binary), which is what MindsDB is actually returning.
+
+---
+
+_**Assistant (default)**_
+
+
+
+---
+
