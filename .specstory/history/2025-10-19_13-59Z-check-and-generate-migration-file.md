@@ -27751,6 +27751,136 @@ Lines added: 11, lines removed: 23
 
 ---
 
+Now I'll remove the duplicate `decode_body` clause that's causing warnings:
+
+
+---
+
+Tool use: **search_replace**
+
+
+<details><summary>Edit file: /home/jesse/Desktop/NEWEST 13.10.25 GreenMan Tavern/lib/green_man_tavern/mindsdb/client.ex</summary>
+
+**Chunk 1**
+Lines added: undefined, lines removed: 1
+
+```diff
+@@ -131,5 +131,4 @@
+    end
+  
+-   defp decode_body(%{"data" => _} = map), do: decode_body(Jason.encode!(map))
+  
+    defp sanitize_agent_name(name) when is_binary(name) do
+```
+
+</details>
+
+---
+
+Tool use: **read_lints**
+
+<details>
+          <summary>Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `/home/jesse/Desktop/NEWEST 13.10.25 GreenMan Tavern/lib/green_man_tavern/mindsdb/client.ex`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+
+---
+
+Tool use: **run_terminal_cmd**
+
+```bash
+git add -A && git commit -m "fix(mindsdb): correct decode_body for nested list format [[answer]] and remove duplicate clause"
+```
+
+```
+[master 73506ed] fix(mindsdb): correct decode_body for nested list format [[answer]] and remove duplicate clause
+ 5 files changed, 251 insertions(+), 21 deletions(-)
+ rewrite .elixir_ls/build/test/lib/green_man_tavern/.mix/compile.elixir (99%)
+ rewrite .elixir_ls/build/test/lib/green_man_tavern/ebin/Elixir.GreenManTavern.MindsDB.Client.beam (85%)
+
+```
+
+---
+
+Tool use: **run_terminal_cmd**
+
+```bash
+git tag -a rollback-after-nested-list-fix -m "Rollback point: after fixing decode_body for MindsDB nested list format [[answer]]"
+```
+
+---
+
+Fixed the `decode_body` function to handle MindsDB's actual response structure!
+
+**Key changes:**
+- Now correctly handles the nested list format: `%{"data" => [["answer_string"]], "type" => "table"}`
+- Extracts the answer using pattern matching: `[[answer | _] | _]` to get the first row, first column
+- Added guard clause `when is_binary(body)` for better type safety
+- Removed the duplicate `decode_body` clause that was causing warnings
+
+**Response format handled:**
+```json
+{
+  "data": [["This is the agent's response"]],
+  "type": "table"
+}
+```
+
+**Rollback point created:** `rollback-after-nested-list-fix`
+
+The client now properly extracts answers from MindsDB's table-format responses with nested arrays.
+
+---
+
+_**User (2025-10-22 07:50Z)**_
+
+Fix decode_body to handle both string and map inputs since Req auto-parses JSON.
+
+TASK:
+Open lib/green_man_tavern/mindsdb/client.ex
+
+Replace the decode_body function with this version that handles both cases:
+
+defp decode_body(body) when is_binary(body) do
+  case Jason.decode(body) do
+    {:ok, parsed} -> decode_body(parsed)
+    {:error, error} -> {:error, "JSON decode error: #{inspect(error)}"}
+  end
+end
+
+defp decode_body(%{"data" => data, "type" => "table"}) when is_list(data) do
+  # MindsDB returns: %{"data" => [[answer_string]], "type" => "table"}
+  # Extract the first row, first column
+  case data do
+    [[answer | _] | _] when is_binary(answer) ->
+      {:ok, answer}
+    _ ->
+      {:error, "Unexpected data structure: #{inspect(data)}"}
+  end
+end
+
+defp decode_body(%{"error" => error}) do
+  {:error, "MindsDB error: #{error}"}
+end
+
+defp decode_body(response) do
+  {:error, "Unexpected response format: #{inspect(response)}"}
+end
+
+This adds pattern matching for both binary (JSON string) and map (already parsed) inputs.
+
+---
+
+_**Assistant (default)**_
+
 
 
 ---

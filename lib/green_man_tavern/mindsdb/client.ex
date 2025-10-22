@@ -109,25 +109,28 @@ defmodule GreenManTavern.MindsDB.Client do
 
   defp decode_body(body) when is_binary(body) do
     case Jason.decode(body) do
-      {:ok, %{"data" => data, "type" => "table"}} when is_list(data) ->
-        # MindsDB returns: %{"data" => [[answer_string]], "type" => "table"}
-        # Extract the first row, first column
-        case data do
-          [[answer | _] | _] when is_binary(answer) ->
-            {:ok, answer}
-          _ ->
-            {:error, "Unexpected data structure: #{inspect(data)}"}
-        end
-      
-      {:ok, %{"error" => error}} ->
-        {:error, "MindsDB error: #{error}"}
-      
-      {:ok, response} ->
-        {:error, "Unexpected response format: #{inspect(response)}"}
-      
-      {:error, error} ->
-        {:error, "JSON decode error: #{inspect(error)}"}
+      {:ok, parsed} -> decode_body(parsed)
+      {:error, error} -> {:error, "JSON decode error: #{inspect(error)}"}
     end
+  end
+
+  defp decode_body(%{"data" => data, "type" => "table"}) when is_list(data) do
+    # MindsDB returns: %{"data" => [[answer_string]], "type" => "table"}
+    # Extract the first row, first column
+    case data do
+      [[answer | _] | _] when is_binary(answer) ->
+        {:ok, answer}
+      _ ->
+        {:error, "Unexpected data structure: #{inspect(data)}"}
+    end
+  end
+
+  defp decode_body(%{"error" => error}) do
+    {:error, "MindsDB error: #{error}"}
+  end
+
+  defp decode_body(response) do
+    {:error, "Unexpected response format: #{inspect(response)}"}
   end
 
 
