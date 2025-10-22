@@ -17,14 +17,13 @@ config :swoosh, local: false
 # Do not print debug messages in production
 config :logger, level: :info
 
-# MindsDB Configuration for Production
+# MindsDB Configuration for Production (HTTP API)
 config :green_man_tavern,
   mindsdb: [
     host: System.get_env("MINDSDB_HOST", "localhost"),
-    port: String.to_integer(System.get_env("MINDSDB_PORT", "47335")),
+    http_port: String.to_integer(System.get_env("MINDSDB_HTTP_PORT", "47334")),
     user: System.get_env("MINDSDB_USER", "mindsdb"),
-    password: System.get_env("MINDSDB_PASSWORD", "mindsdb"),
-    database: System.get_env("MINDSDB_DATABASE", "mindsdb")
+    password: System.get_env("MINDSDB_PASSWORD", "mindsdb")
   ]
 
 # Runtime production configuration, including reading
