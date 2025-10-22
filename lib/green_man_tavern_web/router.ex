@@ -36,6 +36,7 @@ defmodule GreenManTavernWeb.Router do
       on_mount: [{GreenManTavernWeb.UserAuth, :ensure_authenticated}] do
 
       live "/characters/:character_name", CharacterLive
+      live "/living-web", LivingWebLive
     end
   end
 

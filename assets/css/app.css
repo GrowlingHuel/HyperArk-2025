@@ -602,6 +602,410 @@ p { font-size: 12px; }
   background: #FFF;
 }
 
+/* Living Web Styles */
+.hypercard-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #CCCCCC;
+}
+
+.hypercard-banner {
+  height: 40px;
+  background: #D9D9D9;
+  border: 1px solid #000;
+  border-bottom: 2px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  flex-shrink: 0;
+}
+
+.banner-title {
+  font-family: var(--font-mac);
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.hypercard-windows {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.hypercard-window {
+  flex: 1;
+  background: #FFF;
+  border: 1px solid #000;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.window-chrome {
+  height: 20px;
+  background: #D9D9D9;
+  border-bottom: 1px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  flex-shrink: 0;
+}
+
+.window-title {
+  font-family: var(--font-mac);
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.window-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.control-dot {
+  width: 8px;
+  height: 8px;
+  background: #000;
+  border-radius: 0;
+}
+
+.window-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Systems Library Styles */
+.systems-library {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.library-header {
+  padding: 8px;
+  border-bottom: 1px solid #000;
+  background: #F0F0F0;
+}
+
+.library-title {
+  font-family: var(--font-mac);
+  font-size: 14px;
+  font-weight: bold;
+  margin: 0 0 4px 0;
+}
+
+.space-filter {
+  font-size: 10px;
+  color: #666;
+}
+
+.space-type {
+  font-weight: bold;
+  color: #000;
+}
+
+.categories-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.category-section {
+  margin-bottom: 8px;
+}
+
+.category-header {
+  background: #E0E0E0;
+  border: 1px solid #000;
+  padding: 4px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mac);
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.category-icon {
+  font-size: 10px;
+}
+
+.category-name {
+  flex: 1;
+}
+
+.category-count {
+  font-size: 10px;
+  color: #666;
+}
+
+.category-systems {
+  padding: 4px 0;
+}
+
+.system-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  margin-bottom: 2px;
+}
+
+.system-item:hover {
+  background: #F0F0F0;
+  border-color: #000;
+}
+
+.system-icon {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon-text {
+  font-size: 10px;
+  font-weight: bold;
+  color: #000;
+}
+
+.system-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.system-name {
+  font-family: var(--font-mac);
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.system-type {
+  font-size: 10px;
+  color: #666;
+  text-transform: capitalize;
+}
+
+.system-actions {
+  flex-shrink: 0;
+}
+
+.add-button {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #000;
+  background: #FFF;
+  font-family: var(--font-mac);
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-button:hover {
+  background: #E0E0E0;
+}
+
+/* Canvas Styles */
+.canvas-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.living-web-canvas {
+  flex: 1;
+  min-height: 600px;
+  background: #FFF;
+  border: 1px solid #000;
+  cursor: crosshair;
+}
+
+.system-node {
+  cursor: pointer;
+}
+
+.system-circle {
+  transition: all 0.1s ease;
+}
+
+.system-circle:hover {
+  stroke-width: 3;
+}
+
+.potential-connection {
+  pointer-events: none;
+}
+
+.canvas-controls {
+  padding: 8px;
+  border-top: 1px solid #000;
+  background: #F0F0F0;
+}
+
+.control-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mac);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.control-checkbox input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
+  border: 1px solid #000;
+  background: #FFF;
+}
+
+.canvas-legend {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #FFF;
+  border: 1px solid #000;
+  padding: 8px;
+  font-family: var(--font-mac);
+  font-size: 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border: 1px solid #000;
+}
+
+.legend-color.active {
+  background: #CCCCCC;
+}
+
+.legend-color.potential {
+  background: #FFA500;
+  border-style: dashed;
+}
+
+.legend-color.process {
+  background: #999999;
+}
+
+/* System Details Panel */
+.system-details {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  background: #FFF;
+  border: 1px solid #000;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.details-header {
+  background: #E0E0E0;
+  border-bottom: 1px solid #000;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.details-header h4 {
+  font-family: var(--font-mac);
+  font-size: 14px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.close-button {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #000;
+  background: #FFF;
+  font-family: var(--font-mac);
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-button:hover {
+  background: #E0E0E0;
+}
+
+.details-content {
+  padding: 8px;
+}
+
+.detail-row {
+  display: flex;
+  margin-bottom: 4px;
+}
+
+.detail-label {
+  font-weight: bold;
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.detail-value {
+  flex: 1;
+}
+
+.detail-description {
+  margin: 8px 0;
+}
+
+.detail-description p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.detail-requirements {
+  margin-top: 8px;
+}
+
+.detail-requirements h5 {
+  font-family: var(--font-mac);
+  font-size: 12px;
+  font-weight: bold;
+  margin: 0 0 4px 0;
+}
+
+.detail-requirements p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
 /* Custom HyperCard-style Scrollbars */
 .mac-window-content::-webkit-scrollbar, .mac-content-area::-webkit-scrollbar {
   width: 16px;
