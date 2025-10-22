@@ -18,13 +18,25 @@ defmodule GreenManTavernWeb.LivingWebLive do
       |> assign(:left_window_title, "Systems Library")
       |> assign(:right_window_title, "Living Web")
       |> assign(:selected_system, nil)
+      |> assign(:selected_node_id, nil)
       |> assign(:show_connections, true)
       |> assign(:systems_by_category, [])
       |> assign(:user_systems, [])
       |> assign(:user_space_type, get_user_space_type(current_user))
+      |> assign(:icon_map, build_icon_map())
       |> load_systems_data(current_user.id)
 
     {:ok, socket}
+  end
+
+  @impl true
+  def handle_event("select_node", %{"id" => system_id}, socket) do
+    {:noreply, assign(socket, :selected_node_id, system_id)}
+  end
+
+  @impl true
+  def handle_event("deselect_node", _params, socket) do
+    {:noreply, assign(socket, :selected_node_id, nil)}
   end
 
   @impl true
@@ -154,7 +166,7 @@ defmodule GreenManTavernWeb.LivingWebLive do
               <svg
                 viewBox="0 0 1200 800"
                 class="living-web-canvas"
-                phx-click="deselect_system"
+                phx-click="deselect_node"
               >
                 <!-- Background grid -->
                 <defs>
@@ -165,28 +177,21 @@ defmodule GreenManTavernWeb.LivingWebLive do
                 <rect width="100%" height="100%" fill="url(#grid)" />
 
                 <!-- User Systems -->
-                <%= for user_system <- @user_systems do %>
-                  <g class="system-node" phx-click="select_system" phx-value-system_id={user_system.system.id}>
-                    <circle
-                      cx={user_system.position_x}
-                      cy={user_system.position_y}
-                      r="20"
-                      fill={user_system.system.color_scheme}
-                      stroke="#000000"
-                      stroke-width="2"
-                      class="system-circle"
-                    />
-                    <text
-                      x={user_system.position_x}
-                      y={user_system.position_y + 5}
-                      text-anchor="middle"
-                      font-family="Monaco, monospace"
-                      font-size="12"
-                      fill="#000000"
-                    >
-                      {user_system.system.icon_name}
-                    </text>
-                  </g>
+                <%= if @user_systems == [] do %>
+                  <text
+                    x="600"
+                    y="400"
+                    text-anchor="middle"
+                    font-family="Monaco, monospace"
+                    font-size="16"
+                    fill="#666666"
+                  >
+                    Drag systems from the library to start building your Living Web
+                  </text>
+                <% else %>
+                  <%= for user_system <- @user_systems do %>
+                    {render_node(user_system, @selected_node_id == user_system.system.id)}
+                  <% end %>
                 <% end %>
 
                 <!-- Potential Connections (if enabled) -->
@@ -280,6 +285,135 @@ defmodule GreenManTavernWeb.LivingWebLive do
   end
 
   # Private functions
+
+  defp render_node(user_system, selected?) do
+    system = user_system.system
+    x = user_system.position_x
+    y = user_system.position_y
+    
+    # Category colors
+    {fill_color, border_color} = get_category_colors(system.category, system.system_type)
+    
+    # Border width based on selection
+    border_width = if selected?, do: 4, else: 2
+    
+    # Icon component
+    icon_name = get_icon_component(system.icon_name)
+    
+    assigns = %{icon_name: icon_name, system: system, x: x, y: y, fill_color: fill_color, border_color: border_color, border_width: border_width}
+    
+    ~H"""
+    <g class="system-node" phx-click="select_node" phx-value-id={@system.id} phx-click-away="deselect_node">
+      <!-- Main rectangle -->
+      <rect
+        x={@x - 60}
+        y={@y - 40}
+        width="120"
+        height="80"
+        rx="8"
+        fill={@fill_color}
+        stroke={@border_color}
+        stroke-width={@border_width}
+        class="system-rect"
+      />
+      
+      <!-- Process badge -->
+      <%= if @system.system_type == "process" do %>
+        <circle
+          cx={@x}
+          cy={@y - 32}
+          r="8"
+          fill="#8B5CF6"
+          stroke="#000000"
+          stroke-width="1"
+        />
+      <% end %>
+      
+      <!-- Content area -->
+      <foreignObject x={@x - 50} y={@y - 30} width="100" height="60">
+        <div class="node-content">
+          <!-- Icon -->
+          <div class="node-icon">
+            <.icon name={@icon_name} class="w-8 h-8" />
+          </div>
+          
+          <!-- System name -->
+          <div class="node-name">
+            {@system.name}
+          </div>
+          
+          <!-- Requirements for process nodes -->
+          <%= if @system.system_type == "process" do %>
+            <div class="node-requirements">
+              {@system.requirements}
+            </div>
+          <% end %>
+        </div>
+      </foreignObject>
+    </g>
+    """
+  end
+
+  defp get_category_colors(category, system_type) do
+    case {category, system_type} do
+      {"food", _} -> {"#dcfce7", "#16a34a"}  # light green, dark green
+      {_, "process"} -> {"#fef3c7", "#d97706"}  # light amber, dark amber
+      {_, "storage"} -> {"#ffedd5", "#ea580c"}  # light orange, dark orange
+      {"water", _} -> {"#dbeafe", "#2563eb"}  # light blue, dark blue
+      {"waste", _} -> {"#dbeafe", "#2563eb"}  # light blue, dark blue
+      {"energy", _} -> {"#fef9c3", "#ca8a04"}  # light yellow, dark yellow
+      _ -> {"#f3f4f6", "#6b7280"}  # light grey, dark grey
+    end
+  end
+
+  defp get_icon_component(icon_name) do
+    case icon_name do
+      "Leaf" -> "hero-leaf"
+      "Sun" -> "hero-sun"
+      "Container" -> "hero-archive-box"
+      "Droplets" -> "hero-droplet"
+      "Circle" -> "hero-circle"
+      "Square" -> "hero-square"
+      "TreeDeciduous" -> "hero-tree"
+      "TreePine" -> "hero-tree"
+      "Cherry" -> "hero-cake"
+      "Sprout" -> "hero-sparkles"
+      "Fish" -> "hero-fish"
+      "Bug" -> "hero-bug"
+      "Zap" -> "hero-bolt"
+      "Archive" -> "hero-archive-box"
+      "Snowflake" -> "hero-snowflake"
+      "Wind" -> "hero-wind"
+      "Flame" -> "hero-fire"
+      "ArrowUp" -> "hero-arrow-up"
+      "ArrowDown" -> "hero-arrow-down"
+      _ -> "hero-cube"  # default
+    end
+  end
+
+  defp build_icon_map do
+    %{
+      "Leaf" => "hero-leaf",
+      "Sun" => "hero-sun",
+      "Container" => "hero-archive-box",
+      "Droplets" => "hero-droplet",
+      "Circle" => "hero-circle",
+      "Square" => "hero-square",
+      "TreeDeciduous" => "hero-tree",
+      "TreePine" => "hero-tree",
+      "Cherry" => "hero-cake",
+      "Sprout" => "hero-sparkles",
+      "Fish" => "hero-fish",
+      "Bug" => "hero-bug",
+      "Zap" => "hero-bolt",
+      "Archive" => "hero-archive-box",
+      "Snowflake" => "hero-snowflake",
+      "Wind" => "hero-wind",
+      "Flame" => "hero-fire",
+      "ArrowUp" => "hero-arrow-up",
+      "ArrowDown" => "hero-arrow-down"
+    }
+  end
 
   defp load_systems_data(socket, user_id) do
     try do

@@ -834,8 +834,8 @@ p { font-size: 12px; }
 .living-web-canvas {
   flex: 1;
   min-height: 600px;
-  background: #FFF;
-  border: 1px solid #000;
+  background: #FAFAFA;
+  border: 2px solid #CCC;
   cursor: crosshair;
 }
 
@@ -843,12 +843,52 @@ p { font-size: 12px; }
   cursor: pointer;
 }
 
-.system-circle {
-  transition: all 0.1s ease;
+.system-node:hover .system-rect {
+  filter: brightness(1.1);
 }
 
-.system-circle:hover {
-  stroke-width: 3;
+.system-rect {
+  transition: filter 0.2s ease;
+}
+
+.node-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 4px;
+  text-align: center;
+}
+
+.node-icon {
+  margin-bottom: 4px;
+}
+
+.node-name {
+  font-family: var(--font-mac);
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 1.2;
+  max-height: 2.4em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  color: #000000;
+}
+
+.node-requirements {
+  font-family: var(--font-system);
+  font-size: 8px;
+  font-style: italic;
+  color: #666666;
+  margin-top: 2px;
+  line-height: 1.1;
+  max-height: 1.1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .potential-connection {

@@ -32635,3 +32635,437 @@ _**Assistant (default)**_
 
 ---
 
+I'll search for existing connection schemas to ensure correct module names and fields, then implement the requested Systems context functions accordingly.
+
+---
+
+Tool use: **glob_file_search**
+
+<details>
+<summary>Searched codebase "**/connection*.ex" • **2** results in **1** directory</summary>
+
+Directory: **/home/jesse/Desktop/NEWEST 13.10.25 GreenMan Tavern/lib** (2 files)
+
+| File |
+|------|
+| `green_man_tavern/mindsdb/connection_test.ex` |
+| `green_man_tavern/systems/connection.ex` |
+
+</details>
+
+---
+
+Tool use: **read_file**
+
+Read file: /home/jesse/Desktop/NEWEST 13.10.25 GreenMan Tavern/lib/green_man_tavern/systems/connection.ex
+
+---
+
+Tool use: **glob_file_search**
+
+<details>
+<summary>Searched codebase "**/*.ex" • **4** results in **1** directory</summary>
+
+Directory: **/home/jesse/Desktop/NEWEST 13.10.25 GreenMan Tavern/lib/green_man_tavern/systems** (4 files)
+
+| File |
+|------|
+| `system.ex` |
+| `user_connection.ex` |
+| `connection.ex` |
+| `user_system.ex` |
+
+</details>
+
+---
+
+Tool use: **read_file**
+
+Read file: /home/jesse/Desktop/NEWEST 13.10.25 GreenMan Tavern/lib/green_man_tavern/systems/user_connection.ex
+
+---
+
+<think><details><summary>Thought Process</summary>**Implementing system functions**
+
+I think it might be better to create a function that returns a map with keys from existing categories like "food," "water," "waste," "energy," "storage," and "process." For instance, determine "process" from system_type == "process" and "storage" from system_type == "storage." The rest can come from the category. 
+
+I also need to implement a function that returns user systems, including planned ones, and ensures only specified categories are represented with empty lists as defaults. Lastly, I’ll fetch user connections by joining relevant tables.
+**Adding user system functions**
+
+I need to include flow_label and status in my functions. For adding a user system, I'll create a function, add_user_system, that sets the status to "planned" and leaves implemented_at as nil.
+
+Next, I'll implement an update_system_position function to handle position changes and a delete_user_system function. This one will ensure ownership before deleting any associated user_connections. Since user_connections link to connections that aren't directly tied to user_system, I need to find those connections and delete relevant user_connections accordingly. Finally, I'll edit the file to integrate these changes and keep necessary imports.</details></think>
+
+---
+
+Tool use: **read_file**
+
+Read file: /home/jesse/Desktop/NEWEST 13.10.25 GreenMan Tavern/lib/green_man_tavern/systems.ex
+
+---
+
+
+
+---
+
+Tool use: **apply_patch**
+
+<details>
+        <summary>Apply patch for /home/jesse/Desktop/NEWEST 13.10.25 GreenMan Tavern/lib/green_man_tavern/systems.ex</summary>
+      
+
+```diff
+<<'PATCH'
+*** Begin Patch
+*** Update File: lib/green_man_tavern/systems.ex
+@@
+   alias GreenManTavern.Systems.System
+   alias GreenManTavern.Systems.UserSystem
++  alias GreenManTavern.Systems.Connection
++  alias GreenManTavern.Systems.UserConnection
+@@
+   def list_systems do
+     Repo.all(System)
+   end
++
++  @doc """
++  Returns all systems ordered by category then name. No preloads.
++
++  Matches Prompt 2: list_all_systems/0
++  """
++  def list_all_systems do
++    from(s in System, order_by: [asc: s.category, asc: s.name])
++    |> Repo.all()
++  end
+@@
+   def list_systems_by_category(category) when is_binary(category) do
+     from(s in System, where: s.category == ^category)
+     |> Repo.all()
+   end
++
++  @doc """
++  Returns a map of category => [systems]. Categories include:
++  "food", "process", "storage", "water", "waste", "energy".
++
++  Note: our schema uses "process" and "storage" as system_type, while
++  the others are stored in the category field, so we compose accordingly.
++
++  Matches Prompt 2: list_systems_by_category/0
++  """
++  def list_systems_by_category do
++    systems = list_all_systems()
++
++    %{
++      "food" => Enum.filter(systems, &(&1.category == "food")),
++      "water" => Enum.filter(systems, &(&1.category == "water")),
++      "waste" => Enum.filter(systems, &(&1.category == "waste")),
++      "energy" => Enum.filter(systems, &(&1.category == "energy")),
++      "process" => Enum.filter(systems, &(&1.system_type == "process")),
++      "storage" => Enum.filter(systems, &(&1.system_type == "storage"))
++    }
++  end
+@@
+   def list_active_user_systems(user_id) when is_integer(user_id) do
+     from(us in UserSystem,
+       where: us.user_id == ^user_id and us.status == "active",
+       preload: [:system]
+     )
+     |> Repo.all()
+   end
++
++  @doc """
++  Returns user's systems (active or planned) with position and notes.
++
++  Includes joined system details. Security: filtered by user_id.
++
++  Matches Prompt 2: get_user_systems/1
++  """
++  def get_user_systems(user_id) when is_integer(user_id) do
++    from(us in UserSystem,
++      where: us.user_id == ^user_id and us.status in ["active", "planned"],
++      join: s in System, on: s.id == us.system_id,
++      preload: [system: s],
++      select: us
++    )
++    |> Repo.all()
++  end
++
++  @doc """
++  Returns user's connections (active and potential) with from/to systems.
++
++  Security: filtered by user_id.
++
++  Matches Prompt 2: get_user_connections/1
++  """
++  def get_user_connections(user_id) when is_integer(user_id) do
++    from(uc in UserConnection,
++      where: uc.user_id == ^user_id and uc.status in ["active", "potential", "planned"],
++      join: c in assoc(uc, :connection),
++      left_join: fs in assoc(c, :from_system),
++      left_join: ts in assoc(c, :to_system),
++      preload: [connection: {c, from_system: fs, to_system: ts}]
++    )
++    |> Repo.all()
++  end
++
++  @doc """
++  Creates a user_system at a position, with planned status.
++
++  Matches Prompt 2: add_user_system/5
++  """
++  def add_user_system(user_id, system_id, x, y)
++      when is_integer(user_id) and is_integer(system_id) and is_integer(x) and is_integer(y) do
++    %UserSystem{}
++    |> UserSystem.changeset(%{
++      user_id: user_id,
++      system_id: system_id,
++      position_x: x,
++      position_y: y,
++      status: "planned",
++      implemented_at: nil
++    })
++    |> Repo.insert()
++  end
++
++  @doc """
++  Updates the position of an existing user_system.
++
++  Matches Prompt 2: update_system_position/3
++  """
++  def update_system_position(user_system_id, x, y)
++      when is_integer(user_system_id) and is_integer(x) and is_integer(y) do
++    with %UserSystem{} = us <- Repo.get(UserSystem, user_system_id) do
++      us
++      |> UserSystem.changeset(%{position_x: x, position_y: y})
++      |> Repo.update()
++    else
++      nil -> {:error, :not_found}
++    end
++  end
++
++  @doc """
++  Deletes a user_system owned by the given user_id and cascades related
++  user_connections for connections that involve the deleted system.
++
++  Matches Prompt 2: delete_user_system/2
++  """
++  def delete_user_system(user_system_id, user_id)
++      when is_integer(user_system_id) and is_integer(user_id) do
++    case Repo.get(UserSystem, user_system_id) do
++      %UserSystem{user_id: ^user_id, system_id: system_id} = us ->
++        # Delete user_connections that reference connections involving this system
++        from(uc in UserConnection,
++          where: uc.user_id == ^user_id,
++          join: c in Connection, on: c.id == uc.connection_id,
++          where: c.from_system_id == ^system_id or c.to_system_id == ^system_id
++        )
++        |> Repo.delete_all()
++
++        Repo.delete(us)
++
++      %UserSystem{} ->
++        {:error, :unauthorized}
++
++      nil ->
++        {:error, :not_found}
++    end
++  end
+*** End Patch
+PATCH
+```
+
+---
+
+Tool use: **read_lints**
+
+<details>
+          <summary>Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `/home/jesse/Desktop/NEWEST 13.10.25 GreenMan Tavern/lib/green_man_tavern/systems.ex`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+
+---
+
+Tool use: **run_terminal_cmd**
+
+```bash
+mix compile
+```
+
+```
+Compiling 2 files (.ex)
+    warning: unused import Phoenix.LiveView
+    │
+ 11 │   import Phoenix.LiveView, only: [push_navigate: 2]
+    │   ~
+    │
+    └─ lib/green_man_tavern_web/controllers/user_auth.ex:11:3
+
+    warning: unused import Phoenix.Token
+    │
+ 12 │   import Phoenix.Token
+    │   ~
+    │
+    └─ lib/green_man_tavern_web/controllers/user_auth.ex:12:3
+
+Generated green_man_tavern app
+     warning: no route path for GreenManTavernWeb.Router matches ~p"/users/confirm/#{capture}"
+     │
+ 111 │             &url(~p"/users/confirm/#{&1}")
+     │                    ~
+     │
+     └─ lib/green_man_tavern_web/live/user_registration_live.ex:111: GreenManTavernWeb.UserRegistrationLive.handle_event/3
+
+    warning: no route path for GreenManTavernWeb.Router matches "/database"
+    │
+ 42 │         <.link navigate={~p"/database"} class="banner-menu-item">Database</.link>
+    │         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ lib/green_man_tavern_web/components/banner_menu_component.ex:42: GreenManTavernWeb.BannerMenuComponent.banner_menu/1
+
+    warning: no route path for GreenManTavernWeb.Router matches "/garden"
+    │
+ 43 │         <.link navigate={~p"/garden"} class="banner-menu-item">Garden</.link>
+    │         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ lib/green_man_tavern_web/components/banner_menu_component.ex:43: GreenManTavernWeb.BannerMenuComponent.banner_menu/1
+
+    warning: no route path for GreenManTavernWeb.Router matches ~p"/users/confirm/#{capture}"
+    │
+ 24 │             &url(~p"/users/confirm/#{&1}")
+    │                    ~
+    │
+    └─ lib/green_man_tavern_web/controllers/user_registration_controller.ex:24: GreenManTavernWeb.UserRegistrationController.create/2
+
+    warning: no route path for GreenManTavernWeb.Router matches "/users/settings"
+    │
+ 22 │     |> put_session(:user_return_to, ~p"/users/settings")
+    │                                       ~
+    │
+    └─ lib/green_man_tavern_web/controllers/user_session_controller.ex:22: GreenManTavernWeb.UserSessionController.create/2
+
+
+```
+
+---
+
+Tool use: **run_terminal_cmd**
+
+```bash
+git add -A && git commit -m "feat(systems): implement context queries for systems, user systems, and connections\n\n- list_all_systems/0 ordered by category,name\n- list_systems_by_category/0 returns category=>systems map\n- get_user_systems/1 joins systems with positions and notes\n- get_user_connections/1 with from/to systems preloaded\n- add_user_system/5 create planned system with position\n- update_system_position/3 update coordinates\n- delete_user_system/2 secure delete with cascade of related user_connections"
+```
+
+```
+[master bb42259] feat(systems): implement context queries for systems, user systems, and connections\n\n- list_all_systems/0 ordered by category,name\n- list_systems_by_category/0 returns category=>systems map\n- get_user_systems/1 joins systems with positions and notes\n- get_user_connections/1 with from/to systems preloaded\n- add_user_system/5 create planned system with position\n- update_system_position/3 update coordinates\n- delete_user_system/2 secure delete with cascade of related user_connections
+ 5 files changed, 2303 insertions(+), 28 deletions(-)
+ rewrite .elixir_ls/build/test/lib/green_man_tavern/.mix/compile.elixir (99%)
+
+```
+
+---
+
+- I implemented the requested Systems context functions in `lib/green_man_tavern/systems.ex` and compiled successfully.
+- Route and LiveView for `/living-web` are already in place and leverage these queries.
+
+Key functions added/updated in `lib/green_man_tavern/systems.ex`:
+- list_all_systems/0: ordered by category, then name.
+- list_systems_by_category/0: returns map of categories to systems (food, process, storage, water, waste, energy).
+- get_user_systems/1: user-scoped, returns active/planned systems with positions and notes, preloads `system`.
+- get_user_connections/1: user-scoped, returns connections with `from_system` and `to_system` preloaded.
+- add_user_system/5: creates a planned user_system with coordinates.
+- update_system_position/3: updates position_x and position_y.
+- delete_user_system/2: secure delete if owned by user; cascades related `user_connections` for connections involving the system.
+
+You can now use these in the Living Web or elsewhere.
+
+---
+
+_**User (2025-10-22 09:44Z)**_
+
+Prompt 3: Render SVG Nodes for User Systems**
+```
+In the Living Web LiveView, implement SVG node rendering for user's systems.
+
+LOCATION: lib/green_man_tavern_web/live/living_web_live.ex
+
+REQUIREMENTS:
+
+1. Create a private function render_node(system, selected?) that returns HEEx SVG markup
+
+NODE STRUCTURE (per system):
+- SVG <g> element positioned at system.position_x, system.position_y
+- Rectangle: 120×80px, rounded corners (rx="8")
+- Fill color based on category:
+  - food: #dcfce7 (light green)
+  - process: #fef3c7 (light amber)
+  - storage: #ffedd5 (light orange)
+  - water/waste: #dbeafe (light blue)
+  - energy: #fef9c3 (light yellow)
+- Border: 2px, color based on category (darker shade)
+- If selected: border-width 4px
+- If system_type == "process": add purple circle badge (top-center, 16px diameter)
+
+NODE CONTENT (foreignObject 100×60px inside rect):
+- System icon (from Lucide icons, 32px)
+- System name (11px bold, center-aligned, max 2 lines, truncate overflow)
+- If process node: requirements text (8px italic, grey)
+
+ICON MAPPING:
+Create icon_map in LiveView assigns mapping icon_name strings to Lucide components:
+- "Leaf" => <.icon name="hero-leaf" />
+- "Sun" => <.icon name="hero-sun" />
+- "Container" => <.icon name="hero-archive-box" />
+- etc. (map all icons from systems table)
+
+INTERACTIVITY:
+- Click node: handle_event("select_node", %{"id" => system_id})
+  - Update socket.assigns.selected_node_id
+  - Re-render to show selection border
+- Hover: CSS hover state (slightly lighter fill)
+
+SVG CONTAINER:
+- viewBox="0 0 1200 800" (allows 10 nodes horizontally, 10 vertically at 120px spacing)
+- CSS: width: 100%, min-height: 600px
+- Background: #FAFAFA (very light grey)
+- Border: 2px solid #CCC
+
+EMPTY STATE:
+If no user_systems, show centered text:
+"Drag systems from the library to start building your Living Web"
+
+Reference HyperCard styling from project specs. : : : 🎯 Key Points for Cursor
+
+Follow HyperCard aesthetic - All UI must match existing window chrome
+Security first - All database queries filter by user_id
+SVG coordinates - Use viewBox coordinates, not client coordinates
+Error handling - Always handle {:error, _} cases
+LiveView patterns - Follow existing patterns from project
+Category colors - Consistent mapping throughout (green=food, amber=process, etc.)
+Testing - Verify with mix test after each implementation
+
+---
+
+_**Assistant (default)**_
+
+I'll implement the SVG node rendering for user systems in the Living Web LiveView. Let me first check the current implementation and then add the required functionality.
+
+
+---
+
+Tool use: **read_file**
+
+Read file: /home/jesse/Desktop/NEWEST 13.10.25 GreenMan Tavern/lib/green_man_tavern_web/live/living_web_live.ex
+
+---
+
+
+
+---
+
