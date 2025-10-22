@@ -8,6 +8,8 @@ defmodule GreenManTavern.Systems do
 
   alias GreenManTavern.Systems.System
   alias GreenManTavern.Systems.UserSystem
+  alias GreenManTavern.Systems.Connection
+  alias GreenManTavern.Systems.UserConnection
 
   @doc """
   Returns the list of all systems.
@@ -17,11 +19,43 @@ defmodule GreenManTavern.Systems do
   end
 
   @doc """
+  Returns all systems ordered by category then name. No preloads.
+
+  Matches Prompt 2: list_all_systems/0
+  """
+  def list_all_systems do
+    from(s in System, order_by: [asc: s.category, asc: s.name])
+    |> Repo.all()
+  end
+
+  @doc """
   Returns the list of systems filtered by category.
   """
   def list_systems_by_category(category) when is_binary(category) do
     from(s in System, where: s.category == ^category)
     |> Repo.all()
+  end
+
+  @doc """
+  Returns a map of category => [systems]. Categories include:
+  "food", "process", "storage", "water", "waste", "energy".
+
+  Note: our schema uses "process" and "storage" as system_type, while
+  the others are stored in the category field, so we compose accordingly.
+
+  Matches Prompt 2: list_systems_by_category/0
+  """
+  def list_systems_by_category do
+    systems = list_all_systems()
+
+    %{
+      "food" => Enum.filter(systems, &(&1.category == "food")),
+      "water" => Enum.filter(systems, &(&1.category == "water")),
+      "waste" => Enum.filter(systems, &(&1.category == "waste")),
+      "energy" => Enum.filter(systems, &(&1.category == "energy")),
+      "process" => Enum.filter(systems, &(&1.system_type == "process")),
+      "storage" => Enum.filter(systems, &(&1.system_type == "storage"))
+    }
   end
 
   @doc """
@@ -98,6 +132,104 @@ defmodule GreenManTavern.Systems do
       preload: [:system]
     )
     |> Repo.all()
+  end
+
+  @doc """
+  Returns user's systems (active or planned) with position and notes.
+
+  Includes joined system details. Security: filtered by user_id.
+
+  Matches Prompt 2: get_user_systems/1
+  """
+  def get_user_systems(user_id) when is_integer(user_id) do
+    from(us in UserSystem,
+      where: us.user_id == ^user_id and us.status in ["active", "planned"],
+      join: s in System, on: s.id == us.system_id,
+      preload: [system: s],
+      select: us
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns user's connections (active and potential) with from/to systems.
+
+  Security: filtered by user_id.
+
+  Matches Prompt 2: get_user_connections/1
+  """
+  def get_user_connections(user_id) when is_integer(user_id) do
+    from(uc in UserConnection,
+      where: uc.user_id == ^user_id and uc.status in ["active", "potential", "planned"],
+      join: c in assoc(uc, :connection),
+      left_join: fs in assoc(c, :from_system),
+      left_join: ts in assoc(c, :to_system),
+      preload: [connection: {c, from_system: fs, to_system: ts}]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Creates a user_system at a position, with planned status.
+
+  Matches Prompt 2: add_user_system/5
+  """
+  def add_user_system(user_id, system_id, x, y)
+      when is_integer(user_id) and is_integer(system_id) and is_integer(x) and is_integer(y) do
+    %UserSystem{}
+    |> UserSystem.changeset(%{
+      user_id: user_id,
+      system_id: system_id,
+      position_x: x,
+      position_y: y,
+      status: "planned",
+      implemented_at: nil
+    })
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates the position of an existing user_system.
+
+  Matches Prompt 2: update_system_position/3
+  """
+  def update_system_position(user_system_id, x, y)
+      when is_integer(user_system_id) and is_integer(x) and is_integer(y) do
+    with %UserSystem{} = us <- Repo.get(UserSystem, user_system_id) do
+      us
+      |> UserSystem.changeset(%{position_x: x, position_y: y})
+      |> Repo.update()
+    else
+      nil -> {:error, :not_found}
+    end
+  end
+
+  @doc """
+  Deletes a user_system owned by the given user_id and cascades related
+  user_connections for connections that involve the deleted system.
+
+  Matches Prompt 2: delete_user_system/2
+  """
+  def delete_user_system(user_system_id, user_id)
+      when is_integer(user_system_id) and is_integer(user_id) do
+    case Repo.get(UserSystem, user_system_id) do
+      %UserSystem{user_id: ^user_id, system_id: system_id} = us ->
+        # Delete user_connections that reference connections involving this system
+        from(uc in UserConnection,
+          where: uc.user_id == ^user_id,
+          join: c in Connection, on: c.id == uc.connection_id,
+          where: c.from_system_id == ^system_id or c.to_system_id == ^system_id
+        )
+        |> Repo.delete_all()
+
+        Repo.delete(us)
+
+      %UserSystem{} ->
+        {:error, :unauthorized}
+
+      nil ->
+        {:error, :not_found}
+    end
   end
 
   @doc """

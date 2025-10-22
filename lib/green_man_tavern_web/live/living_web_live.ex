@@ -2,7 +2,7 @@ defmodule GreenManTavernWeb.LivingWebLive do
   use GreenManTavernWeb, :live_view
 
   alias GreenManTavern.Systems
-  
+
   # Import banner menu component
   import GreenManTavernWeb.BannerMenuComponent, only: [banner_menu: 1]
 
@@ -120,9 +120,9 @@ defmodule GreenManTavernWeb.LivingWebLive do
                             <div class="system-type">{system.system_type}</div>
                           </div>
                           <div class="system-actions">
-                            <button 
-                              class="add-button" 
-                              phx-click="add_system" 
+                            <button
+                              class="add-button"
+                              phx-click="add_system"
                               phx-value-system_id={system.id}
                               phx-click-away="deselect_system"
                             >
@@ -151,8 +151,8 @@ defmodule GreenManTavernWeb.LivingWebLive do
           </div>
           <div class="window-content">
             <div class="canvas-container">
-              <svg 
-                viewBox="0 0 1200 800" 
+              <svg
+                viewBox="0 0 1200 800"
                 class="living-web-canvas"
                 phx-click="deselect_system"
               >
@@ -167,20 +167,20 @@ defmodule GreenManTavernWeb.LivingWebLive do
                 <!-- User Systems -->
                 <%= for user_system <- @user_systems do %>
                   <g class="system-node" phx-click="select_system" phx-value-system_id={user_system.system.id}>
-                    <circle 
-                      cx={user_system.position_x} 
-                      cy={user_system.position_y} 
-                      r="20" 
+                    <circle
+                      cx={user_system.position_x}
+                      cy={user_system.position_y}
+                      r="20"
                       fill={user_system.system.color_scheme}
                       stroke="#000000"
                       stroke-width="2"
                       class="system-circle"
                     />
-                    <text 
-                      x={user_system.position_x} 
-                      y={user_system.position_y + 5} 
-                      text-anchor="middle" 
-                      font-family="Monaco, monospace" 
+                    <text
+                      x={user_system.position_x}
+                      y={user_system.position_y + 5}
+                      text-anchor="middle"
+                      font-family="Monaco, monospace"
                       font-size="12"
                       fill="#000000"
                     >
@@ -193,13 +193,13 @@ defmodule GreenManTavernWeb.LivingWebLive do
                 <%= if @show_connections do %>
                   <%= for user_system <- @user_systems do %>
                     <%= for other_system <- @user_systems, other_system.id != user_system.id do %>
-                      <line 
-                        x1={user_system.position_x} 
-                        y1={user_system.position_y} 
-                        x2={other_system.position_x} 
-                        y2={other_system.position_y} 
-                        stroke="#FFA500" 
-                        stroke-width="2" 
+                      <line
+                        x1={user_system.position_x}
+                        y1={user_system.position_y}
+                        x2={other_system.position_x}
+                        y2={other_system.position_y}
+                        stroke="#FFA500"
+                        stroke-width="2"
                         stroke-dasharray="5,5"
                         opacity="0.6"
                         class="potential-connection"
@@ -212,8 +212,8 @@ defmodule GreenManTavernWeb.LivingWebLive do
               <!-- Canvas Controls -->
               <div class="canvas-controls">
                 <label class="control-checkbox">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={@show_connections}
                     phx-click="toggle_connections"
                   />
@@ -285,14 +285,14 @@ defmodule GreenManTavernWeb.LivingWebLive do
     try do
       # Load all systems
       all_systems = Systems.list_systems()
-      
+
       # Filter by user's space type
       user_space_type = socket.assigns.user_space_type
       filtered_systems = Systems.filter_systems_by_space(all_systems, user_space_type)
-      
+
       # Group by category
       systems_by_category = Systems.group_systems_by_category(filtered_systems)
-      
+
       # Load user's active systems
       user_systems = Systems.list_active_user_systems(user_id)
 
