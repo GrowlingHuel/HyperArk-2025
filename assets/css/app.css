@@ -878,17 +878,28 @@ p { font-size: 12px; }
   color: #000000;
 }
 
-.node-requirements {
-  font-family: var(--font-system);
-  font-size: 8px;
-  font-style: italic;
-  color: #666666;
-  margin-top: 2px;
-  line-height: 1.1;
-  max-height: 1.1em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.controls-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.connection-path {
+  cursor: pointer;
+  transition: stroke-width 0.2s ease;
+}
+
+.connection-path:hover {
+  stroke-width: 4 !important;
+}
+
+.flow-label {
+  font-family: Monaco, 'Courier New', monospace;
+  pointer-events: none; /* don't interfere with path clicks */
+}
+
+.connection-group {
+  pointer-events: all;
 }
 
 .potential-connection {

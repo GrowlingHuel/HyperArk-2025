@@ -309,4 +309,22 @@ defmodule GreenManTavern.Systems do
       _ -> {String.capitalize(category), "#DDDDDD"}
     end
   end
+
+  @doc """
+  Creates a connection between two systems.
+  """
+  def create_connection(attrs \\ %{}) do
+    %Connection{}
+    |> Connection.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Creates a user connection.
+  """
+  def create_user_connection(attrs \\ %{}) do
+    %UserConnection{}
+    |> UserConnection.changeset(attrs)
+    |> Repo.insert()
+  end
 end

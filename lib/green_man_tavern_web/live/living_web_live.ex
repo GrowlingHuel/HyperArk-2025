@@ -20,13 +20,20 @@ defmodule GreenManTavernWeb.LivingWebLive do
       |> assign(:selected_system, nil)
       |> assign(:selected_node_id, nil)
       |> assign(:show_connections, true)
+      |> assign(:show_potential, true)
       |> assign(:systems_by_category, [])
       |> assign(:user_systems, [])
+      |> assign(:user_connections, [])
       |> assign(:user_space_type, get_user_space_type(current_user))
       |> assign(:icon_map, build_icon_map())
       |> load_systems_data(current_user.id)
 
     {:ok, socket}
+  end
+
+  @impl true
+  def handle_event("toggle_potential", _params, socket) do
+    {:noreply, assign(socket, :show_potential, !socket.assigns.show_potential)}
   end
 
   @impl true
@@ -168,15 +175,52 @@ defmodule GreenManTavernWeb.LivingWebLive do
                 class="living-web-canvas"
                 phx-click="deselect_node"
               >
-                <!-- Background grid -->
+                <!-- Background grid and arrow markers -->
                 <defs>
                   <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
                     <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#EEEEEE" stroke-width="1"/>
                   </pattern>
+                  
+                  <!-- Active connection arrow (green) -->
+                  <marker
+                    id="arrow-active"
+                    markerWidth="10"
+                    markerHeight="10"
+                    refX="9"
+                    refY="3"
+                    orient="auto"
+                    markerUnits="strokeWidth"
+                  >
+                    <path d="M0,0 L0,6 L9,3 z" fill="#22c55e" />
+                  </marker>
+                  
+                  <!-- Potential connection arrow (orange) -->
+                  <marker
+                    id="arrow-potential"
+                    markerWidth="10"
+                    markerHeight="10"
+                    refX="9"
+                    refY="3"
+                    orient="auto"
+                    markerUnits="strokeWidth"
+                  >
+                    <path d="M0,0 L0,6 L9,3 z" fill="#f97316" />
+                  </marker>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#grid)" />
 
-                <!-- User Systems -->
+                <!-- CONNECTIONS FIRST (behind nodes) -->
+                <%= for connection <- @user_connections do %>
+                  <%= if from = find_system(@user_systems, connection.connection.from_system_id) do %>
+                    <%= if to = find_system(@user_systems, connection.connection.to_system_id) do %>
+                      <%= if rendered = render_connection(connection, from, to, @show_potential) do %>
+                        {rendered}
+                      <% end %>
+                    <% end %>
+                  <% end %>
+                <% end %>
+
+                <!-- User Systems (on top of connections) -->
                 <%= if @user_systems == [] do %>
                   <text
                     x="600"
@@ -216,14 +260,25 @@ defmodule GreenManTavernWeb.LivingWebLive do
 
               <!-- Canvas Controls -->
               <div class="canvas-controls">
-                <label class="control-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={@show_connections}
-                    phx-click="toggle_connections"
-                  />
-                  Show Potential Connections
-                </label>
+                <div class="controls-row">
+                  <label class="control-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={@show_connections}
+                      phx-click="toggle_connections"
+                    />
+                    <span>Show Potential Connections</span>
+                  </label>
+                  
+                  <label class="control-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={@show_potential}
+                      phx-click="toggle_potential"
+                    />
+                    <span>Show Potential Flows</span>
+                  </label>
+                </div>
               </div>
 
               <!-- Legend -->
@@ -284,7 +339,78 @@ defmodule GreenManTavernWeb.LivingWebLive do
     """
   end
 
-  # Private functions
+  defp find_system(user_systems, system_id) do
+    Enum.find(user_systems, fn us -> us.system.id == system_id end)
+  end
+
+  defp render_connection(connection, from_system, to_system, show_potential?) do
+    # Skip potential connections if show_potential is false
+    if connection.status == "potential" and not show_potential? do
+      nil
+    else
+      # Calculate positions
+      start_x = from_system.position_x + 60
+      start_y = from_system.position_y + 40
+      end_x = to_system.position_x + 60
+      end_y = to_system.position_y + 40
+      mid_x = (start_x + end_x) / 2
+      mid_y = (start_y + end_y) / 2 - 50
+      
+      # Determine styling based on status
+      {stroke_color, marker_id, label_color} = case connection.status do
+        "active" -> {"#22c55e", "arrow-active", "#15803d"}
+        "potential" -> {"#f97316", "arrow-potential", "#c2410c"}
+        _ -> {"#6b7280", "arrow-active", "#4b5563"}
+      end
+      
+      stroke_dasharray = if connection.status == "potential", do: "8,4", else: ""
+      opacity = if connection.status == "potential", do: "0.7", else: "1"
+      
+      assigns = %{
+        start_x: start_x,
+        start_y: start_y,
+        end_x: end_x,
+        end_y: end_y,
+        mid_x: mid_x,
+        mid_y: mid_y,
+        stroke_color: stroke_color,
+        marker_id: marker_id,
+        label_color: label_color,
+        stroke_dasharray: stroke_dasharray,
+        opacity: opacity,
+        flow_label: connection.connection.flow_label
+      }
+      
+      ~H"""
+      <g class="connection-group">
+        <!-- Connection path -->
+        <path
+          d={"M #{@start_x} #{@start_y} Q #{@mid_x} #{@mid_y} #{@end_x} #{@end_y}"}
+          fill="none"
+          stroke={@stroke_color}
+          stroke-width="3"
+          stroke-dasharray={@stroke_dasharray}
+          marker-end={"url(##{@marker_id})"}
+          opacity={@opacity}
+          class="connection-path"
+        />
+        
+        <!-- Flow label -->
+        <text
+          x={@mid_x}
+          y={@mid_y - 40}
+          text-anchor="middle"
+          font-size="12"
+          font-weight="500"
+          fill={@label_color}
+          class="flow-label"
+        >
+          {@flow_label}
+        </text>
+      </g>
+      """
+    end
+  end
 
   defp render_node(user_system, selected?) do
     system = user_system.system
@@ -430,15 +556,20 @@ defmodule GreenManTavernWeb.LivingWebLive do
       # Load user's active systems
       user_systems = Systems.list_active_user_systems(user_id)
 
+      # Load user's connections
+      user_connections = Systems.get_user_connections(user_id)
+
       socket
       |> assign(:systems_by_category, systems_by_category)
       |> assign(:user_systems, user_systems)
+      |> assign(:user_connections, user_connections)
     rescue
       error ->
         socket
         |> put_flash(:error, "Failed to load systems data: #{inspect(error)}")
         |> assign(:systems_by_category, [])
         |> assign(:user_systems, [])
+        |> assign(:user_connections, [])
     end
   end
 
