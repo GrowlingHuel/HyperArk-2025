@@ -71,5 +71,5 @@
      {description,
          "Rich, real-time user experiences with server-rendered HTML\n"},
      {registered,[]},
-     {vsn,"1.1.14"},
+     {vsn,"1.1.15"},
      {mod,{'Elixir.Phoenix.LiveView.Application',[]}}]}.

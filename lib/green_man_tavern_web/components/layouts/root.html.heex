@@ -46,89 +46,213 @@
             }
           }
         });
+
+        // Character selection function - now uses URL parameters
+        window.selectCharacterFromDropdown = function(characterId) {
+          console.log("Character selected from dropdown:", characterId);
+          
+          // Store in session storage for persistence
+          if (characterId) {
+            sessionStorage.setItem('selectedCharacterId', characterId.toString());
+          } else {
+            sessionStorage.removeItem('selectedCharacterId');
+          }
+          
+          // Navigate to current page with character parameter
+          const currentPath = window.location.pathname;
+          const newUrl = characterId ? `${currentPath}?character=${characterId}` : currentPath;
+          window.location.href = newUrl;
+        };
+
+        // Load character from session storage on page load
+        document.addEventListener('DOMContentLoaded', function() {
+          const selectedCharacterId = sessionStorage.getItem('selectedCharacterId');
+          if (selectedCharacterId) {
+            console.log("Restoring character from session:", selectedCharacterId);
+            // Update the select element
+            const select = document.getElementById('character-select');
+            if (select) {
+              select.value = selectedCharacterId;
+            }
+          }
+        });
       })();
     </script>
   </head>
   <body>
-    <div class="master-layout">
-      <.banner_menu current_character={assigns[:character]} current_user={assigns[:current_user]} />
+    <div class="app-layout">
+      <!-- Banner (fixed top) -->
+      <div class="banner">
+        <.banner_menu current_character={assigns[:character]} current_user={assigns[:current_user]} />
+      </div>
+      
       <%= if assigns[:is_auth_page] do %>
         <!-- Auth pages - simple layout -->
         {@inner_content}
       <% else %>
-        <!-- Regular pages - dual window layout -->
-        <div class="content-container">
-        <div class="left-window">
-          <div class="mac-title-bar">
-            <div class="mac-close-box">×</div>
-            <span class="mac-window-title">{assigns[:left_window_title] || "Tavern"}</span>
+        <!-- Two-column content area -->
+        <div class="content-wrapper">
+          
+          <!-- LEFT WINDOW: Static + Character Context -->
+          <div class="left-container">
+            <div class="mac-window">
+              <div class="mac-title-bar">
+                <div class="mac-close-box">×</div>
+                <span class="mac-title">{assigns[:left_window_title] || "Green Man Tavern"}</span>
+              </div>
+              <div class="mac-content-area">
+                <!-- ALWAYS RENDER: Tavern scene -->
+                <div class="tavern-scene-sticky">
+                  <img src="/images/the_tavern.png" alt="Green Man Tavern" style="width: 100%; display: block; border: 1px solid #000;" />
+                </div>
+                
+                
+                <!-- CONDITIONALLY RENDER: Selected character -->
+                <%= if assigns[:character] do %>
+                  <div class="character-content">
+                    <div style="padding: 8px; border-top: 1px solid #CCC;">
+                      <h2 style="font-size: 14px; margin-bottom: 8px; color: #000;"><%= @character.name %></h2>
+                      <p style="font-size: 11px; color: #666; margin-bottom: 8px;">
+                        <%= @character.archetype %>
+                      </p>
+                      
+                      <!-- Focus Area -->
+                      <div style="margin-bottom: 12px;">
+                        <p style="font-weight: bold; margin-bottom: 4px; font-size: 11px;">Focus Area:</p>
+                        <p style="margin-bottom: 8px; color: #666; font-size: 10px;">
+                          <%= @character.focus_area %>
+                        </p>
+                      </div>
+                      
+                      <!-- Character portrait if available -->
+                      <div style="margin-bottom: 8px;">
+                        <img 
+                          src={"/images/characters/#{@character.icon_name}.png"} 
+                          alt={@character.name}
+                          style="width: 100%; border: 1px solid #000; margin-bottom: 4px;"
+                          onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                        />
+                        <div style="display: none; padding: 8px; border: 1px solid #CCC; background: #F9F9F9; text-align: center; font-size: 10px; color: #666;">
+                          Icon: <%= @character.icon_name %>
+                        </div>
+                      </div>
+
+                      <!-- Character description -->
+                      <div style="margin-bottom: 12px;">
+                        <p style="font-weight: bold; margin-bottom: 4px; font-size: 11px;">Description:</p>
+                        <p style="margin-bottom: 8px; color: #666; font-size: 10px; line-height: 1.4;">
+                          <%= @character.description %>
+                        </p>
+                      </div>
+
+                      <!-- Personality traits -->
+                      <div style="margin-bottom: 12px;">
+                        <p style="font-weight: bold; margin-bottom: 4px; font-size: 11px;">Personality Traits:</p>
+                        <ul style="margin-left: 16px; color: #666; font-size: 10px;">
+                          <%= for trait <- @character.personality_traits do %>
+                            <li><%= trait %></li>
+                          <% end %>
+                        </ul>
+                      </div>
+
+                      <!-- Trust level -->
+                      <div style="margin-bottom: 16px; padding: 6px; border: 1px solid #CCC; background: #F9F9F9;">
+                        <p style="font-weight: bold; margin-bottom: 4px; font-size: 11px;">Trust Level:</p>
+                        <p style="font-size: 10px; color: #666;">
+                          <strong><%= String.capitalize(@character.trust_requirement) %></strong>
+                        </p>
+                        <%= if @character.trust_requirement == "none" do %>
+                          <p style="color: #2d7d2d; font-size: 10px; margin-top: 4px;">
+                            ✓ Available to chat immediately!
+                          </p>
+                        <% else %>
+                          <p style="color: #666; font-size: 10px; margin-top: 4px;">
+                            Build trust to engage fully.
+                          </p>
+                        <% end %>
+                      </div>
+
+                      <!-- Chat Interface -->
+                      <div style="border-top: 1px solid #CCC; padding-top: 12px;">
+                        <h3 style="font-family: Chicago, 'Arial Black', sans-serif; font-size: 14px; margin-bottom: 8px;">
+                          Chat with <%= @character.name %>
+                        </h3>
+                        
+                        <!-- Chat messages area -->
+                        <div id="chat-messages" style="height: 200px; border: 1px solid #CCC; background: #FFF; padding: 8px; margin-bottom: 8px; overflow-y: auto; font-size: 11px;">
+                          <%= if assigns[:chat_messages] && length(assigns[:chat_messages]) > 0 do %>
+                            <%= for message <- assigns[:chat_messages] do %>
+                              <%= if message.type == :user do %>
+                                <div style="margin-bottom: 8px; padding: 4px; border-left: 2px solid #666;">
+                                  <div style="font-weight: bold; font-size: 10px; color: #666; margin-bottom: 2px;">You</div>
+                                  <div style="color: #333;"><%= message.content %></div>
+                                </div>
+                              <% else %>
+                                <div style="margin-bottom: 8px; padding: 4px; border-left: 2px solid #999;">
+                                  <div style="font-weight: bold; font-size: 10px; color: #666; margin-bottom: 2px;"><%= @character.name %></div>
+                                  <div style="color: #333;"><%= message.content %></div>
+                                </div>
+                              <% end %>
+                            <% end %>
+                          <% else %>
+                            <p style="color: #999; font-style: italic; text-align: center; margin-top: 20px;">
+                              Start a conversation with <%= @character.name %>...
+                            </p>
+                          <% end %>
+                        </div>
+                        
+                        <!-- Chat input -->
+                        <form phx-submit="send_message" style="display: flex; gap: 4px;">
+                          <input 
+                            type="text" 
+                            name="message"
+                            phx-change="update_message"
+                            value={assigns[:current_message] || ""}
+                            placeholder="Type your message..."
+                            style="flex: 1; padding: 6px; border: 1px solid #CCC; font-size: 11px; font-family: Monaco, monospace;"
+                          />
+                          <button 
+                            type="submit"
+                            phx-click="send_message"
+                            style="padding: 6px 12px; background: linear-gradient(180deg, #EFEFEF 0%, #D0D0D0 100%); border: 1px solid #CCC; font-size: 11px; cursor: pointer;"
+                          >
+                            Send
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                <% else %>
+                  <!-- Default tavern message -->
+                  <div style="padding: 8px;">
+                    <h2 style="font-size: 14px; margin-bottom: 8px; color: #000;">Welcome to the Green Man Tavern</h2>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 8px;">
+                      Select a character from the dropdown above to begin your journey.
+                    </p>
+                    <p style="font-size: 11px; color: #999;">
+                      Each character has unique knowledge and perspectives to share about permaculture and sustainable living.
+                    </p>
+                  </div>
+                <% end %>
+              </div>
+            </div>
           </div>
           
-          <div class="mac-window-content">
-            <!-- Always show tavern image -->
-            <div style="margin-bottom: 12px;">
-              <img src="/images/the_tavern.png" alt="Green Man Tavern" style="width: 100%; display: block; border: 1px solid #000;" />
+          <!-- RIGHT WINDOW: Page-Specific Content -->
+          <div class="right-container">
+            <div class="mac-window">
+              <div class="mac-title-bar">
+                <div class="mac-close-box">×</div>
+                <span class="mac-title">{assigns[:right_window_title] || assigns[:page_title] || "Content"}</span>
+              </div>
+              <div class="mac-content-area">
+                <!-- THIS IS WHERE LIVEVIEW PAGES RENDER -->
+                {@inner_content}
+              </div>
             </div>
-            
-            <!-- Show character content if character is selected, otherwise show default message -->
-            <%= if assigns[:character] do %>
-              <!-- Character content will be rendered here by the LiveView -->
-              {@inner_content}
-            <% else %>
-              <!-- Default tavern message -->
-              <div style="padding: 8px; border-top: 1px solid #CCC;">
-                <p style="font-size: 12px; color: #666; margin-bottom: 8px;">
-                  Welcome to the Green Man Tavern! Select a character from the dropdown above to begin your journey.
-                </p>
-                <p style="font-size: 11px; color: #999;">
-                  Each character has unique knowledge and perspectives to share about permaculture and sustainable living.
-                </p>
-              </div>
-            <% end %>
           </div>
+          
         </div>
-        <div class="right-window">
-          <div class="mac-title-bar">
-            <div class="mac-close-box">×</div>
-            <span class="mac-window-title">{assigns[:right_window_title] || "Main"}</span>
-          </div>
-          <div class="mac-window-content">
-            <%= if assigns[:character] do %>
-              <!-- Right window content - shows results/consequences of character interactions -->
-              <div style="padding: 16px;">
-                <h2 style="font-family: Chicago, 'Arial Black', sans-serif; font-size: 18px; margin-bottom: 12px;">
-                  Interaction Results
-                </h2>
-                
-                <div style="border: 1px solid #CCC; padding: 12px; background: #F9F9F9;">
-                  <p style="font-size: 12px; color: #666; margin-bottom: 8px;">
-                    Chat with <%= assigns[:character].name %> in the left window to see results here.
-                  </p>
-                  <p style="font-size: 11px; color: #999;">
-                    This area will show:
-                  </p>
-                  <ul style="font-size: 11px; color: #666; margin-left: 16px; margin-top: 4px;">
-                    <li>Living Web updates (new systems suggested)</li>
-                    <li>Garden recommendations</li>
-                    <li>Database entries</li>
-                    <li>Quest notifications</li>
-                  </ul>
-                </div>
-              </div>
-            <% else %>
-              <!-- Default right window content -->
-              <div style="padding: 16px;">
-                <h2 style="font-family: Chicago, 'Arial Black', sans-serif; font-size: 18px; margin-bottom: 12px;">
-                  Welcome
-                </h2>
-                <p style="font-size: 12px; color: #666;">
-                  Select a character to begin your permaculture journey.
-                </p>
-              </div>
-            <% end %>
-          </div>
-        </div>
-      </div>
       <% end %>
     </div>
   </body>

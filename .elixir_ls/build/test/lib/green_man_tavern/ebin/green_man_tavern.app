@@ -40,6 +40,7 @@
           'Elixir.GreenManTavernWeb.ErrorHTML',
           'Elixir.GreenManTavernWeb.ErrorJSON',
           'Elixir.GreenManTavernWeb.Gettext',
+          'Elixir.GreenManTavernWeb.HomeLive',
           'Elixir.GreenManTavernWeb.Layouts',
           'Elixir.GreenManTavernWeb.LivingWebLive',
           'Elixir.GreenManTavernWeb.PageController',

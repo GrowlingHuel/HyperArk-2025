@@ -173,7 +173,126 @@ p { font-size: 12px; }
 * { box-sizing: border-box; }
 .no-antialias { -webkit-font-smoothing: none; shape-rendering: crispEdges; image-rendering: pixelated; }
 .sharp-border { border: 1px solid #000; image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; }
-/* Master Layout */
+/* App Layout - New Structure */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.banner {
+  height: 40px;
+  flex-shrink: 0;
+  background: #CCC;
+  border-bottom: 2px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;  /* ADD THIS - pushes content to left and right */
+  padding: 0 16px;
+}
+
+.content-wrapper {
+  display: flex;
+  flex-direction: row;  /* CRITICAL: Side-by-side layout */
+  flex: 1;
+  overflow: hidden;
+  height: calc(100vh - 40px);  /* Full height minus banner */
+}
+
+.left-container {
+  flex: 1;  /* Equal flex weight */
+  border-right: 2px solid #000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.right-container {
+  flex: 1;  /* Equal flex weight */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.mac-window {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #FFF;
+}
+
+.mac-title-bar {
+  height: 20px;
+  background: #CCC;
+  border-bottom: 2px solid #000;
+  flex-shrink: 0;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;  /* ADD THIS - centers content */
+  position: relative;
+}
+
+/* Striped background (will be behind text) */
+.mac-title-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    #CCC 0px,
+    #CCC 1px,
+    #FFF 1px,
+    #FFF 2px
+  );
+  z-index: 0;
+}
+
+/* Title text with clear background */
+.mac-title {
+  font-family: Monaco, 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  color: #000;
+  position: relative;
+  z-index: 1;
+  background: #FFF;  /* Solid white behind text */
+  padding: 0 8px;
+}
+
+.mac-content-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px;
+  background: #FFF;
+}
+
+/* For Living Web page specifically */
+.living-web-page {
+  display: flex;
+  height: 100%;
+  gap: 16px;
+}
+
+.systems-library {
+  width: 250px;
+  flex-shrink: 0;
+  border-right: 1px solid #CCC;
+  padding-right: 16px;
+}
+
+.diagram-canvas {
+  flex: 1;
+  overflow: auto;
+}
+
+/* Legacy Master Layout - Keep for compatibility */
 .master-layout {
   display: flex;
   flex-direction: column;
@@ -183,8 +302,10 @@ p { font-size: 12px; }
   background: #CCCCCC;
 }
 
+/* Banner menu styling - updated for new structure */
 .banner-menu {
   height: 40px;
+  width: 100%;  /* ADD THIS - take full width */
   background: #D9D9D9;
   border-top: 1px solid #000;    /* ADD: top border */
   border-left: 1px solid #000;   /* ADD: left border */
@@ -234,6 +355,17 @@ p { font-size: 12px; }
   font-weight: bold;
   color: #000;
   flex-shrink: 0;
+}
+
+.banner-left {
+  display: flex;
+  align-items: center;
+}
+
+.banner-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .banner-menu-items {
@@ -498,27 +630,6 @@ p { font-size: 12px; }
   background: #FFF;
   height: 100%;
   box-shadow: none; /* Remove all shadows */
-}
-
-.mac-title-bar {
-  height: 20px;
-  /* Horizontal dash pattern across entire bar */
-  background: 
-    repeating-linear-gradient(
-      0deg,
-      #000000 0px,
-      #000000 1px,
-      #FFFFFF 1px,
-      #FFFFFF 2px
-    );
-  border-top: 1px solid #000;
-  border-bottom: 1px solid #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 24px;
-  flex-shrink: 0;
-  position: relative;
 }
 
 .mac-close-box {

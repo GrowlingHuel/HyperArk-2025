@@ -251,4 +251,5 @@ defmodule GreenManTavernWeb.CharacterLive do
       true -> 0.01
     end
   end
+
 end

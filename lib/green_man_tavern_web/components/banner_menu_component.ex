@@ -13,30 +13,25 @@ defmodule GreenManTavernWeb.BannerMenuComponent do
 
     ~H"""
     <div class="banner-menu">
-      <span class="banner-logo">🍃 HyperArk</span>
+      <!-- LEFT: Logo/Brand -->
+      <div class="banner-left">
+        <span class="banner-logo">🍃 HyperArk</span>
+      </div>
 
-      <div class="banner-menu-items">
+      <!-- RIGHT: Navigation buttons -->
+      <div class="banner-right">
         <.link navigate={~p"/"} class="banner-menu-item">Tavern</.link>
 
-        <!-- Characters Dropdown -->
-        <div class="dropdown-container">
-          <button class="banner-menu-item dropdown-button">
-            Characters ▾
-          </button>
-
-          <div class="dropdown-menu" id="characters-dropdown" style="display: none;">
+        <!-- Characters Selector -->
+        <div class="character-selector">
+          <select id="character-select" onchange="selectCharacterFromDropdown(this.value)" class="banner-menu-item" style="background: #CCC; border: 1px solid #000; padding: 4px 8px; font-size: 12px;">
+            <option value="">Characters</option>
             <%= for character <- @characters do %>
-              <.link
-                navigate={~p"/characters/#{Characters.name_to_slug(character.name)}"}
-                class={[
-                  "dropdown-item",
-                  is_current_character?(character, @current_character) && "dropdown-item-current"
-                ]}
-              >
+              <option value={character.id} selected={is_current_character?(character, @current_character)}>
                 <%= character.name %>
-              </.link>
+              </option>
             <% end %>
-          </div>
+          </select>
         </div>
 
         <.link navigate={~p"/database"} class="banner-menu-item">Database</.link>
