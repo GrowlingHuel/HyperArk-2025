@@ -76,6 +76,25 @@
             }
           }
         });
+
+        // Handle character chat form submission
+        document.addEventListener('DOMContentLoaded', function() {
+          const chatForm = document.getElementById('character-chat-form');
+          if (chatForm) {
+            chatForm.addEventListener('submit', function(e) {
+              e.preventDefault();
+              const messageInput = chatForm.querySelector('input[name="message"]');
+              const message = messageInput.value.trim();
+              
+              if (message) {
+                console.log("Sending message to LiveView:", message);
+                // Send the message to the current LiveView
+                window.liveSocket.pushEvent("send_message", {message: message});
+                messageInput.value = '';
+              }
+            });
+          }
+        });
       })();
     </script>
   </head>
@@ -102,7 +121,7 @@
               </div>
               <div class="mac-content-area">
                 <!-- ALWAYS RENDER: Tavern scene -->
-                <div class="tavern-scene-sticky">
+                <div class="tavern-scene">
                   <img src="/images/the_tavern.png" alt="Green Man Tavern" style="width: 100%; display: block; border: 1px solid #000;" />
                 </div>
                 
@@ -202,18 +221,16 @@
                         </div>
                         
                         <!-- Chat input -->
-                        <form phx-submit="send_message" style="display: flex; gap: 4px;">
+                        <form id="character-chat-form" style="display: flex; gap: 4px;">
                           <input 
                             type="text" 
                             name="message"
-                            phx-change="update_message"
                             value={assigns[:current_message] || ""}
                             placeholder="Type your message..."
                             style="flex: 1; padding: 6px; border: 1px solid #CCC; font-size: 11px; font-family: Monaco, monospace;"
                           />
                           <button 
                             type="submit"
-                            phx-click="send_message"
                             style="padding: 6px 12px; background: linear-gradient(180deg, #EFEFEF 0%, #D0D0D0 100%); border: 1px solid #CCC; font-size: 11px; cursor: pointer;"
                           >
                             Send

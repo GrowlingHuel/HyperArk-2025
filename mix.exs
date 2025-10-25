@@ -66,7 +66,14 @@ defmodule GreenManTavern.MixProject do
       {:gettext, "~> 0.26"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.5"}
+      {:bandit, "~> 1.5"},
+
+      # MindsDB Integration Dependencies
+      # These dependencies support MindsDB AI database integration for character conversations
+      # and knowledge base processing in the Green Man Tavern application.
+      {:myxql, "~> 0.7.0"},  # MySQL driver for MindsDB SQL interface
+      {:pdf_extractor, "~> 0.5.0"},  # PDF text extraction for knowledge base
+      {:progress_bar, "~> 3.0"}  # Progress indicators for long operations
     ]
   end
 

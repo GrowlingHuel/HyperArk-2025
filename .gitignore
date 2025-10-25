@@ -42,3 +42,7 @@ npm-debug.log
 # LibreOffice/OpenOffice lock files
 .~lock.*#
 
+# MindsDB backups and logs
+/priv/mindsdb/backups/*.tar.gz
+/priv/mindsdb/logs/*.log
+

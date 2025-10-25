@@ -87,9 +87,38 @@ config :phoenix_live_view,
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
 
-# MindsDB Configuration for Development (HTTP API)
-config :green_man_tavern,
-  mindsdb_host: "localhost",
-  mindsdb_http_port: 47334,
-  mindsdb_user: "mindsdb",
-  mindsdb_password: "mindsdb"
+# MindsDB Configuration for Development
+# This configuration provides connection settings for MindsDB integration
+# in the development environment. MindsDB is an AI database that enables
+# natural language queries and machine learning model training.
+config :green_man_tavern, GreenManTavern.MindsDB,
+  # Host address where MindsDB server is running
+  # Default: localhost (MindsDB running locally via Docker)
+  host: "localhost",
+
+  # HTTP API port for MindsDB REST endpoints
+  # This is used for querying agents and models via HTTP requests
+  # Default: 48334 (MindsDB's Docker container HTTP API port)
+  http_port: 48334,
+
+  # MySQL-compatible port for direct database connections
+  # This port allows SQL queries to be executed directly against MindsDB
+  # Default: 48335 (MindsDB's Docker container MySQL-compatible port)
+  mysql_port: 48335,
+
+  # Database name within MindsDB instance
+  # MindsDB uses this database to store models, agents, and data sources
+  database: "mindsdb",
+
+  # Username for MindsDB authentication
+  # Default MindsDB installation uses 'mindsdb' as username
+  username: "mindsdb",
+
+  # Password for MindsDB authentication
+  # Default MindsDB installation has empty password
+  password: "",
+
+  # Connection pool size for managing concurrent database connections
+  # Higher values allow more concurrent queries but use more memory
+  # Development uses smaller pool to conserve resources
+  pool_size: 5

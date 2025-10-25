@@ -700,11 +700,9 @@ p { font-size: 12px; }
     );
 }
 
-.tavern-scene-sticky {
-  position: sticky;
-  top: 0;
+.tavern-scene {
+  /* Removed sticky positioning to allow scrolling with content */
   background: #000;
-  z-index: 10;
   border-bottom: 2px solid #000;
 }
 

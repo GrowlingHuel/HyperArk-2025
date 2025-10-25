@@ -35,3 +35,40 @@ config :phoenix, :plug_init_mode, :runtime
 # Enable helpful, but potentially expensive runtime checks
 config :phoenix_live_view,
   enable_expensive_runtime_checks: true
+
+# MindsDB Configuration for Testing
+# This configuration provides connection settings for MindsDB integration
+# in the test environment. Test configuration uses minimal resources
+# and may use mock services or test-specific MindsDB instances.
+config :green_man_tavern, GreenManTavern.MindsDB,
+  # Host address where MindsDB server is running during tests
+  # Default: localhost (assumes MindsDB running locally for testing)
+  host: "localhost",
+
+  # HTTP API port for MindsDB REST endpoints during testing
+  # This is used for querying agents and models via HTTP requests
+  # Default: 48334 (MindsDB's Docker container HTTP API port)
+  http_port: 48334,
+
+  # MySQL-compatible port for direct database connections during testing
+  # This port allows SQL queries to be executed directly against MindsDB
+  # Default: 48335 (MindsDB's Docker container MySQL-compatible port)
+  mysql_port: 48335,
+
+  # Database name within MindsDB instance for testing
+  # MindsDB uses this database to store models, agents, and data sources
+  # Default: mindsdb
+  database: "mindsdb",
+
+  # Username for MindsDB authentication during testing
+  # Default MindsDB installation uses 'mindsdb' as username
+  username: "mindsdb",
+
+  # Password for MindsDB authentication during testing
+  # Default MindsDB installation has empty password
+  password: "",
+
+  # Connection pool size for managing concurrent database connections during testing
+  # Test environment uses smaller pool to minimize resource usage
+  # and ensure tests run efficiently
+  pool_size: 2

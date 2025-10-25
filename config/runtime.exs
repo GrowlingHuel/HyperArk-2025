@@ -28,12 +28,48 @@ if config_env() == :prod do
       For example: ecto://USER:PASS@HOST/DATABASE
       """
 
-  # MindsDB HTTP API Runtime Configuration for Production
-  config :green_man_tavern,
-    mindsdb_host: System.get_env("MINDSDB_HOST") || "localhost",
-    mindsdb_http_port: String.to_integer(System.get_env("MINDSDB_HTTP_PORT") || "47334"),
-    mindsdb_user: System.get_env("MINDSDB_USER") || "mindsdb",
-    mindsdb_password: System.get_env("MINDSDB_PASSWORD") || "mindsdb"
+  # MindsDB Runtime Configuration for Production
+  # This configuration loads MindsDB connection settings from environment variables
+  # for production deployment. All values can be overridden via environment variables
+  # to support different deployment environments (staging, production, etc.)
+  config :green_man_tavern, GreenManTavern.MindsDB,
+    # Host address where MindsDB server is running
+    # Can be overridden with MINDSDB_HOST environment variable
+    # Default: localhost
+    host: System.get_env("MINDSDB_HOST") || "localhost",
+
+    # HTTP API port for MindsDB REST endpoints
+    # Used for querying agents and models via HTTP requests
+    # Can be overridden with MINDSDB_HTTP_PORT environment variable
+    # Default: 48334
+    http_port: String.to_integer(System.get_env("MINDSDB_HTTP_PORT") || "48334"),
+
+    # MySQL-compatible port for direct database connections
+    # Allows SQL queries to be executed directly against MindsDB
+    # Can be overridden with MINDSDB_MYSQL_PORT environment variable
+    # Default: 48335
+    mysql_port: String.to_integer(System.get_env("MINDSDB_MYSQL_PORT") || "48335"),
+
+    # Database name within MindsDB instance
+    # Can be overridden with MINDSDB_DATABASE environment variable
+    # Default: mindsdb
+    database: System.get_env("MINDSDB_DATABASE") || "mindsdb",
+
+    # Username for MindsDB authentication
+    # Can be overridden with MINDSDB_USERNAME environment variable
+    # Default: mindsdb
+    username: System.get_env("MINDSDB_USERNAME") || "mindsdb",
+
+    # Password for MindsDB authentication
+    # Can be overridden with MINDSDB_PASSWORD environment variable
+    # Default: empty string
+    password: System.get_env("MINDSDB_PASSWORD") || "",
+
+    # Connection pool size for managing concurrent database connections
+    # Higher values allow more concurrent queries but use more memory
+    # Can be overridden with MINDSDB_POOL_SIZE environment variable
+    # Production uses larger pool for better performance
+    pool_size: String.to_integer(System.get_env("MINDSDB_POOL_SIZE") || "5")
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 

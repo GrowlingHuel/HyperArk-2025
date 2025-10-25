@@ -187,23 +187,6 @@ defmodule GreenManTavernWeb.HomeLive do
          socket
          |> assign(:chat_messages, new_messages)
          |> assign(:is_loading, false)}
-
-      {:error, reason} ->
-        # Handle MindsDB error
-        error_response = %{
-          id: System.unique_integer([:positive]),
-          type: :character,
-          content: "I'm having trouble processing that right now. Please try again later.",
-          timestamp: DateTime.utc_now()
-        }
-
-        new_messages = socket.assigns.chat_messages ++ [error_response]
-
-        {:noreply,
-         socket
-         |> assign(:chat_messages, new_messages)
-         |> assign(:is_loading, false)
-         |> put_flash(:error, "Error: #{reason}")}
     end
   end
 
