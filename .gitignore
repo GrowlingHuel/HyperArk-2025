@@ -46,3 +46,6 @@ npm-debug.log
 /priv/mindsdb/backups/*.tar.gz
 /priv/mindsdb/logs/*.log
 
+mindsdb_backup_20251025.tar
+*.tar
+backups/
