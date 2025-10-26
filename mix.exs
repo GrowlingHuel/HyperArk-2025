@@ -73,7 +73,12 @@ defmodule GreenManTavern.MixProject do
       # and knowledge base processing in the Green Man Tavern application.
       {:myxql, "~> 0.7.0"},  # MySQL driver for MindsDB SQL interface
       {:pdf_extractor, "~> 0.5.0"},  # PDF text extraction for knowledge base
-      {:progress_bar, "~> 3.0"}  # Progress indicators for long operations
+      {:progress_bar, "~> 3.0"},  # Progress indicators for long operations
+
+      # PDF Processing Dependencies
+      # These dependencies support PDF text extraction for the knowledge base system.
+      {:pdf, "~> 0.6.0"},  # Elixir PDF parsing library
+      {:briefly, "~> 0.4"}  # Temporary file management
     ]
   end
 

@@ -1,0 +1,776 @@
+    warning: unused import Phoenix.LiveView
+    │
+ 11 │   import Phoenix.LiveView, only: [push_navigate: 2]
+    │   ~
+    │
+    └─ lib/green_man_tavern_web/controllers/user_auth.ex:11:3
+
+    warning: unused import Phoenix.Token
+    │
+ 12 │   import Phoenix.Token
+    │   ~
+    │
+    └─ lib/green_man_tavern_web/controllers/user_auth.ex:12:3
+
+     warning: PDFExtractor.extract_text/1 is undefined (module PDFExtractor is not available or is yet to be defined). Did you mean:
+
+           * GreenManTavern.Knowledge.PDFExtractor.extract_text/1
+           * PdfExtractor.extract_text/1
+
+     │
+ 258 │       case PDF.extract_text(file_path) do
+     │                ~
+     │
+     └─ lib/green_man_tavern/knowledge/pdf_extractor.ex:258:16: GreenManTavern.Knowledge.PDFExtractor.perform_extraction/1
+
+     warning: PDFExtractor.extract_metadata/1 is undefined (module PDFExtractor is not available or is yet to be defined). Did you mean:
+
+           * GreenManTavern.Knowledge.PDFExtractor.extract_metadata/1
+           * PdfExtractor.extract_metadata/1
+
+     │
+ 282 │       case PDF.extract_metadata(file_path) do
+     │                ~
+     │
+     └─ lib/green_man_tavern/knowledge/pdf_extractor.ex:282:16: GreenManTavern.Knowledge.PDFExtractor.perform_metadata_extraction/1
+
+     warning: no route path for GreenManTavernWeb.Router matches ~p"/users/confirm/#{capture}"
+     │
+ 111 │             &url(~p"/users/confirm/#{&1}")
+     │                    ~
+     │
+     └─ lib/green_man_tavern_web/live/user_registration_live.ex:111: GreenManTavernWeb.UserRegistrationLive.handle_event/3
+
+    warning: no route path for GreenManTavernWeb.Router matches "/database"
+    │
+ 37 │         <.link navigate={~p"/database"} class="banner-menu-item">Database</.link>
+    │         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ lib/green_man_tavern_web/components/banner_menu_component.ex:37: GreenManTavernWeb.BannerMenuComponent.banner_menu/1
+
+    warning: no route path for GreenManTavernWeb.Router matches "/garden"
+    │
+ 38 │         <.link navigate={~p"/garden"} class="banner-menu-item">Garden</.link>
+    │         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ lib/green_man_tavern_web/components/banner_menu_component.ex:38: GreenManTavernWeb.BannerMenuComponent.banner_menu/1
+
+    warning: variable "agent_config" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 58 │       |> Enum.map(fn {agent_name, agent_config} ->
+    │                                   ~
+    │
+    └─ lib/green_man_tavern/mindsdb/agent_installer.ex:58:35: GreenManTavern.MindsDB.AgentInstaller.install_all/1
+
+     warning: variable "verbose" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 234 │     verbose = Keyword.get(opts, :verbose, false)
+     │     ~~~~~~~
+     │
+     └─ lib/mix/tasks/mindsdb.setup.ex:234:5: Mix.Tasks.Mindsdb.Setup.upload_knowledge/2
+
+     warning: variable "verbose" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 252 │     verbose = Keyword.get(opts, :verbose, false)
+     │     ~~~~~~~
+     │
+     └─ lib/mix/tasks/mindsdb.setup.ex:252:5: Mix.Tasks.Mindsdb.Setup.verify_setup/3
+
+     warning: the following clause will never match:
+
+         {:ok, results}
+
+     because it attempts to match on the result of:
+
+         install_agents(force: force, verbose: verbose)
+
+     which has type:
+
+         dynamic(:ok or {:error, binary()})
+
+     typing violation found at:
+     │
+ 127 │         {:ok, results} ->
+     │         ~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/mix/tasks/mindsdb.setup.ex:127: Mix.Tasks.Mindsdb.Setup.run/1
+
+     warning: the following clause will never match:
+
+         {:ok, results}
+
+     because it attempts to match on the result of:
+
+         GreenManTavern.MindsDB.AgentInstaller.verify_all()
+
+     which has type:
+
+         dynamic(:ok or {:error, binary()})
+
+     typing violation found at:
+     │
+ 260 │           {:ok, results} ->
+     │           ~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/mix/tasks/mindsdb.setup.ex:260: Mix.Tasks.Mindsdb.Setup.verify_setup/3
+
+     warning: incompatible types given to Kernel.map_size/1:
+
+         map_size(results)
+
+     given types:
+
+         -binary()-
+
+     but expected one of:
+
+         %{...}
+
+     where "results" was given the type:
+
+         # type: binary()
+         # from: lib/mix/tasks/mindsdb.setup.ex
+         {:error, results}
+
+     typing violation found at:
+     │
+ 272 │               total: map_size(results),
+     │                      ~
+     │
+     └─ lib/mix/tasks/mindsdb.setup.ex:272:22: Mix.Tasks.Mindsdb.Setup.verify_setup/3
+
+    warning: no route path for GreenManTavernWeb.Router matches ~p"/users/confirm/#{capture}"
+    │
+ 24 │             &url(~p"/users/confirm/#{&1}")
+    │                    ~
+    │
+    └─ lib/green_man_tavern_web/controllers/user_registration_controller.ex:24: GreenManTavernWeb.UserRegistrationController.create/2
+
+     warning: the following clause will never match:
+
+         {:error, reason}
+
+     because it attempts to match on the result of:
+
+         GreenManTavern.MindsDB.HTTPClient.upload_file(file_path, metadata)
+
+     which has type:
+
+         dynamic({:ok, %{...}})
+
+     typing violation found at:
+     │
+ 437 │       {:error, reason} ->
+     │       ~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/green_man_tavern/mindsdb/knowledge_manager.ex:437: GreenManTavern.MindsDB.KnowledgeManager.upload_to_mindsdb/4
+
+    warning: no route path for GreenManTavernWeb.Router matches "/users/settings"
+    │
+ 22 │     |> put_session(:user_return_to, ~p"/users/settings")
+    │                                       ~
+    │
+    └─ lib/green_man_tavern_web/controllers/user_session_controller.ex:22: GreenManTavernWeb.UserSessionController.create/2
+
+    warning: module attribute @temp_dir was set but never used
+    │
+ 46 │   @temp_dir Keyword.get(@config, :temp_dir, System.tmp_dir())
+    │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ lib/green_man_tavern/documents/pdf_processor.ex:46: GreenManTavern.Documents.PDFProcessor (module)
+
+warning: struct Task.TimeoutError is undefined (module Task.TimeoutError is not available or is yet to be defined)
+└─ lib/green_man_tavern/documents/pdf_processor.ex: GreenManTavern.Documents.PDFProcessor.extract_with_pdftotext/1
+
+     warning: :pdf.parse/1 is undefined (module :pdf is not available or is yet to be defined)
+     │
+ 167 │       case :pdf.parse(pdf_binary) do
+     │                 ~
+     │
+     └─ lib/green_man_tavern/documents/pdf_processor.ex:167:17: GreenManTavern.Documents.PDFProcessor.extract_with_library/1
+
+     warning: :pdf.get_page_count/1 is undefined (module :pdf is not available or is yet to be defined)
+     │
+ 206 │       {:ok, page_count} = :pdf.get_page_count(pdf_doc)
+     │                                ~
+     │
+     └─ lib/green_man_tavern/documents/pdf_processor.ex:206:32: GreenManTavern.Documents.PDFProcessor.extract_text_from_pages/1
+
+     warning: :pdf.get_page_text/2 is undefined (module :pdf is not available or is yet to be defined)
+     │
+ 210 │         case :pdf.get_page_text(pdf_doc, page_num) do
+     │                   ~
+     │
+     └─ lib/green_man_tavern/documents/pdf_processor.ex:210:19: GreenManTavern.Documents.PDFProcessor.extract_text_from_pages/1
+
+     warning: :pdf.get_page_text/2 is undefined (module :pdf is not available or is yet to be defined)
+     │
+ 219 │           case :pdf.get_page_text(pdf_doc, 1) do
+     │                     ~
+     │
+     └─ lib/green_man_tavern/documents/pdf_processor.ex:219:21: GreenManTavern.Documents.PDFProcessor.extract_text_from_pages/1
+
+[info] MindsDB Connection manager started
+╔══════════════════════════════════════════════════════════════╗
+║                    PDF Batch Processing                     ║
+║                Green Man Tavern Knowledge Base               ║
+╚══════════════════════════════════════════════════════════════╝
+
+📁 Directory: /home/jesse/Desktop/GreenMan_files/permaculture_PDFs
+📄 Chunk Size: 1000 characters
+🔄 Overlap: 200 characters
+⏭️  Skip Existing: true
+📦 Batch Size: 100 chunks
+
+[info] Starting PDF directory processing: /home/jesse/Desktop/GreenMan_files/permaculture_PDFs
+[info] Found 45 PDF files to process
+[debug] Processing PDF: 1001gardeningtipsandtricks.pdf
+[debug] QUERY OK source="documents" db=0.6ms decode=1.0ms queue=1.2ms idle=10.0ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["1001gardeningtipsandtricks.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process 1001gardeningtipsandtricks.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "1001gardeningtipsandtricks", metadata: %{file_size: 21045813, page_count: 1, processed_at: ~U[2025-10-25 13:08:33Z], text_length: 187710, extracted_at: ~U[2025-10-25 13:08:33Z], extraction_method: :pdftotext, original_size_bytes: 21045813}, processed_at: ~U[2025-10-25 13:08:33Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/1001gardeningtipsandtricks.pdf", source_file: "1001gardeningtipsandtricks.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: 50do-it-yourselfprojectsforkeepingchickens.pdf
+[debug] QUERY OK source="documents" db=1.5ms idle=500.6ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["50do-it-yourselfprojectsforkeepingchickens.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process 50do-it-yourselfprojectsforkeepingchickens.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "50do-it-yourselfprojectsforkeepingchickens", metadata: %{file_size: 12404494, page_count: 1, processed_at: ~U[2025-10-25 13:08:36Z], text_length: 201695, extracted_at: ~U[2025-10-25 13:08:36Z], extraction_method: :pdftotext, original_size_bytes: 12404494}, processed_at: ~U[2025-10-25 13:08:36Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/50do-it-yourselfprojectsforkeepingchickens.pdf", source_file: "50do-it-yourselfprojectsforkeepingchickens.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: Building-Soils-for-Better-Crops.pdf
+[debug] QUERY OK source="documents" db=1.2ms idle=1280.0ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["Building-Soils-for-Better-Crops.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process Building-Soils-for-Better-Crops.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Building-soils-for-better-crops", metadata: %{file_size: 14429734, page_count: 1, processed_at: ~U[2025-10-25 13:08:42Z], text_length: 1253819, extracted_at: ~U[2025-10-25 13:08:41Z], extraction_method: :pdftotext, original_size_bytes: 14429734}, processed_at: ~U[2025-10-25 13:08:42Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/Building-Soils-for-Better-Crops.pdf", source_file: "Building-Soils-for-Better-Crops.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: The_One_Straw_Revolution.pdf
+[debug] QUERY OK source="documents" db=0.3ms idle=1659.9ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["The_One_Straw_Revolution.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process The_One_Straw_Revolution.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "The one straw revolution", metadata: %{file_size: 3258187, page_count: 1, processed_at: ~U[2025-10-25 13:08:42Z], text_length: 227666, extracted_at: ~U[2025-10-25 13:08:42Z], extraction_method: :pdftotext, original_size_bytes: 3258187}, processed_at: ~U[2025-10-25 13:08:42Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/The_One_Straw_Revolution.pdf", source_file: "The_One_Straw_Revolution.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[info] Processing file 5/45: allthingsjerky.pdf
+[debug] Processing PDF: allthingsjerky.pdf
+[debug] QUERY OK source="documents" db=1.3ms idle=846.1ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["allthingsjerky.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process allthingsjerky.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Allthingsjerky", metadata: %{file_size: 10843534, page_count: 1, processed_at: ~U[2025-10-25 13:08:42Z], text_length: 268247, extracted_at: ~U[2025-10-25 13:08:42Z], extraction_method: :pdftotext, original_size_bytes: 10843534}, processed_at: ~U[2025-10-25 13:08:42Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/allthingsjerky.pdf", source_file: "allthingsjerky.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: amishcanningandpreserving.pdf
+[debug] QUERY OK source="documents" db=0.4ms idle=1519.5ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["amishcanningandpreserving.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process amishcanningandpreserving.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Amishcanningandpreserving", metadata: %{file_size: 8986221, page_count: 1, processed_at: ~U[2025-10-25 13:08:46Z], text_length: 77290, extracted_at: ~U[2025-10-25 13:08:46Z], extraction_method: :pdftotext, original_size_bytes: 8986221}, processed_at: ~U[2025-10-25 13:08:46Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/amishcanningandpreserving.pdf", source_file: "amishcanningandpreserving.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: backyardmedicineupdatedandexpandedsecondedition.pdf
+[debug] QUERY OK source="documents" db=0.4ms idle=1642.2ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["backyardmedicineupdatedandexpandedsecondedition.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process backyardmedicineupdatedandexpandedsecondedition.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Backyardmedicineupdatedandexpandedsecondedition", metadata: %{file_size: 17815748, page_count: 1, processed_at: ~U[2025-10-25 13:08:46Z], text_length: 465428, extracted_at: ~U[2025-10-25 13:08:46Z], extraction_method: :pdftotext, original_size_bytes: 17815748}, processed_at: ~U[2025-10-25 13:08:46Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/backyardmedicineupdatedandexpandedsecondedition.pdf", source_file: "backyardmedicineupdatedandexpandedsecondedition.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: basicfishing.pdf
+[debug] QUERY OK source="documents" db=1.3ms idle=1330.1ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["basicfishing.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process basicfishing.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Basicfishing", metadata: %{file_size: 11065183, page_count: 1, processed_at: ~U[2025-10-25 13:08:48Z], text_length: 375871, extracted_at: ~U[2025-10-25 13:08:48Z], extraction_method: :pdftotext, original_size_bytes: 11065183}, processed_at: ~U[2025-10-25 13:08:48Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/basicfishing.pdf", source_file: "basicfishing.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: beahero.pdf
+[debug] QUERY OK source="documents" db=0.4ms idle=1350.1ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["beahero.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process beahero.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Beahero", metadata: %{file_size: 917157, page_count: 1, processed_at: ~U[2025-10-25 13:08:48Z], text_length: 236016, extracted_at: ~U[2025-10-25 13:08:48Z], extraction_method: :pdftotext, original_size_bytes: 917157}, processed_at: ~U[2025-10-25 13:08:48Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/beahero.pdf", source_file: "beahero.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[info] Processing file 10/45: compostingfortheabsolutebeginner.pdf
+[debug] Processing PDF: compostingfortheabsolutebeginner.pdf
+[debug] QUERY OK source="documents" db=0.5ms idle=1113.6ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["compostingfortheabsolutebeginner.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process compostingfortheabsolutebeginner.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Compostingfortheabsolutebeginner", metadata: %{file_size: 18543692, page_count: 1, processed_at: ~U[2025-10-25 13:08:49Z], text_length: 284806, extracted_at: ~U[2025-10-25 13:08:48Z], extraction_method: :pdftotext, original_size_bytes: 18543692}, processed_at: ~U[2025-10-25 13:08:49Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/compostingfortheabsolutebeginner.pdf", source_file: "compostingfortheabsolutebeginner.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: do-it-yourselfprojectstogetyouoffthegrid.pdf
+[debug] QUERY OK source="documents" db=1.0ms idle=1651.2ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["do-it-yourselfprojectstogetyouoffthegrid.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process do-it-yourselfprojectstogetyouoffthegrid.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Do-it-yourselfprojectstogetyouoffthegrid", metadata: %{file_size: 14900037, page_count: 1, processed_at: ~U[2025-10-25 13:08:51Z], text_length: 176889, extracted_at: ~U[2025-10-25 13:08:51Z], extraction_method: :pdftotext, original_size_bytes: 14900037}, processed_at: ~U[2025-10-25 13:08:51Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/do-it-yourselfprojectstogetyouoffthegrid.pdf", source_file: "do-it-yourselfprojectstogetyouoffthegrid.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: essentialguidetofooddrying.pdf
+[debug] QUERY OK source="documents" db=1.6ms idle=1889.0ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["essentialguidetofooddrying.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process essentialguidetofooddrying.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Essentialguidetofooddrying", metadata: %{file_size: 5122972, page_count: 1, processed_at: ~U[2025-10-25 13:08:51Z], text_length: 212764, extracted_at: ~U[2025-10-25 13:08:51Z], extraction_method: :pdftotext, original_size_bytes: 5122972}, processed_at: ~U[2025-10-25 13:08:51Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/essentialguidetofooddrying.pdf", source_file: "essentialguidetofooddrying.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: foragerscookbook.pdf
+[debug] QUERY OK source="documents" db=0.3ms idle=1330.7ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["foragerscookbook.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process foragerscookbook.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Foragerscookbook", metadata: %{file_size: 26011187, page_count: 1, processed_at: ~U[2025-10-25 13:08:52Z], text_length: 394614, extracted_at: ~U[2025-10-25 13:08:52Z], extraction_method: :pdftotext, original_size_bytes: 26011187}, processed_at: ~U[2025-10-25 13:08:52Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/foragerscookbook.pdf", source_file: "foragerscookbook.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: foragershandbook.pdf
+[debug] QUERY OK source="documents" db=0.3ms idle=1044.0ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["foragershandbook.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process foragershandbook.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Foragershandbook", metadata: %{file_size: 4552037, page_count: 1, processed_at: ~U[2025-10-25 13:08:53Z], text_length: 341375, extracted_at: ~U[2025-10-25 13:08:53Z], extraction_method: :pdftotext, original_size_bytes: 4552037}, processed_at: ~U[2025-10-25 13:08:53Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/foragershandbook.pdf", source_file: "foragershandbook.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[info] Processing file 15/45: fundamentalsofmantracking.pdf
+[debug] Processing PDF: fundamentalsofmantracking.pdf
+[debug] QUERY OK source="documents" db=0.5ms idle=1744.7ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["fundamentalsofmantracking.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process fundamentalsofmantracking.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Fundamentalsofmantracking", metadata: %{file_size: 8647193, page_count: 1, processed_at: ~U[2025-10-25 13:08:53Z], text_length: 232746, extracted_at: ~U[2025-10-25 13:08:53Z], extraction_method: :pdftotext, original_size_bytes: 8647193}, processed_at: ~U[2025-10-25 13:08:53Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/fundamentalsofmantracking.pdf", source_file: "fundamentalsofmantracking.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: goodlivingguidetokeepingsheepandotherfiberanimals.pdf
+[debug] QUERY OK source="documents" db=0.4ms idle=1260.8ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["goodlivingguidetokeepingsheepandotherfiberanimals.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process goodlivingguidetokeepingsheepandotherfiberanimals.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Goodlivingguidetokeepingsheepandotherfiberanimals", metadata: %{file_size: 7754262, page_count: 1, processed_at: ~U[2025-10-25 13:08:54Z], text_length: 216504, extracted_at: ~U[2025-10-25 13:08:54Z], extraction_method: :pdftotext, original_size_bytes: 7754262}, processed_at: ~U[2025-10-25 13:08:54Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/goodlivingguidetokeepingsheepandotherfiberanimals.pdf", source_file: "goodlivingguidetokeepingsheepandotherfiberanimals.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: goodlivingguidetomedicinaltea.pdf
+[debug] QUERY OK source="documents" db=0.3ms idle=1648.0ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["goodlivingguidetomedicinaltea.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process goodlivingguidetomedicinaltea.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Goodlivingguidetomedicinaltea", metadata: %{file_size: 18740823, page_count: 1, processed_at: ~U[2025-10-25 13:08:56Z], text_length: 217073, extracted_at: ~U[2025-10-25 13:08:56Z], extraction_method: :pdftotext, original_size_bytes: 18740823}, processed_at: ~U[2025-10-25 13:08:56Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/goodlivingguidetomedicinaltea.pdf", source_file: "goodlivingguidetomedicinaltea.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: homebutcher.pdf
+[debug] QUERY OK source="documents" db=0.4ms idle=1847.6ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["homebutcher.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process homebutcher.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Homebutcher", metadata: %{file_size: 12326594, page_count: 1, processed_at: ~U[2025-10-25 13:08:57Z], text_length: 371139, extracted_at: ~U[2025-10-25 13:08:56Z], extraction_method: :pdftotext, original_size_bytes: 12326594}, processed_at: ~U[2025-10-25 13:08:57Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/homebutcher.pdf", source_file: "homebutcher.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: homeremedies.pdf
+[debug] QUERY OK source="documents" db=0.5ms idle=1622.1ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["homeremedies.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process homeremedies.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Homeremedies", metadata: %{file_size: 15721994, page_count: 1, processed_at: ~U[2025-10-25 13:08:57Z], text_length: 491845, extracted_at: ~U[2025-10-25 13:08:57Z], extraction_method: :pdftotext, original_size_bytes: 15721994}, processed_at: ~U[2025-10-25 13:08:57Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/homeremedies.pdf", source_file: "homeremedies.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[info] Processing file 20/45: homesteadinghandbook.pdf
+[debug] Processing PDF: homesteadinghandbook.pdf
+[debug] QUERY OK source="documents" db=0.5ms idle=1329.7ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["homesteadinghandbook.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process homesteadinghandbook.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Homesteadinghandbook", metadata: %{file_size: 21142595, page_count: 1, processed_at: ~U[2025-10-25 13:08:58Z], text_length: 798382, extracted_at: ~U[2025-10-25 13:08:58Z], extraction_method: :pdftotext, original_size_bytes: 21142595}, processed_at: ~U[2025-10-25 13:08:58Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/homesteadinghandbook.pdf", source_file: "homesteadinghandbook.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: i3325e.pdf
+[debug] QUERY OK source="documents" db=1.3ms idle=1572.9ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["i3325e.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process i3325e.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "I3325e", metadata: %{file_size: 9263599, page_count: 1, processed_at: ~U[2025-10-25 13:09:01Z], text_length: 1726245, extracted_at: ~U[2025-10-25 13:09:01Z], extraction_method: :pdftotext, original_size_bytes: 9263599}, processed_at: ~U[2025-10-25 13:09:01Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/i3325e.pdf", source_file: "i3325e.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: illustratedencyclopediaofcountryliving.pdf
+[debug] QUERY OK source="documents" db=0.4ms idle=1229.6ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["illustratedencyclopediaofcountryliving.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[error] PDF extraction failed
+[error] PDF extraction failed for illustratedencyclopediaofcountryliving.pdf: :file_too_large
+[error] Failed to process illustratedencyclopediaofcountryliving.pdf: :file_too_large
+[debug] Processing PDF: joyofbrewingcidermeadandherbalwine.pdf
+[debug] QUERY OK source="documents" db=0.3ms idle=1230.5ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["joyofbrewingcidermeadandherbalwine.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process joyofbrewingcidermeadandherbalwine.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Joyofbrewingcidermeadandherbalwine", metadata: %{file_size: 3204492, page_count: 1, processed_at: ~U[2025-10-25 13:09:02Z], text_length: 177162, extracted_at: ~U[2025-10-25 13:09:02Z], extraction_method: :pdftotext, original_size_bytes: 3204492}, processed_at: ~U[2025-10-25 13:09:02Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/joyofbrewingcidermeadandherbalwine.pdf", source_file: "joyofbrewingcidermeadandherbalwine.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: littlebookofincrediblyusefulknots.pdf
+[debug] QUERY OK source="documents" db=0.5ms idle=728.7ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["littlebookofincrediblyusefulknots.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process littlebookofincrediblyusefulknots.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Littlebookofincrediblyusefulknots", metadata: %{file_size: 25348849, page_count: 1, processed_at: ~U[2025-10-25 13:09:05Z], text_length: 159979, extracted_at: ~U[2025-10-25 13:09:05Z], extraction_method: :pdftotext, original_size_bytes: 25348849}, processed_at: ~U[2025-10-25 13:09:05Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/littlebookofincrediblyusefulknots.pdf", source_file: "littlebookofincrediblyusefulknots.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[info] Processing file 25/45: masonjarcookbook.pdf
+[debug] Processing PDF: masonjarcookbook.pdf
+[debug] QUERY OK source="documents" db=1.3ms idle=289.3ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["masonjarcookbook.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process masonjarcookbook.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Masonjarcookbook", metadata: %{file_size: 9148077, page_count: 1, processed_at: ~U[2025-10-25 13:09:06Z], text_length: 136680, extracted_at: ~U[2025-10-25 13:09:06Z], extraction_method: :pdftotext, original_size_bytes: 9148077}, processed_at: ~U[2025-10-25 13:09:06Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/masonjarcookbook.pdf", source_file: "masonjarcookbook.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: maximizingyourminifarm.pdf
+[debug] QUERY OK source="documents" db=0.4ms idle=823.4ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["maximizingyourminifarm.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process maximizingyourminifarm.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Maximizingyourminifarm", metadata: %{file_size: 19055372, page_count: 1, processed_at: ~U[2025-10-25 13:09:07Z], text_length: 536808, extracted_at: ~U[2025-10-25 13:09:06Z], extraction_method: :pdftotext, original_size_bytes: 19055372}, processed_at: ~U[2025-10-25 13:09:07Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/maximizingyourminifarm.pdf", source_file: "maximizingyourminifarm.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: minifarmingbible.pdf
+[debug] QUERY OK source="documents" db=0.5ms idle=1697.5ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["minifarmingbible.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process minifarmingbible.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Minifarmingbible", metadata: %{file_size: 12271267, page_count: 1, processed_at: ~U[2025-10-25 13:09:07Z], text_length: 448726, extracted_at: ~U[2025-10-25 13:09:07Z], extraction_method: :pdftotext, original_size_bytes: 12271267}, processed_at: ~U[2025-10-25 13:09:07Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/minifarmingbible.pdf", source_file: "minifarmingbible.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: naturalsoapathome.pdf
+[debug] QUERY OK source="documents" db=0.5ms idle=724.8ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["naturalsoapathome.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process naturalsoapathome.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Naturalsoapathome", metadata: %{file_size: 4614685, page_count: 1, processed_at: ~U[2025-10-25 13:09:08Z], text_length: 130687, extracted_at: ~U[2025-10-25 13:09:08Z], extraction_method: :pdftotext, original_size_bytes: 4614685}, processed_at: ~U[2025-10-25 13:09:08Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/naturalsoapathome.pdf", source_file: "naturalsoapathome.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: organiccountryhomehandbook.pdf
+[debug] QUERY OK source="documents" db=0.4ms idle=702.1ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["organiccountryhomehandbook.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process organiccountryhomehandbook.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Organiccountryhomehandbook", metadata: %{file_size: 9716832, page_count: 1, processed_at: ~U[2025-10-25 13:09:09Z], text_length: 313720, extracted_at: ~U[2025-10-25 13:09:08Z], extraction_method: :pdftotext, original_size_bytes: 9716832}, processed_at: ~U[2025-10-25 13:09:09Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/organiccountryhomehandbook.pdf", source_file: "organiccountryhomehandbook.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[info] Processing file 30/45: orvisguidetobeginningflyfishing.pdf
+[debug] Processing PDF: orvisguidetobeginningflyfishing.pdf
+[debug] QUERY OK source="documents" db=1.1ms idle=1587.8ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["orvisguidetobeginningflyfishing.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process orvisguidetobeginningflyfishing.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Orvisguidetobeginningflyfishing", metadata: %{file_size: 8496579, page_count: 1, processed_at: ~U[2025-10-25 13:09:09Z], text_length: 206270, extracted_at: ~U[2025-10-25 13:09:09Z], extraction_method: :pdftotext, original_size_bytes: 8496579}, processed_at: ~U[2025-10-25 13:09:09Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/orvisguidetobeginningflyfishing.pdf", source_file: "orvisguidetobeginningflyfishing.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: plantsthatcankill.pdf
+[debug] QUERY OK source="documents" db=0.4ms idle=1997.7ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["plantsthatcankill.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process plantsthatcankill.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Plantsthatcankill", metadata: %{file_size: 11986708, page_count: 1, processed_at: ~U[2025-10-25 13:09:10Z], text_length: 123611, extracted_at: ~U[2025-10-25 13:09:10Z], extraction_method: :pdftotext, original_size_bytes: 11986708}, processed_at: ~U[2025-10-25 13:09:10Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/plantsthatcankill.pdf", source_file: "plantsthatcankill.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: plantsyoucantkill.pdf
+[debug] QUERY OK source="documents" db=0.4ms idle=1080.0ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["plantsyoucantkill.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process plantsyoucantkill.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Plantsyoucantkill", metadata: %{file_size: 17816280, page_count: 1, processed_at: ~U[2025-10-25 13:09:11Z], text_length: 137571, extracted_at: ~U[2025-10-25 13:09:11Z], extraction_method: :pdftotext, original_size_bytes: 17816280}, processed_at: ~U[2025-10-25 13:09:11Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/plantsyoucantkill.pdf", source_file: "plantsyoucantkill.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: pocketfishingbasicsguide.pdf
+[debug] QUERY OK source="documents" db=0.3ms idle=1686.0ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["pocketfishingbasicsguide.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process pocketfishingbasicsguide.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Pocketfishingbasicsguide", metadata: %{file_size: 24146940, page_count: 1, processed_at: ~U[2025-10-25 13:09:13Z], text_length: 196289, extracted_at: ~U[2025-10-25 13:09:13Z], extraction_method: :pdftotext, original_size_bytes: 24146940}, processed_at: ~U[2025-10-25 13:09:13Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/pocketfishingbasicsguide.pdf", source_file: "pocketfishingbasicsguide.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: pocketguidetooutdoorknots.pdf
+[debug] QUERY OK source="documents" db=0.3ms idle=1136.5ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["pocketguidetooutdoorknots.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process pocketguidetooutdoorknots.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Pocketguidetooutdoorknots", metadata: %{file_size: 17437961, page_count: 1, processed_at: ~U[2025-10-25 13:09:16Z], text_length: 196148, extracted_at: ~U[2025-10-25 13:09:16Z], extraction_method: :pdftotext, original_size_bytes: 17437961}, processed_at: ~U[2025-10-25 13:09:16Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/pocketguidetooutdoorknots.pdf", source_file: "pocketguidetooutdoorknots.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[info] Processing file 35/45: sasurbansurvivalhandbook.pdf
+[debug] Processing PDF: sasurbansurvivalhandbook.pdf
+[debug] QUERY OK source="documents" db=0.3ms idle=1847.3ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["sasurbansurvivalhandbook.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process sasurbansurvivalhandbook.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Sasurbansurvivalhandbook", metadata: %{file_size: 8240048, page_count: 1, processed_at: ~U[2025-10-25 13:09:19Z], text_length: 1270797, extracted_at: ~U[2025-10-25 13:09:18Z], extraction_method: :pdftotext, original_size_bytes: 8240048}, processed_at: ~U[2025-10-25 13:09:19Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/sasurbansurvivalhandbook.pdf", source_file: "sasurbansurvivalhandbook.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: shootersbibleguidetodeerhunting.pdf
+[debug] QUERY OK source="documents" db=0.4ms idle=1716.6ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["shootersbibleguidetodeerhunting.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process shootersbibleguidetodeerhunting.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Shootersbibleguidetodeerhunting", metadata: %{file_size: 19972909, page_count: 1, processed_at: ~U[2025-10-25 13:09:23Z], text_length: 549970, extracted_at: ~U[2025-10-25 13:09:23Z], extraction_method: :pdftotext, original_size_bytes: 19972909}, processed_at: ~U[2025-10-25 13:09:23Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/shootersbibleguidetodeerhunting.pdf", source_file: "shootersbibleguidetodeerhunting.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: survivalskillsofthenativeamericans.pdf
+[debug] QUERY OK source="documents" db=0.3ms idle=1375.9ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["survivalskillsofthenativeamericans.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process survivalskillsofthenativeamericans.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Survivalskillsofthenativeamericans", metadata: %{file_size: 5705641, page_count: 1, processed_at: ~U[2025-10-25 13:09:24Z], text_length: 194174, extracted_at: ~U[2025-10-25 13:09:24Z], extraction_method: :pdftotext, original_size_bytes: 5705641}, processed_at: ~U[2025-10-25 13:09:24Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/survivalskillsofthenativeamericans.pdf", source_file: "survivalskillsofthenativeamericans.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: toolschool.pdf
+[debug] QUERY OK source="documents" db=0.6ms idle=706.1ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["toolschool.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process toolschool.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Toolschool", metadata: %{file_size: 17535316, page_count: 1, processed_at: ~U[2025-10-25 13:09:24Z], text_length: 394280, extracted_at: ~U[2025-10-25 13:09:24Z], extraction_method: :pdftotext, original_size_bytes: 17535316}, processed_at: ~U[2025-10-25 13:09:24Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/toolschool.pdf", source_file: "toolschool.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: ultimateguidetohomebutchering.pdf
+[debug] QUERY OK source="documents" db=0.3ms idle=1361.1ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["ultimateguidetohomebutchering.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process ultimateguidetohomebutchering.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Ultimateguidetohomebutchering", metadata: %{file_size: 15169934, page_count: 1, processed_at: ~U[2025-10-25 13:09:25Z], text_length: 248540, extracted_at: ~U[2025-10-25 13:09:25Z], extraction_method: :pdftotext, original_size_bytes: 15169934}, processed_at: ~U[2025-10-25 13:09:25Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/ultimateguidetohomebutchering.pdf", source_file: "ultimateguidetohomebutchering.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[info] Processing file 40/45: ultimatesurvivalmedicineguide.pdf
+[debug] Processing PDF: ultimatesurvivalmedicineguide.pdf
+[debug] QUERY OK source="documents" db=0.5ms idle=866.9ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["ultimatesurvivalmedicineguide.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process ultimatesurvivalmedicineguide.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Ultimatesurvivalmedicineguide", metadata: %{file_size: 16524246, page_count: 1, processed_at: ~U[2025-10-25 13:09:26Z], text_length: 486800, extracted_at: ~U[2025-10-25 13:09:26Z], extraction_method: :pdftotext, original_size_bytes: 16524246}, processed_at: ~U[2025-10-25 13:09:26Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/ultimatesurvivalmedicineguide.pdf", source_file: "ultimatesurvivalmedicineguide.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: weckhomepreserving.pdf
+[debug] QUERY OK source="documents" db=0.5ms idle=859.6ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["weckhomepreserving.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process weckhomepreserving.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Weckhomepreserving", metadata: %{file_size: 9959177, page_count: 1, processed_at: ~U[2025-10-25 13:09:26Z], text_length: 178865, extracted_at: ~U[2025-10-25 13:09:26Z], extraction_method: :pdftotext, original_size_bytes: 9959177}, processed_at: ~U[2025-10-25 13:09:26Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/weckhomepreserving.pdf", source_file: "weckhomepreserving.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: wecksmall-batchpreserving.pdf
+[debug] QUERY OK source="documents" db=0.4ms idle=1213.7ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["wecksmall-batchpreserving.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process wecksmall-batchpreserving.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Wecksmall-batchpreserving", metadata: %{file_size: 12439605, page_count: 1, processed_at: ~U[2025-10-25 13:09:27Z], text_length: 184704, extracted_at: ~U[2025-10-25 13:09:27Z], extraction_method: :pdftotext, original_size_bytes: 12439605}, processed_at: ~U[2025-10-25 13:09:27Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/wecksmall-batchpreserving.pdf", source_file: "wecksmall-batchpreserving.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: wildernessguidetodutchovencooking.pdf
+[debug] QUERY OK source="documents" db=0.4ms idle=1654.3ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["wildernessguidetodutchovencooking.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process wildernessguidetodutchovencooking.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Wildernessguidetodutchovencooking", metadata: %{file_size: 6690906, page_count: 1, processed_at: ~U[2025-10-25 13:09:27Z], text_length: 125611, extracted_at: ~U[2025-10-25 13:09:27Z], extraction_method: :pdftotext, original_size_bytes: 6690906}, processed_at: ~U[2025-10-25 13:09:27Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/wildernessguidetodutchovencooking.pdf", source_file: "wildernessguidetodutchovencooking.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[debug] Processing PDF: wildgamecookbook.pdf
+[debug] QUERY OK source="documents" db=0.3ms idle=827.0ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["wildgamecookbook.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process wildgamecookbook.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Wildgamecookbook", metadata: %{file_size: 27994096, page_count: 1, processed_at: ~U[2025-10-25 13:09:29Z], text_length: 47981, extracted_at: ~U[2025-10-25 13:09:29Z], extraction_method: :pdftotext, original_size_bytes: 27994096}, processed_at: ~U[2025-10-25 13:09:29Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/wildgamecookbook.pdf", source_file: "wildgamecookbook.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+[info] Processing file 45/45: zerowaste.pdf
+[debug] Processing PDF: zerowaste.pdf
+[debug] QUERY OK source="documents" db=0.3ms idle=1034.9ms
+SELECT TRUE FROM "documents" AS d0 WHERE ((d0."source_file" = $1) AND NOT (d0."processed_at" IS NULL)) LIMIT 1 ["zerowaste.pdf"]
+[90m↳ GreenManTavern.Documents.process_single_pdf/4, at: lib/green_man_tavern/documents.ex:537[0m
+[info] Starting PDF extraction
+[debug] Attempting library-based extraction
+[debug] PDF library extraction error
+[warning] Library extraction failed, trying pdftotext fallback
+[debug] Attempting pdftotext extraction
+[info] PDF extraction successful
+[error] Failed to process zerowaste.pdf: #Ecto.Changeset<action: :insert, changes: %{title: "Zerowaste", metadata: %{file_size: 9023214, page_count: 1, processed_at: ~U[2025-10-25 13:09:30Z], text_length: 166173, extracted_at: ~U[2025-10-25 13:09:29Z], extraction_method: :pdftotext, original_size_bytes: 9023214}, processed_at: ~U[2025-10-25 13:09:30Z], file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/zerowaste.pdf", source_file: "zerowaste.pdf"}, errors: [metadata: {"missing required fields: category", []}], data: #GreenManTavern.Documents.Document<>, valid?: false, ...>
+✅ Processing Complete!
+
+📊 Summary:
+├─ Total Files: 45
+├─ Processed: 0
+├─ Skipped: 0
+├─ Failed: 45
+├─ Total Chunks: 0
+└─ Duration: 59 seconds
+
+
+[info] Processing complete: 0 processed, 45 failed
+❌ Failed Files:
+** (Protocol.UndefinedError) protocol String.Chars not implemented for type Ecto.Changeset (a struct). This protocol is implemented for the following type(s): Atom, BitString, Date, DateTime, Decimal, Float, Integer, List, MyXQL.Queries, MyXQL.Query, MyXQL.TextQueries, MyXQL.TextQuery, NaiveDateTime, Phoenix.LiveComponent.CID, Postgrex.Copy, Postgrex.Query, Time, URI, Version, Version.Requirement
+
+Got value:
+
+    #Ecto.Changeset<
+      action: :insert,
+      changes: %{
+        title: "1001gardeningtipsandtricks",
+        metadata: %{
+          file_size: 21045813,
+          page_count: 1,
+          processed_at: ~U[2025-10-25 13:08:33Z],
+          text_length: 187710,
+          extracted_at: ~U[2025-10-25 13:08:33Z],
+          extraction_method: :pdftotext,
+          original_size_bytes: 21045813
+        },
+        processed_at: ~U[2025-10-25 13:08:33Z],
+        file_path: "/home/jesse/Desktop/GreenMan_files/permaculture_PDFs/1001gardeningtipsandtricks.pdf",
+        source_file: "1001gardeningtipsandtricks.pdf"
+      },
+      errors: [metadata: {"missing required fields: category", []}],
+      data: #GreenManTavern.Documents.Document<>,
+      valid?: false,
+      ...
+    >
+
+    (elixir 1.18.2) lib/string/chars.ex:3: String.Chars.impl_for!/1
+    (elixir 1.18.2) lib/string/chars.ex:22: String.Chars.to_string/1
+    (green_man_tavern 0.1.0) lib/mix/tasks/documents.process_pdfs.ex:157: anonymous fn/1 in Mix.Tasks.Documents.ProcessPdfs.display_success_summary/1
+    (elixir 1.18.2) lib/enum.ex:987: Enum."-each/2-lists^foreach/1-0-"/2
+    (green_man_tavern 0.1.0) lib/mix/tasks/documents.process_pdfs.ex:156: Mix.Tasks.Documents.ProcessPdfs.display_success_summary/1
+    (mix 1.18.2) lib/mix/task.ex:495: anonymous fn/3 in Mix.Task.run_task/5
+    (mix 1.18.2) lib/mix/cli.ex:107: Mix.CLI.run_task/2
+    /home/jesse/.asdf/installs/elixir/1.18.2-otp-26/bin/mix:2: (file)
+    (elixir 1.18.2) lib/code.ex:1525: Code.require_file/2

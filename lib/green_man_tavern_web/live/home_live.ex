@@ -2,6 +2,8 @@ defmodule GreenManTavernWeb.HomeLive do
   use GreenManTavernWeb, :live_view
 
   alias GreenManTavern.Characters
+  alias GreenManTavern.AI.{ClaudeClient, CharacterContext}
+  alias GreenManTavern.Conversations
 
   @impl true
   def mount(_params, _session, socket) do
@@ -16,6 +18,7 @@ defmodule GreenManTavernWeb.HomeLive do
       |> assign(:character, nil)
       |> assign(:chat_messages, [])
       |> assign(:current_message, "")
+      |> assign(:is_loading, false)
 
     {:ok, socket}
   end
@@ -64,15 +67,50 @@ defmodule GreenManTavernWeb.HomeLive do
   end
 
   @impl true
-  def handle_event("send_message", %{}, socket) do
-    message = socket.assigns.current_message || ""
-
-    if String.trim(message) == "" do
+  def handle_event("send_message", %{"message" => message}, socket) do
+    character = socket.assigns[:character]
+    user_id = socket.assigns[:user_id]
+    
+    IO.puts("=== SEND MESSAGE EVENT ===")
+    IO.puts("Message: #{message}")
+    IO.puts("Character: #{inspect(character && character.name)}")
+    
+    if character && String.trim(message) != "" do
+      # Add user message
+      user_message = %{
+        id: System.unique_integer([:positive]),
+        type: :user,
+        content: message,
+        timestamp: DateTime.utc_now()
+      }
+      
+      new_messages = (socket.assigns[:chat_messages] || []) ++ [user_message]
+      
+      # Store in conversation history
+      if user_id do
+        Conversations.create_conversation_entry(%{
+          user_id: user_id,
+          character_id: character.id,
+          message_type: "user",
+          content: message,
+          timestamp: DateTime.utc_now()
+        })
+      end
+      
+      socket = 
+        socket
+        |> assign(:chat_messages, new_messages)
+        |> assign(:current_message, "")
+        |> assign(:is_loading, true)
+      
+      # Process with Claude
+      IO.puts("=== SENDING TO HANDLE_INFO ===")
+      send(self(), {:process_with_claude, user_id, character, message})
+      
       {:noreply, socket}
     else
-      IO.puts("=== SEND MESSAGE TRIGGERED (Button) ===")
-      IO.puts("Sending async message: #{message}")
-      send_message(socket, message)
+      IO.puts("=== MESSAGE REJECTED: No character or empty message ===")
+      {:noreply, socket}
     end
   end
 
@@ -81,117 +119,87 @@ defmodule GreenManTavernWeb.HomeLive do
     {:noreply, assign(socket, :current_message, message)}
   end
 
-  defp send_message(socket, message) when message in [nil, ""] do
-    {:noreply, socket}
-  end
-
-  defp send_message(socket, message) do
-    user_id = socket.assigns.user_id
-    character = socket.assigns.character
-
-    # Extract and store projects from user message
-    if user_id do
-      GreenManTavern.MindsDB.MemoryExtractor.extract_and_store_projects(user_id, message)
-    end
-
-    # Add user message to UI
-    user_message = %{
-      id: System.unique_integer([:positive]),
-      type: :user,
-      content: message,
-      timestamp: DateTime.utc_now()
-    }
-
-    new_messages = socket.assigns.chat_messages ++ [user_message]
-
-    # Update UI with user message and loading state
-    socket =
-      socket
-      |> assign(:chat_messages, new_messages)
-      |> assign(:current_message, "")
-      |> assign(:is_loading, true)
-
-    # Store user message in conversation history
-    if user_id do
-      GreenManTavern.Conversations.create_conversation_entry(%{
-        user_id: user_id,
-        character_id: character.id,
-        message_type: "user",
-        content: message,
-        timestamp: DateTime.utc_now()
-      })
-    end
-
-    # Send to MindsDB for processing
-    if user_id do
-      IO.puts("🎯 [1/4] SENDING ASYNC MESSAGE TO SELF: '#{message}'")
-      IO.puts("🎯 [2/4] Self PID: #{inspect(self())}")
-      send(self(), {:process_with_mindsdb, user_id, character, message})
-    end
-
-    {:noreply, socket}
-  end
-
   @impl true
-  def handle_info({:process_with_mindsdb, user_id, character, message}, socket) do
-    # Debug logging - handle_info called
-    IO.puts("🎯 [3/4] RECEIVED ASYNC MESSAGE: '#{message}'")
-    IO.puts("🎯 [4/4] Processing started for: '#{message}'")
-    IO.puts("=== HANDLE INFO CALLED ===")
-    IO.puts("Processing message: #{message}")
-
-    # Debug logging
-    IO.puts("=== PROCESSING MESSAGE ===")
-    IO.puts("User: #{user_id}, Character: #{character.name}")
-    IO.puts("Message: #{message}")
-
-    # Build context for MindsDB query
-    context = GreenManTavern.MindsDB.ContextBuilder.build_character_context(user_id, character.id)
-
-    # Debug logging before MindsDB call
-    IO.puts("=== CALLING MINDSDB ===")
-    IO.puts("Agent: #{character.mindsdb_agent_name}")
-
-    # Query MindsDB for character response
-    result = GreenManTavern.MindsDB.Client.query_agent(character.mindsdb_agent_name, message, context)
-
-    # Debug logging after MindsDB call
-    IO.puts("=== MINDSDB RESPONSE ===")
-    IO.puts("Result: #{inspect(result)}")
-
+  def handle_info({:process_with_claude, user_id, character, message}, socket) do
+    IO.puts("=== HANDLE_INFO CALLED IN HOMELIVE ===")
+    IO.puts("User: #{user_id}, Character: #{character.name}, Message: #{message}")
+    
+    # Search knowledge base
+    IO.puts("=== SEARCHING KNOWLEDGE BASE ===")
+    context = CharacterContext.search_knowledge_base(message, limit: 5)
+    IO.puts("=== CONTEXT RETRIEVED ===")
+    IO.puts(context)
+    
+    # Build system prompt
+    system_prompt = CharacterContext.build_system_prompt(character)
+    IO.puts("=== CALLING CLAUDE API ===")
+    
+    # Call Claude
+    result = ClaudeClient.chat(message, system_prompt, context)
+    IO.puts("=== CLAUDE RESULT: #{inspect(result)} ===")
+    
     case result do
       {:ok, response} ->
-
+        IO.puts("=== SUCCESS! Got response ===")
+        IO.puts("Current messages count: #{length(socket.assigns.chat_messages)}")
+        
         character_response = %{
           id: System.unique_integer([:positive]),
           type: :character,
           content: response,
           timestamp: DateTime.utc_now()
         }
-
+        
         new_messages = socket.assigns.chat_messages ++ [character_response]
-
-        # Store character response in conversation history
-        GreenManTavern.Conversations.create_conversation_entry(%{
-          user_id: user_id,
-          character_id: character.id,
-          message_type: "character",
-          content: response,
+        IO.puts("New messages count: #{length(new_messages)}")
+        IO.puts("New messages: #{inspect(new_messages, pretty: true, limit: :infinity)}")
+        
+        # Store in conversation history
+        if user_id do
+          Conversations.create_conversation_entry(%{
+            user_id: user_id,
+            character_id: character.id,
+            message_type: "character",
+            content: response,
+            timestamp: DateTime.utc_now()
+          })
+        end
+        
+        new_socket = 
+          socket
+          |> assign(:chat_messages, new_messages)
+          |> assign(:is_loading, false)
+          |> push_event("new-message", %{
+            message: %{
+              id: character_response.id,
+              type: "character",
+              content: response,
+              character_name: character.name,
+              timestamp: DateTime.to_iso8601(character_response.timestamp)
+            }
+          })
+        
+        IO.puts("Socket assigns chat_messages count: #{length(new_socket.assigns.chat_messages)}")
+        IO.puts("=== RETURNING SOCKET WITH #{length(new_socket.assigns.chat_messages)} MESSAGES ===")
+        
+        {:noreply, new_socket}
+         
+      {:error, reason} ->
+        IO.puts("=== ERROR: #{inspect(reason)} ===")
+        
+        error_message = %{
+          id: System.unique_integer([:positive]),
+          type: :error,
+          content: "Sorry, I had trouble responding. Error: #{inspect(reason)}",
           timestamp: DateTime.utc_now()
-        })
-
-        # Update trust level based on interaction
-        update_trust_level(user_id, character.id, message, response)
-
+        }
+        
+        new_messages = socket.assigns.chat_messages ++ [error_message]
+        
         {:noreply,
          socket
          |> assign(:chat_messages, new_messages)
          |> assign(:is_loading, false)}
     end
-  end
-
-  defp update_trust_level(_user_id, _character_id, _message, _response) do
-    # TODO: Implement trust level updates
-    :ok
   end
 end

@@ -77,6 +77,14 @@ config :logger, :default_formatter,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# PDF Processing Configuration
+# Settings for PDF text extraction and processing
+config :green_man_tavern, :pdf_processing,
+  temp_dir: System.tmp_dir(),
+  max_file_size_mb: 50,
+  timeout_seconds: 120,
+  pdftotext_path: "/usr/bin/pdftotext"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

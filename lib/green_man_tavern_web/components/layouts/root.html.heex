@@ -76,25 +76,35 @@
             }
           }
         });
+        // Add this to root.html.heex in the <script> section, right before the closing })();
 
-        // Handle character chat form submission
-        document.addEventListener('DOMContentLoaded', function() {
-          const chatForm = document.getElementById('character-chat-form');
-          if (chatForm) {
-            chatForm.addEventListener('submit', function(e) {
-              e.preventDefault();
-              const messageInput = chatForm.querySelector('input[name="message"]');
-              const message = messageInput.value.trim();
-              
-              if (message) {
-                console.log("Sending message to LiveView:", message);
-                // Send the message to the current LiveView
-                window.liveSocket.pushEvent("send_message", {message: message});
-                messageInput.value = '';
-              }
-            });
-          }
+        // Listen for new chat messages from LiveView
+        window.addEventListener("phx:new-message", (e) => {
+          const chatContainer = document.getElementById("chat-messages");
+          if (!chatContainer) return;
+          
+          const { message } = e.detail;
+          const messageDiv = document.createElement("div");
+          messageDiv.style.cssText = "margin-bottom: 8px; padding: 4px; border-left: 2px solid #2d7d2d;";
+          
+          messageDiv.innerHTML = `
+            <div style="font-weight: bold; font-size: 10px; color: #2d7d2d; margin-bottom: 2px;">${message.character_name}</div>
+            <div style="color: #333; white-space: pre-wrap;">${escapeHtml(message.content)}</div>
+          `;
+          
+          chatContainer.appendChild(messageDiv);
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+          
+          // Remove "Start a conversation" placeholder if it exists
+          const placeholder = chatContainer.querySelector('p[style*="font-style: italic"]');
+          if (placeholder) placeholder.remove();
         });
+
+        function escapeHtml(text) {
+          const div = document.createElement('div');
+          div.textContent = text;
+          return div.innerHTML;
+        }
       })();
     </script>
   </head>
@@ -221,7 +231,7 @@
                         </div>
                         
                         <!-- Chat input -->
-                        <form id="character-chat-form" style="display: flex; gap: 4px;">
+                        <form phx-submit="send_message" style="display: flex; gap: 4px;">
                           <input 
                             type="text" 
                             name="message"
@@ -231,9 +241,10 @@
                           />
                           <button 
                             type="submit"
+                            disabled={assigns[:is_loading]}
                             style="padding: 6px 12px; background: linear-gradient(180deg, #EFEFEF 0%, #D0D0D0 100%); border: 1px solid #CCC; font-size: 11px; cursor: pointer;"
                           >
-                            Send
+                            <%= if assigns[:is_loading], do: "Sending...", else: "Send" %>
                           </button>
                         </form>
                       </div>
