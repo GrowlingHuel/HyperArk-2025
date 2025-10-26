@@ -102,6 +102,14 @@ defmodule GreenManTavernWeb.HomeLive do
         |> assign(:chat_messages, new_messages)
         |> assign(:current_message, "")
         |> assign(:is_loading, true)
+        |> push_event("new-message", %{
+          message: %{
+            id: user_message.id,
+            type: "user",
+            content: message,
+            timestamp: DateTime.to_iso8601(user_message.timestamp)
+          }
+        })
       
       # Process with Claude
       IO.puts("=== SENDING TO HANDLE_INFO ===")
