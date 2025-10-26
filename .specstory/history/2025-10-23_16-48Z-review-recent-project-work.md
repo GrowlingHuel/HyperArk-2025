@@ -37258,3 +37258,714 @@ The Documents context now correctly processes PDFs from extraction through chunk
 
 ---
 
+_**User (2025-10-24 09:40Z)**_
+
+I have been working with Claude to fix up the API AI agent integration. We now have a functional chatbos for all the characters! And according to Claude, we no longer need MindsDB integration. However, as soon as I logged off from MindsDB, the chat integration failed! WITHOUT CREATING OR MODIFYING ANYTHING, can you please investigate the codebase and tell me whether we are still dependent on MindsDB integration for the character interaction to work?
+
+---
+
+_**Assistant (default)**_
+
+
+
+---
+
+
+Investigating the codebase for MindsDB dependencies in character interactions without modifying code.
+
+
+---
+
+Tool use: **grep**
+
+<details>
+<summary>Grep for "MindsDB" in "lib/green_man_tavern_web" • 8 matches</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `lib/green_man_tavern_web/live/living_web_live.ex` | `GreenManTavern.MindsDB.MemoryExtractor.extract_and_store_projects(user_id, message)` | L417 |
+| `lib/green_man_tavern_web/live/living_web_live.ex` | `# Send to MindsDB for processing` | L448 |
+| `lib/green_man_tavern_web/live/living_web_live.ex` | `# Build context for MindsDB query` | L471 |
+| `lib/green_man_tavern_web/live/living_web_live.ex` | `context = GreenManTavern.MindsDB.ContextBuilder.build_character_context(user_id, character.id)` | L472 |
+| `lib/green_man_tavern_web/live/living_web_live.ex` | `# Debug logging before MindsDB call` | L474 |
+| `lib/green_man_tavern_web/live/living_web_live.ex` | `# Query MindsDB for character response` | L478 |
+| `lib/green_man_tavern_web/live/living_web_live.ex` | `result = GreenManTavern.MindsDB.Client.query_agent(character.mindsdb_agent_name, message, context)` | L479 |
+| `lib/green_man_tavern_web/live/living_web_live.ex` | `# Debug logging after MindsDB call` | L481 |
+
+
+</details>
+
+---
+
+MindsDB references remain in the live views.
+
+
+---
+
+Tool use: **read_file**
+
+Read file: lib/green_man_tavern_web/live/home_live.ex
+
+---
+
+Checking how messages are sent in LivingWebLive:
+
+
+---
+
+Tool use: **read_file**
+
+Read file: lib/green_man_tavern_web/live/living_web_live.ex
+
+---
+
+Checking if there's a Claude-based implementation being used:
+
+
+---
+
+Tool use: **grep**
+
+<details>
+<summary>Grep for "ClaudeClient|CharacterContext" in "lib" • 10 matches</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `lib/green_man_tavern_web/live/home_live.ex` | `alias GreenManTavern.AI.\{ClaudeClient, CharacterContext\}` | L5 |
+| `lib/green_man_tavern_web/live/home_live.ex` | `context = CharacterContext.search_knowledge_base(message, limit: 5)` | L137 |
+| `lib/green_man_tavern_web/live/home_live.ex` | `system_prompt = CharacterContext.build_system_prompt(character)` | L142 |
+| `lib/green_man_tavern_web/live/home_live.ex` | `result = ClaudeClient.chat(message, system_prompt, context)` | L146 |
+| `lib/green_man_tavern/ai/claude_client.ex` | `defmodule GreenManTavern.AI.ClaudeClient do` | L1 |
+| `lib/green_man_tavern_web/live/character_live.ex` | `alias GreenManTavern.AI.\{ClaudeClient, CharacterContext\}` | L5 |
+| `lib/green_man_tavern_web/live/character_live.ex` | `context = CharacterContext.search_knowledge_base(message, limit: 5)` | L130 |
+| `lib/green_man_tavern_web/live/character_live.ex` | `system_prompt = CharacterContext.build_system_prompt(character)` | L133 |
+| `lib/green_man_tavern_web/live/character_live.ex` | `result = ClaudeClient.chat(message, system_prompt, context)` | L138 |
+| `lib/green_man_tavern/ai/character_context.ex` | `defmodule GreenManTavern.AI.CharacterContext do` | L1 |
+
+
+</details>
+
+---
+
+Checking which LiveView is currently active:
+
+
+---
+
+Tool use: **read_file**
+
+Read file: lib/green_man_tavern_web/router.ex
+
+---
+
+Findings: Both MindSDB and Claude are still in use. Checking LivingWebLive.
+
+
+---
+
+Tool use: **read_file**
+
+Read file: lib/green_man_tavern_web/live/living_web_live.ex
+
+---
+
+## Investigation report: MindsDB dependencies
+
+### Summary
+Yes. `LivingWebLive` still calls MindsDB via `GreenManTavern.MindsDB.Client.query_agent`, so shutdown will cause chat responses to fail.
+
+### Findings
+
+#### Active MindsDB usage
+- Module: `lib/green_man_tavern_web/live/living_web_live.ex` (lines 417, 448-453, 472-479)
+- Functions/events:
+  - `send_message/2` (lines 411-456) calls `GreenManTavern.MindsDB.MemoryExtractor.extract_and_store_projects/2` (line 417)
+  - `handle_info/2` (lines 459+) calls `GreenManTavern.MindsDB.Client.query_agent/3` for responses (line 479)
+
+#### Alternative implementation
+- Module: `lib/green_man_tavern_web/live/home_live.ex` (lines 5, 137, 142, 146)
+- Uses `GreenManTavern.AI.ClaudeClient`/`CharacterContext` instead of MindsDB; no dependency.
+
+### Why chats fail
+- `/living-web` uses `LivingWebLive`, which calls `GreenManTavern.MindsDB.Client.query_agent`. When MindsDB is offline, that call fails and no response is produced.
+
+### Recommendation
+- Short term: Use `HomeLive` (for `/`) since it uses Claude directly.
+- Long term: Update `LivingWebLive` to call `ClaudeClient` instead of MindsDB by reusing the approach in `HomeLive` (lines 136-146). This removes the MindsDB dependency for character responses.
+
+Should I update `LivingWebLive` to use the Claude implementation?
+
+---
+
+_**User (2025-10-24 09:40Z)**_
+
+If you can, YES PLEASE! But first create a rollback point here in case anything goes wrong
+
+---
+
+_**Assistant (default)**_
+
+
+
+---
+
+
+Saving a backup and switching `LivingWebLive` to Claude. Reading the current file to back up.
+
+
+---
+
+Tool use: **read_file**
+
+Read file: lib/green_man_tavern_web/live/living_web_live.ex
+
+---
+
+Saving a backup and switching to Claude.
+
+
+---
+
+Tool use: **run_terminal_cmd**
+
+```bash
+cp lib/green_man_tavern_web/live/living_web_live.ex lib/green_man_tavern_web/live/living_web_live.ex.backup
+```
+
+---
+
+Updating `LivingWebLive` to use Claude instead of MindsDB:
+
+
+---
+
+Tool use: **search_replace**
+
+
+<details><summary>Edit file: lib/green_man_tavern_web/live/living_web_live.ex</summary>
+
+**Chunk 1**
+Lines added: 2, lines removed: undefined
+
+```diff
+@@ -4,4 +4,6 @@
+    alias GreenManTavern.Systems
+    alias GreenManTavern.Characters
++   alias GreenManTavern.AI.{ClaudeClient, CharacterContext}
++   alias GreenManTavern.Conversations
+  
+  
+```
+
+</details>
+
+---
+
+Removing MindsDB usage and switching to Claude:
+
+
+---
+
+Tool use: **search_replace**
+
+
+<details><summary>Edit file: lib/green_man_tavern_web/live/living_web_live.ex</summary>
+
+**Chunk 1**
+Lines added: undefined, lines removed: 5
+
+```diff
+@@ -414,9 +414,4 @@
+      user_id = socket.assigns.user_id
+      character = socket.assigns.character
+- 
+-     # Extract and store projects from user message
+-     if user_id do
+-       GreenManTavern.MindsDB.MemoryExtractor.extract_and_store_projects(user_id, message)
+-     end
+  
+      # Add user message to UI
+```
+
+**Chunk 2**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -439,5 +434,5 @@
+      # Store user message in conversation history
+      if user_id do
+-       GreenManTavern.Conversations.create_conversation_entry(%{
++       Conversations.create_conversation_entry(%{
+          user_id: user_id,
+          character_id: character.id,
+```
+
+**Chunk 3**
+Lines added: 2, lines removed: 6
+
+```diff
+@@ -448,10 +443,6 @@
+      end
+  
+-     # Send to MindsDB for processing
+-     if user_id do
+-       IO.puts("🎯 [1/4] SENDING ASYNC MESSAGE TO SELF: '#{message}'")
+-       IO.puts("🎯 [2/4] Self PID: #{inspect(self())}")
+-       send(self(), {:process_with_mindsdb, user_id, character, message})
+-     end
++     # Send to Claude for processing
++     send(self(), {:process_with_claude, user_id, character, message})
+  
+      {:noreply, socket}
+```
+
+</details>
+
+---
+
+Replacing the old MindsDB handle_info with the new Claude implementation:
+
+
+---
+
+Tool use: **search_replace**
+
+
+<details><summary>Edit file: lib/green_man_tavern_web/live/living_web_live.ex</summary>
+
+**Chunk 1**
+Lines added: 20, lines removed: 27
+
+```diff
+@@ -450,33 +450,26 @@
+  
+    @impl true
+-   def handle_info({:process_with_mindsdb, user_id, character, message}, socket) do
+-     # Debug logging - handle_info called
+-     IO.puts("🎯 [3/4] RECEIVED ASYNC MESSAGE: '#{message}'")
+-     IO.puts("🎯 [4/4] Processing started for: '#{message}'")
+-     IO.puts("=== HANDLE INFO CALLED ===")
+-     IO.puts("Processing message: #{message}")
+- 
+-     # Debug logging
+-     IO.puts("=== PROCESSING MESSAGE ===")
+-     IO.puts("User: #{user_id}, Character: #{character.name}")
+-     IO.puts("Message: #{message}")
+- 
+-     # Build context for MindsDB query
+-     context = GreenManTavern.MindsDB.ContextBuilder.build_character_context(user_id, character.id)
+- 
+-     # Debug logging before MindsDB call
+-     IO.puts("=== CALLING MINDSDB ===")
+-     IO.puts("Agent: #{character.mindsdb_agent_name}")
+- 
+-     # Query MindsDB for character response
+-     result = GreenManTavern.MindsDB.Client.query_agent(character.mindsdb_agent_name, message, context)
+- 
+-     # Debug logging after MindsDB call
+-     IO.puts("=== MINDSDB RESPONSE ===")
+-     IO.puts("Result: #{inspect(result)}")
+- 
++   def handle_info({:process_with_claude, user_id, character, message}, socket) do
++     IO.puts("=== HANDLE_INFO CALLED IN LIVING WEB LIVE ===")
++     IO.puts("User: #{user_id}, Character: #{character.name}, Message: #{message}")
++     
++     # Search knowledge base
++     IO.puts("=== SEARCHING KNOWLEDGE BASE ===")
++     context = CharacterContext.search_knowledge_base(message, limit: 5)
++     IO.puts("=== CONTEXT RETRIEVED ===")
++     IO.puts(context)
++     
++     # Build system prompt
++     system_prompt = CharacterContext.build_system_prompt(character)
++     IO.puts("=== CALLING CLAUDE API ===")
++     
++     # Call Claude
++     result = ClaudeClient.chat(message, system_prompt, context)
++     IO.puts("=== CLAUDE RESULT: #{inspect(result)} ===")
++     
+      case result do
+        {:ok, response} ->
+- 
++         IO.puts("=== SUCCESS! Got response ===")
++         
+          character_response = %{
+            id: System.unique_integer([:positive]),
+```
+
+**Chunk 2**
+Lines added: 29, lines removed: 13
+
+```diff
+@@ -485,19 +478,35 @@
+            timestamp: DateTime.utc_now()
+          }
+- 
++         
+          new_messages = socket.assigns.chat_messages ++ [character_response]
+- 
++         
+          # Store character response in conversation history
+-         GreenManTavern.Conversations.create_conversation_entry(%{
+-           user_id: user_id,
+-           character_id: character.id,
+-           message_type: "character",
+-           content: response,
+-           timestamp: DateTime.utc_now()
+-         })
+- 
+-         # Update trust level based on interaction
+-         update_trust_level(user_id, character.id, message, response)
+- 
++         if user_id do
++           Conversations.create_conversation_entry(%{
++             user_id: user_id,
++             character_id: character.id,
++             message_type: "character",
++             content: response,
++             timestamp: DateTime.utc_now()
++           })
++         end
++         
++         {:noreply,
++          socket
++          |> assign(:chat_messages, new_messages)
++          |> assign(:is_loading, false)}
++          
++       {:error, reason} ->
++         IO.puts("=== ERROR: #{inspect(reason)} ===")
++         
++         error_message = %{
++           id: System.unique_integer([:positive]),
++           type: :error,
++           content: "Sorry, I had trouble responding. Error: #{inspect(reason)}",
++           timestamp: DateTime.utc_now()
++         }
++         
++         new_messages = socket.assigns.chat_messages ++ [error_message]
++         
+          {:noreply,
+           socket
+```
+
+</details>
+
+---
+
+Verifying compilation succeeds:
+
+
+---
+
+Tool use: **run_terminal_cmd**
+
+```bash
+mix compile
+```
+
+```
+    warning: unused import Phoenix.LiveView
+    │
+ 11 │   import Phoenix.LiveView, only: [push_navigate: 2]
+    │   ~
+    │
+    └─ lib/green_man_tavern_web/controllers/user_auth.ex:11:3
+
+    warning: unused import Phoenix.Token
+    │
+ 12 │   import Phoenix.Token
+    │   ~
+    │
+    └─ lib/green_man_tavern_web/controllers/user_auth.ex:12:3
+
+     warning: PDFExtractor.extract_text/1 is undefined (module PDFExtractor is not available or is yet to be defined). Did you mean:
+
+           * GreenManTavern.Knowledge.PDFExtractor.extract_text/1
+           * PdfExtractor.extract_text/1
+
+     │
+ 258 │       case PDF.extract_text(file_path) do
+     │                ~
+     │
+     └─ lib/green_man_tavern/knowledge/pdf_extractor.ex:258:16: GreenManTavern.Knowledge.PDFExtractor.perform_extraction/1
+
+     warning: PDFExtractor.extract_metadata/1 is undefined (module PDFExtractor is not available or is yet to be defined). Did you mean:
+
+           * GreenManTavern.Knowledge.PDFExtractor.extract_metadata/1
+           * PdfExtractor.extract_metadata/1
+
+     │
+ 282 │       case PDF.extract_metadata(file_path) do
+     │                ~
+     │
+     └─ lib/green_man_tavern/knowledge/pdf_extractor.ex:282:16: GreenManTavern.Knowledge.PDFExtractor.perform_metadata_extraction/1
+
+     warning: no route path for GreenManTavernWeb.Router matches ~p"/users/confirm/#{capture}"
+     │
+ 111 │             &url(~p"/users/confirm/#{&1}")
+     │                    ~
+     │
+     └─ lib/green_man_tavern_web/live/user_registration_live.ex:111: GreenManTavernWeb.UserRegistrationLive.handle_event/3
+
+    warning: no route path for GreenManTavernWeb.Router matches "/database"
+    │
+ 37 │         <.link navigate={~p"/database"} class="banner-menu-item">Database</.link>
+    │         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ lib/green_man_tavern_web/components/banner_menu_component.ex:37: GreenManTavernWeb.BannerMenuComponent.banner_menu/1
+
+    warning: no route path for GreenManTavernWeb.Router matches "/garden"
+    │
+ 38 │         <.link navigate={~p"/garden"} class="banner-menu-item">Garden</.link>
+    │         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ lib/green_man_tavern_web/components/banner_menu_component.ex:38: GreenManTavernWeb.BannerMenuComponent.banner_menu/1
+
+    warning: variable "agent_config" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 58 │       |> Enum.map(fn {agent_name, agent_config} ->
+    │                                   ~
+    │
+    └─ lib/green_man_tavern/mindsdb/agent_installer.ex:58:35: GreenManTavern.MindsDB.AgentInstaller.install_all/1
+
+     warning: function validate_metadata_structure/1 is unused
+     │
+ 113 │   defp validate_metadata_structure(metadata) do
+     │        ~
+     │
+     └─ lib/green_man_tavern/documents/document.ex:113:8: GreenManTavern.Documents.Document (module)
+
+     warning: variable "verbose" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 234 │     verbose = Keyword.get(opts, :verbose, false)
+     │     ~~~~~~~
+     │
+     └─ lib/mix/tasks/mindsdb.setup.ex:234:5: Mix.Tasks.Mindsdb.Setup.upload_knowledge/2
+
+     warning: variable "verbose" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 252 │     verbose = Keyword.get(opts, :verbose, false)
+     │     ~~~~~~~
+     │
+     └─ lib/mix/tasks/mindsdb.setup.ex:252:5: Mix.Tasks.Mindsdb.Setup.verify_setup/3
+
+     warning: the following clause will never match:
+
+         {:ok, results}
+
+     because it attempts to match on the result of:
+
+         install_agents(force: force, verbose: verbose)
+
+     which has type:
+
+         dynamic(:ok or {:error, binary()})
+
+     typing violation found at:
+     │
+ 127 │         {:ok, results} ->
+     │         ~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/mix/tasks/mindsdb.setup.ex:127: Mix.Tasks.Mindsdb.Setup.run/1
+
+     warning: the following clause will never match:
+
+         {:ok, results}
+
+     because it attempts to match on the result of:
+
+         GreenManTavern.MindsDB.AgentInstaller.verify_all()
+
+     which has type:
+
+         dynamic(:ok or {:error, binary()})
+
+     typing violation found at:
+     │
+ 260 │           {:ok, results} ->
+     │           ~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/mix/tasks/mindsdb.setup.ex:260: Mix.Tasks.Mindsdb.Setup.verify_setup/3
+
+     warning: incompatible types given to Kernel.map_size/1:
+
+         map_size(results)
+
+     given types:
+
+         -binary()-
+
+     but expected one of:
+
+         %{...}
+
+     where "results" was given the type:
+
+         # type: binary()
+         # from: lib/mix/tasks/mindsdb.setup.ex
+         {:error, results}
+
+     typing violation found at:
+     │
+ 272 │               total: map_size(results),
+     │                      ~
+     │
+     └─ lib/mix/tasks/mindsdb.setup.ex:272:22: Mix.Tasks.Mindsdb.Setup.verify_setup/3
+
+    warning: no route path for GreenManTavernWeb.Router matches ~p"/users/confirm/#{capture}"
+    │
+ 24 │             &url(~p"/users/confirm/#{&1}")
+    │                    ~
+    │
+    └─ lib/green_man_tavern_web/controllers/user_registration_controller.ex:24: GreenManTavernWeb.UserRegistrationController.create/2
+
+    warning: unused alias Document
+    │
+ 12 │   alias GreenManTavern.Documents.{Document, DocumentChunk}
+    │   ~
+    │
+    └─ lib/green_man_tavern/documents/search.ex:12:3
+
+     warning: the following clause will never match:
+
+         {:error, reason}
+
+     because it attempts to match on the result of:
+
+         GreenManTavern.MindsDB.HTTPClient.upload_file(file_path, metadata)
+
+     which has type:
+
+         dynamic({:ok, %{...}})
+
+     typing violation found at:
+     │
+ 437 │       {:error, reason} ->
+     │       ~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/green_man_tavern/mindsdb/knowledge_manager.ex:437: GreenManTavern.MindsDB.KnowledgeManager.upload_to_mindsdb/4
+
+    warning: no route path for GreenManTavernWeb.Router matches "/users/settings"
+    │
+ 22 │     |> put_session(:user_return_to, ~p"/users/settings")
+    │                                       ~
+    │
+    └─ lib/green_man_tavern_web/controllers/user_session_controller.ex:22: GreenManTavernWeb.UserSessionController.create/2
+
+     warning: function update_trust_level/4 is unused
+     │
+ 518 │   defp update_trust_level(_user_id, _character_id, _message, _response) do
+     │        ~
+     │
+     └─ lib/green_man_tavern_web/live/living_web_live.ex:518:8: GreenManTavernWeb.LivingWebLive (module)
+
+    warning: module attribute @temp_dir was set but never used
+    │
+ 46 │   @temp_dir Keyword.get(@config, :temp_dir, System.tmp_dir())
+    │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ lib/green_man_tavern/documents/pdf_processor.ex:46: GreenManTavern.Documents.PDFProcessor (module)
+
+warning: struct Task.TimeoutError is undefined (module Task.TimeoutError is not available or is yet to be defined)
+└─ lib/green_man_tavern/documents/pdf_processor.ex: GreenManTavern.Documents.PDFProcessor.extract_with_pdftotext/1
+
+     warning: :pdf.parse/1 is undefined (module :pdf is not available or is yet to be defined)
+     │
+ 167 │       case :pdf.parse(pdf_binary) do
+     │                 ~
+     │
+     └─ lib/green_man_tavern/documents/pdf_processor.ex:167:17: GreenManTavern.Documents.PDFProcessor.extract_with_library/1
+
+     warning: :pdf.get_page_count/1 is undefined (module :pdf is not available or is yet to be defined)
+     │
+ 206 │       {:ok, page_count} = :pdf.get_page_count(pdf_doc)
+     │                                ~
+     │
+     └─ lib/green_man_tavern/documents/pdf_processor.ex:206:32: GreenManTavern.Documents.PDFProcessor.extract_text_from_pages/1
+
+     warning: :pdf.get_page_text/2 is undefined (module :pdf is not available or is yet to be defined)
+     │
+ 210 │         case :pdf.get_page_text(pdf_doc, page_num) do
+     │                   ~
+     │
+     └─ lib/green_man_tavern/documents/pdf_processor.ex:210:19: GreenManTavern.Documents.PDFProcessor.extract_text_from_pages/1
+
+     warning: :pdf.get_page_text/2 is undefined (module :pdf is not available or is yet to be defined)
+     │
+ 219 │           case :pdf.get_page_text(pdf_doc, 1) do
+     │                     ~
+     │
+     └─ lib/green_man_tavern/documents/pdf_processor.ex:219:21: GreenManTavern.Documents.PDFProcessor.extract_text_from_pages/1
+
+
+```
+
+---
+
+Compilation succeeded. Summary:
+
+
+---
+
+Tool use: **todo_write**
+
+## Todo List
+
+- [x] Add PDF dependencies to mix.exs
+- [x] Create PDFProcessor module with extraction logic
+- [x] Add PDF processing configuration to config.exs
+- [x] Create directory structure for PDF processing
+- [x] Implement library-based extraction method
+- [x] Implement pdftotext fallback extraction method
+- [x] Handle edge cases and error conditions
+- [x] Create TextChunker module for optimal PDF content chunking
+- [x] Create batch processing pipeline for PDF directory processing
+- [x] Fix pattern matching error in extract_pdf_text function
+- [x] Migrate LivingWebLive from MindsDB to Claude
+
+---
+
+## Migration complete
+
+### Backup
+- Backup: `lib/green_man_tavern_web/live/living_web_live.ex.backup`
+
+### Changes
+1. Added Claude aliases:
+   - `alias GreenManTavern.AI.{ClaudeClient, CharacterContext}`
+   - `alias GreenManTavern.Conversations`
+2. Removed MindsDB dependencies in `send_message/2`:
+   - Removed `GreenManTavern.MindsDB.MemoryExtractor.extract_and_store_projects/2`
+   - Removed `GreenManTavern.MindsDB.Client.query_agent/3`
+   - Changed async message from `{:process_with_mindsdb, ...}` to `{:process_with_claude, ...}`
+3. Replaced `handle_info` function:
+   - From `{:process_with_mindsdb, ...}` to `{:process_with_claude, ...}`
+   - Uses `CharacterContext.search_knowledge_base/2`
+   - Uses `CharacterContext.build_system_prompt/1`
+   - Uses `ClaudeClient.chat/3`
+   - Removed `update_trust_level` call
+
+### Results
+- Chat now uses Claude via the knowledge base
+- No dependency on MindsDB for Living Web interactions
+- Consistent with HomeLive
+- Knowledge base search via `CharacterContext`
+- Character prompts via `CharacterContext.build_system_prompt`
+- Conversation history still stored
+
+### Rollback
+If issues arise, restore:
+```bash
+cp lib/green_man_tavern_web/live/living_web_live.ex.backup lib/green_man_tavern_web/live/living_web_live.ex
+```
+
+Chat interactions in Living Web should work without MindsDB.
+
+---
+
