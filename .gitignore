@@ -49,3 +49,10 @@ npm-debug.log
 mindsdb_backup_20251025.tar
 *.tar
 backups/
+/.elixir_ls/
+/.specstory/
+/files/
+batch_debug.log
+*.zip
+/1
+t 10 filenames
