@@ -46,6 +46,7 @@ defmodule GreenManTavern.Conversations do
   Creates a conversation entry for the given user.
 
   This function requires user_id to be present in attrs for security.
+  The user_id must match the authenticated user to prevent spoofing.
 
   ## Examples
 
@@ -55,11 +56,28 @@ defmodule GreenManTavern.Conversations do
       iex> create_conversation_entry(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
+  ## Security
+
+  This function requires user_id to be set in attrs. Callers should
+  explicitly set user_id from the authenticated user to prevent spoofing.
   """
   def create_conversation_entry(attrs \\ %{}) do
-    %ConversationHistory{}
-    |> ConversationHistory.changeset(attrs)
-    |> Repo.insert()
+    # Security: Ensure user_id is present and valid
+    case Map.get(attrs, :user_id) do
+      nil ->
+        # Create a changeset to get proper error handling
+        changeset = %ConversationHistory{} |> ConversationHistory.changeset(attrs)
+        {:error, %{changeset | errors: [{:user_id, {"is required for security", []}} | changeset.errors]}}
+      
+      user_id when is_integer(user_id) ->
+        %ConversationHistory{}
+        |> ConversationHistory.changeset(attrs)
+        |> Repo.insert()
+      
+      _ ->
+        changeset = %ConversationHistory{} |> ConversationHistory.changeset(attrs)
+        {:error, %{changeset | errors: [{:user_id, {"must be an integer", []}} | changeset.errors]}}
+    end
   end
 
   @doc """
