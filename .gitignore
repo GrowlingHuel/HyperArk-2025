@@ -56,3 +56,4 @@ batch_debug.log
 *.zip
 /1
 t 10 filenames
+.env

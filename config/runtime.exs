@@ -3,7 +3,7 @@ import Config
 # Load .env file in development for local environment variables
 if config_env() == :dev do
   env_file = Path.join(__DIR__, "..", ".env")
-  
+
   if File.exists?(env_file) do
     env_file
     |> File.read!()
@@ -20,12 +20,12 @@ if config_env() == :dev do
           # Remove quotes if present
           value = String.trim(value, "'") |> String.trim("\"")
           System.put_env(key, value)
-        
+
         _ ->
           :skip
       end
     end)
-    
+
     IO.puts("Loaded environment variables from .env")
   end
 end
