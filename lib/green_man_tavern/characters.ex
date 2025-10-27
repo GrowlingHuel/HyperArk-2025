@@ -1,6 +1,22 @@
 defmodule GreenManTavern.Characters do
   @moduledoc """
-  The Characters context.
+  The Characters context for managing AI character data and relationships.
+
+  This module provides functions for managing the seven seeker characters
+  (The Student, The Grandmother, The Farmer, The Robot, The Alchemist,
+  The Survivalist, and The Hobo) and their relationships with users.
+
+  ## Features
+
+  - Character data management (get, create, update, delete)
+  - User-character relationship tracking (trust levels, interactions)
+  - Slug generation for URL-friendly character names
+  - Trust system for character access control
+
+  ## Security
+
+  - All queries are properly scoped by user_id
+  - Trust level verification for character access
   """
 
   import Ecto.Query, warn: false
@@ -165,10 +181,22 @@ defmodule GreenManTavern.Characters do
   @doc """
   Gets or creates a user-character relationship.
 
+  Returns the existing relationship if found, otherwise creates a new one
+  with default trust level of 0.
+
+  ## Parameters
+
+  - `user_id` - The user's ID (integer, required)
+  - `character_id` - The character's ID (integer, required)
+
+  ## Returns
+
+  - `{:ok, %UserCharacter{}}` - The relationship struct
+
   ## Examples
 
       iex> get_or_create_user_character(1, 2)
-      {:ok, %UserCharacter{}}
+      {:ok, %UserCharacter{user_id: 1, character_id: 2, trust_level: 0}}
 
   """
   def get_or_create_user_character(user_id, character_id) do
@@ -179,12 +207,24 @@ defmodule GreenManTavern.Characters do
   end
 
   @doc """
-  Gets a user-character relationship.
+  Gets a user-character relationship by user and character IDs.
+
+  Returns the relationship if it exists, otherwise returns `nil`.
+
+  ## Parameters
+
+  - `user_id` - The user's ID (integer, required)
+  - `character_id` - The character's ID (integer, required)
+
+  ## Returns
+
+  - `%UserCharacter{}` - The relationship struct if found
+  - `nil` - If no relationship exists
 
   ## Examples
 
       iex> get_user_character(1, 2)
-      %UserCharacter{}
+      %UserCharacter{user_id: 1, character_id: 2, trust_level: 25}
 
       iex> get_user_character(1, 999)
       nil
@@ -234,12 +274,29 @@ defmodule GreenManTavern.Characters do
   end
 
   @doc """
-  Updates user's trust level with a character.
+  Updates a user's trust level with a character.
+
+  Gets or creates the user-character relationship, then increases
+  the trust level by the specified delta.
+
+  ## Parameters
+
+  - `user_id` - The user's ID (integer, required)
+  - `character_id` - The character's ID (integer, required)
+  - `trust_delta` - The amount to increase trust (positive number)
+
+  ## Returns
+
+  - `{:ok, %UserCharacter{}}` - Updated relationship
+  - `{:error, %Ecto.Changeset{}}` - If validation fails
 
   ## Examples
 
       iex> update_user_character_trust(1, 2, 5)
-      {:ok, %UserCharacter{}}
+      {:ok, %UserCharacter{trust_level: 30}}
+
+      iex> update_user_character_trust(1, 2, -10)
+      {:error, %Ecto.Changeset{}}
 
   """
   def update_user_character_trust(user_id, character_id, trust_delta) do

@@ -1,6 +1,24 @@
 defmodule GreenManTavern.Conversations do
   @moduledoc """
   The Conversations context for managing conversation history.
+
+  This module provides secure, user-scoped access to conversation history
+  between users and AI characters. All queries automatically filter by user_id
+  to prevent data leaks and ensure privacy.
+
+  ## Security
+
+  - All queries are scoped to the authenticated user's ID
+  - Ownership verification before update/delete operations
+  - User ID validation on create operations
+  - Data isolation between users
+
+  ## Features
+
+  - Store conversation entries (user messages and character responses)
+  - Retrieve conversation history with user/character scoping
+  - Support for trust level tracking
+  - Cleanup of old conversations
   """
 
   import Ecto.Query, warn: false
@@ -144,11 +162,27 @@ defmodule GreenManTavern.Conversations do
   end
 
   @doc """
-  Gets recent conversation between a user and character.
+  Gets recent conversation entries between a user and a character.
+
+  Returns the most recent conversation messages between a specific user
+  and character, ordered by most recent first.
+
+  ## Parameters
+
+  - `user_id` - The user's ID (integer, required)
+  - `character_id` - The character's ID (integer, required)
+  - `limit` - Maximum number of entries to return (default: 20)
+
+  ## Returns
+
+  List of `%ConversationHistory{}` structs ordered by `inserted_at` (descending).
 
   ## Examples
 
       iex> get_recent_conversation(1, 2, 10)
+      [%ConversationHistory{message_type: "character", ...}, ...]
+
+      iex> get_recent_conversation(1, 2)
       [%ConversationHistory{}, ...]
 
   """

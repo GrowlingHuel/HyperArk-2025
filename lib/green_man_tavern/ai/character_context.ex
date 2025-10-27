@@ -2,17 +2,41 @@ defmodule GreenManTavern.AI.CharacterContext do
   @moduledoc """
   Builds context and system prompts for character interactions.
 
-  This module creates the personality and knowledge context for each
-  character's conversations.
+  This module is responsible for creating the personality, knowledge,
+  and behavioral context for each character's AI-powered conversations.
+  It integrates character data with the knowledge base to provide rich,
+  contextually-aware interactions.
+
+  ## Features
+
+  - **System Prompts**: Creates detailed personality definitions for Claude
+  - **Knowledge Search**: Searches the PDF knowledge base for relevant context
+  - **Context Formatting**: Formats knowledge base results for Claude's use
   """
 
   alias GreenManTavern.Documents.Search
 
   @doc """
-  Build a system prompt for a character.
+  Builds a system prompt for a character to guide their AI conversations.
 
-  Creates a prompt that defines the character's personality, role,
-  and behavior in conversations.
+  Creates a comprehensive prompt that defines the character's personality,
+  role, focus area, and behavioral guidelines for Claude. This prompt
+  ensures consistent character behavior across all interactions.
+
+  ## Parameters
+
+  - `character` - A `%Character{}` struct with personality data
+
+  ## Returns
+
+  A string containing the system prompt for Claude.
+
+  ## Examples
+
+      iex> character = %Character{name: "The Grandmother", archetype: "Elder Wisdom", ...}
+      iex> CharacterContext.build_system_prompt(character)
+      "You are The Grandmother, Elder Wisdom.\\n\\nDESCRIPTION:\\n..."
+
   """
   def build_system_prompt(character) do
     personality = format_personality_traits(character.personality_traits)
@@ -46,9 +70,32 @@ defmodule GreenManTavern.AI.CharacterContext do
   end
 
   @doc """
-  Search the knowledge base and format context for a user's question.
+  Searches the knowledge base and formats context for a user's question.
 
-  Returns a formatted context string with relevant information from documents.
+  This function searches the PDF knowledge base using semantic search,
+  retrieves relevant document chunks, and formats them as context for
+  Claude. The knowledge base contains permaculture and sustainable
+  living information.
+
+  ## Parameters
+
+  - `query` - The user's question or message to search for
+  - `opts` - Keyword list of options
+    - `:limit` - Maximum number of chunks to return (default: 5)
+
+  ## Returns
+
+  A formatted context string with relevant information from the knowledge base.
+  Returns an empty string if no relevant content is found.
+
+  ## Examples
+
+      iex> CharacterContext.search_knowledge_base("How to build a compost bin?")
+      "Context from permaculture_guide.pdf:\\n\\nBuilding a compost bin requires..."
+
+      iex> CharacterContext.search_knowledge_base("unknown topic", limit: 10)
+      ""
+
   """
   def search_knowledge_base(query, opts \\ []) do
     limit = Keyword.get(opts, :limit, 5)
