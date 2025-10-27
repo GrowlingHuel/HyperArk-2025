@@ -2,7 +2,7 @@ import Config
 
 # Load .env file in development for local environment variables
 if config_env() == :dev do
-  env_file = Path.join(__DIR__, "..", ".env")
+  env_file = Path.join([__DIR__, "..", ".env"])
 
   if File.exists?(env_file) do
     env_file
