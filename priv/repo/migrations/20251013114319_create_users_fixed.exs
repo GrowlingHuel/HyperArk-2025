@@ -9,7 +9,8 @@ defmodule GreenManTavern.Repo.Migrations.CreateUsersFixed do
       add :profile_data, :map, default: %{}
       add :xp, :integer, default: 0
       add :level, :integer, default: 1
-      add :primary_character_id, :integer  # Will add foreign key constraint later
+      # Will add foreign key constraint later
+      add :primary_character_id, :integer
 
       # Manual timestamp fields using PostgreSQL's NOW() to avoid Elixir 1.18.2 bug
       add :inserted_at, :naive_datetime, null: false, default: fragment("NOW()")

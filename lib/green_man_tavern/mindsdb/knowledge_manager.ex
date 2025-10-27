@@ -1,5 +1,6 @@
 defmodule GreenManTavern.MindsDB.KnowledgeManager do
-alias GreenManTavern.MindsDB.HTTPClient
+  alias GreenManTavern.MindsDB.HTTPClient
+
   @moduledoc """
   Handles uploading and managing knowledge base documents in MindsDB.
 
@@ -91,7 +92,6 @@ alias GreenManTavern.MindsDB.HTTPClient
     with :ok <- validate_upload_file(file_path, force),
          {:ok, extraction_result} <- PDFExtractor.extract_with_chunks(file_path, chunk_size),
          {:ok, upload_result} <- upload_to_mindsdb(extraction_result, file_path, category, tags) do
-
       Logger.info("Successfully uploaded PDF",
         file_path: file_path,
         chunks: extraction_result.chunk_count,
@@ -105,6 +105,7 @@ alias GreenManTavern.MindsDB.HTTPClient
           file_path: file_path,
           error: error
         )
+
         {:error, error}
     end
   end
@@ -159,7 +160,6 @@ alias GreenManTavern.MindsDB.HTTPClient
 
     with :ok <- validate_directory(dir_path),
          pdf_files <- find_pdf_files(dir_path, recursive) do
-
       if Enum.empty?(pdf_files) do
         Logger.warning("No PDF files found", dir_path: dir_path)
         {:ok, create_empty_summary()}
@@ -170,10 +170,10 @@ alias GreenManTavern.MindsDB.HTTPClient
         upload_results =
           pdf_files
           |> Task.async_stream(
-               &upload_single_file(&1, category, skip_existing, chunk_size, force),
-               max_concurrency: max_concurrent,
-               timeout: @upload_timeout
-             )
+            &upload_single_file(&1, category, skip_existing, chunk_size, force),
+            max_concurrency: max_concurrent,
+            timeout: @upload_timeout
+          )
           |> Enum.map(fn
             {:ok, result} -> result
             {:exit, reason} -> {:failed, "unknown", reason}
@@ -197,6 +197,7 @@ alias GreenManTavern.MindsDB.HTTPClient
           dir_path: dir_path,
           error: error
         )
+
         {:error, error}
     end
   end
@@ -259,11 +260,12 @@ alias GreenManTavern.MindsDB.HTTPClient
       {:ok, files} ->
         files
         |> Enum.any?(fn file ->
-             file_name = file["name"] || ""
-             file_name == filename ||
-             String.ends_with?(file_name, filename) ||
-             String.ends_with?(filename, file_name)
-           end)
+          file_name = file["name"] || ""
+
+          file_name == filename ||
+            String.ends_with?(file_name, filename) ||
+            String.ends_with?(filename, file_name)
+        end)
 
       _ ->
         Logger.warning("Could not check file existence", filename: filename)
@@ -477,7 +479,8 @@ alias GreenManTavern.MindsDB.HTTPClient
       skipped: skipped,
       failed: failed,
       total: length(all_files),
-      success_rate: if(length(all_files) > 0, do: Float.round(uploaded / length(all_files) * 100, 2), else: 0),
+      success_rate:
+        if(length(all_files) > 0, do: Float.round(uploaded / length(all_files) * 100, 2), else: 0),
       failed_files: failed_files,
       results: results
     }
@@ -495,8 +498,8 @@ alias GreenManTavern.MindsDB.HTTPClient
     files
     |> Enum.map(fn file ->
       file["metadata"]["category"] ||
-      file["category"] ||
-      "unknown"
+        file["category"] ||
+        "unknown"
     end)
     |> Enum.frequencies()
   end
@@ -521,8 +524,8 @@ alias GreenManTavern.MindsDB.HTTPClient
     files
     |> Enum.map(fn file ->
       file["uploaded_at"] ||
-      file["metadata"]["extracted_at"] ||
-      "unknown"
+        file["metadata"]["extracted_at"] ||
+        "unknown"
     end)
     |> Enum.frequencies()
   end

@@ -102,6 +102,7 @@ defmodule GreenManTavern.Documents.DocumentChunk do
         case validate_metadata_structure(metadata) do
           :ok ->
             changeset
+
           {:error, reason} ->
             add_error(changeset, :metadata, reason)
         end

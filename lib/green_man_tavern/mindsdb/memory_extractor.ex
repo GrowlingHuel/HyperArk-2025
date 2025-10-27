@@ -27,8 +27,8 @@ defmodule GreenManTavern.MindsDB.MemoryExtractor do
   def get_active_projects(user_id) do
     query =
       from up in UserProject,
-      where: up.user_id == ^user_id and up.status != "abandoned",
-      order_by: [desc: up.mentioned_at]
+        where: up.user_id == ^user_id and up.status != "abandoned",
+        order_by: [desc: up.mentioned_at]
 
     Repo.all(query)
   end
@@ -44,55 +44,66 @@ defmodule GreenManTavern.MindsDB.MemoryExtractor do
     projects = []
 
     # Pattern matching as specified in architecture file
-    projects = if String.contains?(text, "want to") or String.contains?(text, "would like to") do
-      extract_from_pattern(text, ~r/(?:want to|would like to) (\w+)/, "desire", 0.7) ++ projects
-    else
-      projects
-    end
+    projects =
+      if String.contains?(text, "want to") or String.contains?(text, "would like to") do
+        extract_from_pattern(text, ~r/(?:want to|would like to) (\w+)/, "desire", 0.7) ++ projects
+      else
+        projects
+      end
 
-    projects = if String.contains?(text, "planning to") or String.contains?(text, "going to") do
-      extract_from_pattern(text, ~r/(?:planning to|going to) (\w+)/, "planning", 0.8) ++ projects
-    else
-      projects
-    end
+    projects =
+      if String.contains?(text, "planning to") or String.contains?(text, "going to") do
+        extract_from_pattern(text, ~r/(?:planning to|going to) (\w+)/, "planning", 0.8) ++
+          projects
+      else
+        projects
+      end
 
-    projects = if String.contains?(text, "started") or String.contains?(text, "beginning") do
-      extract_from_pattern(text, ~r/(?:started|beginning) (\w+)/, "in_progress", 0.9) ++ projects
-    else
-      projects
-    end
+    projects =
+      if String.contains?(text, "started") or String.contains?(text, "beginning") do
+        extract_from_pattern(text, ~r/(?:started|beginning) (\w+)/, "in_progress", 0.9) ++
+          projects
+      else
+        projects
+      end
 
-    projects = if String.contains?(text, "have") and (String.contains?(text, "chickens") or
-                String.contains?(text, "garden") or String.contains?(text, "compost")) do
-      extract_from_pattern(text, ~r/have (?:a )?(\w+)/, "completed", 1.0) ++ projects
-    else
-      projects
-    end
+    projects =
+      if String.contains?(text, "have") and
+           (String.contains?(text, "chickens") or
+              String.contains?(text, "garden") or String.contains?(text, "compost")) do
+        extract_from_pattern(text, ~r/have (?:a )?(\w+)/, "completed", 1.0) ++ projects
+      else
+        projects
+      end
 
     # Specific project type detection
-    projects = if String.contains?(text, "chicken") do
-      [{"chickens", infer_status(text), infer_confidence(text)} | projects]
-    else
-      projects
-    end
+    projects =
+      if String.contains?(text, "chicken") do
+        [{"chickens", infer_status(text), infer_confidence(text)} | projects]
+      else
+        projects
+      end
 
-    projects = if String.contains?(text, "compost") do
-      [{"composting", infer_status(text), infer_confidence(text)} | projects]
-    else
-      projects
-    end
+    projects =
+      if String.contains?(text, "compost") do
+        [{"composting", infer_status(text), infer_confidence(text)} | projects]
+      else
+        projects
+      end
 
-    projects = if String.contains?(text, "garden") or String.contains?(text, "plant") do
-      [{"garden", infer_status(text), infer_confidence(text)} | projects]
-    else
-      projects
-    end
+    projects =
+      if String.contains?(text, "garden") or String.contains?(text, "plant") do
+        [{"garden", infer_status(text), infer_confidence(text)} | projects]
+      else
+        projects
+      end
 
-    projects = if String.contains?(text, "herb") do
-      [{"herb_garden", infer_status(text), infer_confidence(text)} | projects]
-    else
-      projects
-    end
+    projects =
+      if String.contains?(text, "herb") do
+        [{"herb_garden", infer_status(text), infer_confidence(text)} | projects]
+      else
+        projects
+      end
 
     projects
   end
@@ -152,10 +163,15 @@ defmodule GreenManTavern.MindsDB.MemoryExtractor do
     else
       # Create new project
       %UserProject{}
-      |> UserProject.changeset(Map.merge(%{
-        user_id: user_id,
-        project_type: project_type
-      }, changeset_data))
+      |> UserProject.changeset(
+        Map.merge(
+          %{
+            user_id: user_id,
+            project_type: project_type
+          },
+          changeset_data
+        )
+      )
       |> Repo.insert()
     end
   end

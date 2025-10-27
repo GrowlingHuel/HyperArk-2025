@@ -19,6 +19,7 @@ defmodule GreenManTavernWeb.HomeLive do
       |> assign(:chat_messages, [])
       |> assign(:current_message, "")
       |> assign(:is_loading, false)
+      |> assign(:characters, Characters.list_characters())
 
     {:ok, socket}
   end
@@ -26,25 +27,29 @@ defmodule GreenManTavernWeb.HomeLive do
   @impl true
   def handle_params(params, _url, socket) do
     # Handle character parameter from URL
-    character = case params["character"] do
-      nil -> nil
-      character_id ->
-        try do
-          Characters.get_character!(String.to_integer(character_id))
-        rescue
-          _ -> nil
-        end
-    end
+    character =
+      case params["character"] do
+        nil ->
+          nil
 
-    socket = if character do
-      socket
-      |> assign(:character, character)
-      |> assign(:left_window_title, "Tavern - #{character.name}")
-    else
-      socket
-      |> assign(:character, nil)
-      |> assign(:left_window_title, "Green Man Tavern")
-    end
+        character_id ->
+          try do
+            Characters.get_character!(String.to_integer(character_id))
+          rescue
+            _ -> nil
+          end
+      end
+
+    socket =
+      if character do
+        socket
+        |> assign(:character, character)
+        |> assign(:left_window_title, "Tavern - #{character.name}")
+      else
+        socket
+        |> assign(:character, nil)
+        |> assign(:left_window_title, "Green Man Tavern")
+      end
 
     {:noreply, socket}
   end
@@ -56,7 +61,8 @@ defmodule GreenManTavernWeb.HomeLive do
     character = Characters.get_character!(character_id)
     IO.inspect(character.name, label: "HOME LIVE - CHARACTER SELECTION - NAME")
 
-    socket = socket
+    socket =
+      socket
       |> assign(:character, character)
       |> assign(:left_window_title, "Tavern - #{character.name}")
       |> assign(:chat_messages, [])
@@ -70,11 +76,11 @@ defmodule GreenManTavernWeb.HomeLive do
   def handle_event("send_message", %{"message" => message}, socket) do
     character = socket.assigns[:character]
     user_id = socket.assigns[:user_id]
-    
+
     IO.puts("=== SEND MESSAGE EVENT ===")
     IO.puts("Message: #{message}")
     IO.puts("Character: #{inspect(character && character.name)}")
-    
+
     if character && String.trim(message) != "" do
       # Add user message
       user_message = %{
@@ -83,21 +89,20 @@ defmodule GreenManTavernWeb.HomeLive do
         content: message,
         timestamp: DateTime.utc_now()
       }
-      
+
       new_messages = (socket.assigns[:chat_messages] || []) ++ [user_message]
-      
+
       # Store in conversation history
       if user_id do
         Conversations.create_conversation_entry(%{
           user_id: user_id,
           character_id: character.id,
           message_type: "user",
-          content: message,
-          timestamp: DateTime.utc_now()
+          message_content: message
         })
       end
-      
-      socket = 
+
+      socket =
         socket
         |> assign(:chat_messages, new_messages)
         |> assign(:current_message, "")
@@ -110,11 +115,11 @@ defmodule GreenManTavernWeb.HomeLive do
             timestamp: DateTime.to_iso8601(user_message.timestamp)
           }
         })
-      
+
       # Process with Claude
       IO.puts("=== SENDING TO HANDLE_INFO ===")
       send(self(), {:process_with_claude, user_id, character, message})
-      
+
       {:noreply, socket}
     else
       IO.puts("=== MESSAGE REJECTED: No character or empty message ===")
@@ -131,49 +136,52 @@ defmodule GreenManTavernWeb.HomeLive do
   def handle_info({:process_with_claude, user_id, character, message}, socket) do
     IO.puts("=== HANDLE_INFO CALLED IN HOMELIVE ===")
     IO.puts("User: #{user_id}, Character: #{character.name}, Message: #{message}")
-    
+
+    # CRITICAL: Verify character exists on socket
+    IO.puts("=== CHECKING SOCKET CHARACTER ===")
+    IO.puts("Socket character: #{inspect(socket.assigns.character)}")
+
     # Search knowledge base
     IO.puts("=== SEARCHING KNOWLEDGE BASE ===")
     context = CharacterContext.search_knowledge_base(message, limit: 5)
     IO.puts("=== CONTEXT RETRIEVED ===")
     IO.puts(context)
-    
+
     # Build system prompt
     system_prompt = CharacterContext.build_system_prompt(character)
     IO.puts("=== CALLING CLAUDE API ===")
-    
+
     # Call Claude
     result = ClaudeClient.chat(message, system_prompt, context)
     IO.puts("=== CLAUDE RESULT: #{inspect(result)} ===")
-    
+
     case result do
       {:ok, response} ->
         IO.puts("=== SUCCESS! Got response ===")
         IO.puts("Current messages count: #{length(socket.assigns.chat_messages)}")
-        
+        IO.puts("Current socket character: #{inspect(socket.assigns.character)}")
+
         character_response = %{
           id: System.unique_integer([:positive]),
           type: :character,
           content: response,
           timestamp: DateTime.utc_now()
         }
-        
+
         new_messages = socket.assigns.chat_messages ++ [character_response]
         IO.puts("New messages count: #{length(new_messages)}")
-        IO.puts("New messages: #{inspect(new_messages, pretty: true, limit: :infinity)}")
-        
+
         # Store in conversation history
         if user_id do
           Conversations.create_conversation_entry(%{
             user_id: user_id,
             character_id: character.id,
             message_type: "character",
-            content: response,
-            timestamp: DateTime.utc_now()
+            message_content: response
           })
         end
-        
-        new_socket = 
+
+        new_socket =
           socket
           |> assign(:chat_messages, new_messages)
           |> assign(:is_loading, false)
@@ -186,24 +194,24 @@ defmodule GreenManTavernWeb.HomeLive do
               timestamp: DateTime.to_iso8601(character_response.timestamp)
             }
           })
-        
-        IO.puts("Socket assigns chat_messages count: #{length(new_socket.assigns.chat_messages)}")
-        IO.puts("=== RETURNING SOCKET WITH #{length(new_socket.assigns.chat_messages)} MESSAGES ===")
-        
+
+        IO.puts("New socket character: #{inspect(new_socket.assigns.character)}")
+        IO.puts("=== RETURNING SOCKET ===")
+
         {:noreply, new_socket}
-         
+
       {:error, reason} ->
         IO.puts("=== ERROR: #{inspect(reason)} ===")
-        
+
         error_message = %{
           id: System.unique_integer([:positive]),
           type: :error,
           content: "Sorry, I had trouble responding. Error: #{inspect(reason)}",
           timestamp: DateTime.utc_now()
         }
-        
+
         new_messages = socket.assigns.chat_messages ++ [error_message]
-        
+
         {:noreply,
          socket
          |> assign(:chat_messages, new_messages)

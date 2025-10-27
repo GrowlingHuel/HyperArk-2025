@@ -10,7 +10,6 @@ defmodule GreenManTavern.Application do
     children = [
       GreenManTavernWeb.Telemetry,
       GreenManTavern.Repo,
-      {GreenManTavern.MindsDB.Connection, []},
       {DNSCluster, query: Application.get_env(:green_man_tavern, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: GreenManTavern.PubSub},
       # Start a worker by calling: GreenManTavern.Worker.start_link(arg)

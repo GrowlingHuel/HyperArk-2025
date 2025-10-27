@@ -19,7 +19,7 @@ defmodule GreenManTavernWeb.Components.MacUI.Card do
         </div>
       <% end %>
       <div>
-        <%= render_slot(@inner_block) %>
+        {render_slot(@inner_block)}
       </div>
     </div>
     """

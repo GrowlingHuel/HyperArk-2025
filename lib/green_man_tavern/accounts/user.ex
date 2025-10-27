@@ -128,7 +128,8 @@ defmodule GreenManTavern.Accounts.User do
 
     if hash_password? && password && changeset.valid? do
       # If using Bcrypt, then further validate it is at most 72 bytes long
-      if byte_size(password) > 72, do: raise(ArgumentError, "password should be at most 72 bytes long")
+      if byte_size(password) > 72,
+        do: raise(ArgumentError, "password should be at most 72 bytes long")
 
       changeset
       # If using Bcrypt, the `password` value will be hashed by `validate_password/2`

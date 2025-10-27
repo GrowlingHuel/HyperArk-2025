@@ -74,19 +74,20 @@ defmodule Mix.Tasks.Mindsdb.Setup do
   @impl Mix.Task
   def run(args) do
     # Parse command line options
-    {opts, _, _} = OptionParser.parse(args,
-      switches: [
-        skip_agents: :boolean,
-        skip_knowledge: :boolean,
-        pdf_dir: :string,
-        force: :boolean,
-        verbose: :boolean
-      ],
-      aliases: [
-        f: :force,
-        v: :verbose
-      ]
-    )
+    {opts, _, _} =
+      OptionParser.parse(args,
+        switches: [
+          skip_agents: :boolean,
+          skip_knowledge: :boolean,
+          pdf_dir: :string,
+          force: :boolean,
+          verbose: :boolean
+        ],
+        aliases: [
+          f: :force,
+          v: :verbose
+        ]
+      )
 
     skip_agents = Keyword.get(opts, :skip_agents, false)
     skip_knowledge = Keyword.get(opts, :skip_knowledge, false)
@@ -104,13 +105,16 @@ defmodule Mix.Tasks.Mindsdb.Setup do
 
     # Step 1: Check MindsDB connectivity
     IO.puts("🔍 [1/6] Checking MindsDB connectivity...")
+
     case check_connectivity() do
       {:ok, :connected} ->
         IO.puts("   ✅ MindsDB is connected")
+
         if verbose do
           IO.puts("   📡 HTTP API: http://localhost:48334")
           IO.puts("   🗄️  MySQL API: localhost:48335")
         end
+
       {:error, reason} ->
         IO.puts("   ❌ MindsDB connection failed: #{inspect(reason)}")
         IO.puts("   💡 Make sure MindsDB is running on ports 48334/48335")
@@ -123,14 +127,17 @@ defmodule Mix.Tasks.Mindsdb.Setup do
       IO.puts("⏭️  [2/6] Skipping agent installation")
     else
       IO.puts("🤖 [2/6] Installing character agents...")
+
       case install_agents(force: force, verbose: verbose) do
         {:ok, results} ->
           installed_count = Enum.count(results, fn {_, status} -> status == :installed end)
           skipped_count = Enum.count(results, fn {_, status} -> status == :skipped end)
           IO.puts("   ✅ Agents installed: #{installed_count} new, #{skipped_count} existing")
+
           if verbose do
             display_agent_results(results)
           end
+
         {:error, results} ->
           IO.puts("   ❌ Agent installation had errors")
           display_agent_results(results)
@@ -143,19 +150,26 @@ defmodule Mix.Tasks.Mindsdb.Setup do
       IO.puts("⏭️  [3/6] Skipping knowledge base upload")
     else
       IO.puts("📚 [3/6] Uploading knowledge base...")
+
       case upload_knowledge(pdf_dir, verbose: verbose) do
         {:ok, summary} ->
-          IO.puts("   ✅ Knowledge base uploaded: #{summary.uploaded} files, #{summary.skipped} skipped")
+          IO.puts(
+            "   ✅ Knowledge base uploaded: #{summary.uploaded} files, #{summary.skipped} skipped"
+          )
+
           if verbose do
             IO.puts("   📊 Total files processed: #{summary.total}")
             IO.puts("   📈 Success rate: #{summary.success_rate}%")
+
             if summary.failed > 0 do
               IO.puts("   ⚠️  Failed uploads: #{summary.failed}")
+
               Enum.each(summary.failed_files, fn {filename, reason} ->
                 IO.puts("     - #{filename}: #{inspect(reason)}")
               end)
             end
           end
+
         {:error, reason} ->
           IO.puts("   ❌ Knowledge base upload failed: #{inspect(reason)}")
           exit({:shutdown, 3})
@@ -164,10 +178,12 @@ defmodule Mix.Tasks.Mindsdb.Setup do
 
     # Step 4: Verify setup
     IO.puts("✅ [4/6] Verifying setup...")
+
     case verify_setup(skip_agents, skip_knowledge, verbose: verbose) do
       {:ok, verification} ->
         IO.puts("   ✅ Setup verification passed")
         display_verification(verification, verbose)
+
       {:error, issues} ->
         IO.puts("   ⚠️  Setup verification found issues")
         display_issues(issues)
@@ -176,9 +192,11 @@ defmodule Mix.Tasks.Mindsdb.Setup do
 
     # Step 5: Create backup
     IO.puts("💾 [5/6] Creating backup...")
+
     case create_backup(verbose: verbose) do
       {:ok, backup_path} ->
         IO.puts("   ✅ Backup created: #{backup_path}")
+
       {:error, reason} ->
         IO.puts("   ⚠️  Backup creation failed: #{inspect(reason)}")
         IO.puts("   💡 This is not critical, setup can continue")
@@ -219,6 +237,7 @@ defmodule Mix.Tasks.Mindsdb.Setup do
       case Connection.get_status() do
         {:error, :disconnected} ->
           {:error, :not_connected}
+
         other ->
           {:error, other}
       end
@@ -250,7 +269,10 @@ defmodule Mix.Tasks.Mindsdb.Setup do
 
   defp verify_setup(skip_agents, skip_knowledge, opts) do
     verbose = Keyword.get(opts, :verbose, false)
-    Logger.debug("Verifying setup, skip_agents: #{skip_agents}, skip_knowledge: #{skip_knowledge}")
+
+    Logger.debug(
+      "Verifying setup, skip_agents: #{skip_agents}, skip_knowledge: #{skip_knowledge}"
+    )
 
     verification = %{}
 
@@ -260,12 +282,14 @@ defmodule Mix.Tasks.Mindsdb.Setup do
           {:ok, results} ->
             working_count = Enum.count(results, fn {_, status} -> status == :ok end)
             total_count = map_size(results)
+
             Map.put(verification, :agents, %{
               working: working_count,
               total: total_count,
               all_working: working_count == total_count,
               results: results
             })
+
           {:error, results} ->
             Map.put(verification, :agents, %{
               working: 0,
@@ -330,14 +354,17 @@ defmodule Mix.Tasks.Mindsdb.Setup do
 
   defp display_agent_results(results) do
     IO.puts("   📋 Agent Installation Details:")
+
     results
     |> Enum.each(fn {agent, status} ->
-      status_icon = case status do
-        :installed -> "✅"
-        :skipped -> "⏭️"
-        :error -> "❌"
-        _ -> "❓"
-      end
+      status_icon =
+        case status do
+          :installed -> "✅"
+          :skipped -> "⏭️"
+          :error -> "❌"
+          _ -> "❓"
+        end
+
       IO.puts("     #{status_icon} #{agent}: #{status}")
     end)
   end
@@ -348,6 +375,7 @@ defmodule Mix.Tasks.Mindsdb.Setup do
     case verification.agents do
       %{working: working, total: total, all_working: true} ->
         IO.puts("     🤖 Agents: #{working}/#{total} working ✅")
+
         if verbose do
           verification.agents.results
           |> Enum.each(fn {agent, status} ->
@@ -355,8 +383,10 @@ defmodule Mix.Tasks.Mindsdb.Setup do
             IO.puts("       #{status_icon} #{agent}: #{status}")
           end)
         end
+
       %{working: working, total: total, all_working: false} ->
         IO.puts("     🤖 Agents: #{working}/#{total} working ⚠️")
+
         if verbose do
           verification.agents.results
           |> Enum.each(fn {agent, status} ->
@@ -364,8 +394,10 @@ defmodule Mix.Tasks.Mindsdb.Setup do
             IO.puts("       #{status_icon} #{agent}: #{status}")
           end)
         end
+
       :skipped ->
         IO.puts("     🤖 Agents: skipped")
+
       _ ->
         IO.puts("     🤖 Agents: verification failed ❌")
     end
@@ -373,15 +405,19 @@ defmodule Mix.Tasks.Mindsdb.Setup do
     case verification.knowledge do
       %{total_files: files} when files > 0 ->
         IO.puts("     📚 Knowledge: #{files} files uploaded ✅")
+
         if verbose do
           IO.puts("       📊 Total size: #{verification.knowledge.total_size} words")
           IO.puts("       📁 Categories: #{map_size(verification.knowledge.categories)}")
           IO.puts("       🧩 Total chunks: #{verification.knowledge.chunk_totals}")
         end
+
       %{total_files: 0} ->
         IO.puts("     📚 Knowledge: no files uploaded ⚠️")
+
       :skipped ->
         IO.puts("     📚 Knowledge: skipped")
+
       _ ->
         IO.puts("     📚 Knowledge: verification failed ❌")
     end
@@ -389,6 +425,7 @@ defmodule Mix.Tasks.Mindsdb.Setup do
     case verification.connection do
       true ->
         IO.puts("     🔗 Connection: healthy ✅")
+
       false ->
         IO.puts("     🔗 Connection: unhealthy ❌")
     end
@@ -422,15 +459,15 @@ defmodule Mix.Tasks.Mindsdb.Setup do
 
     if verbose do
       IO.puts("""
-    🔧 Debug Information:
-    ═══════════════════════════════════
-    • MindsDB HTTP API: http://localhost:48334
-    • MindsDB MySQL API: localhost:48335
-    • Backup directory: priv/mindsdb/backups/
-    • Agent definitions: priv/mindsdb/agents/
-    • Knowledge base: priv/mindsdb/knowledge/
-    • Logs: Check application logs for detailed information
-    """)
+      🔧 Debug Information:
+      ═══════════════════════════════════
+      • MindsDB HTTP API: http://localhost:48334
+      • MindsDB MySQL API: localhost:48335
+      • Backup directory: priv/mindsdb/backups/
+      • Agent definitions: priv/mindsdb/agents/
+      • Knowledge base: priv/mindsdb/knowledge/
+      • Logs: Check application logs for detailed information
+      """)
     end
   end
 end

@@ -90,27 +90,31 @@ defmodule GreenManTavern.MindsDB.ContextBuilder do
 
   This version includes character-specific context data.
   """
-  def build_character_context(user_id, character_id) when is_integer(user_id) and is_integer(character_id) do
+  def build_character_context(user_id, character_id)
+      when is_integer(user_id) and is_integer(character_id) do
     base_context = build_context(user_id)
 
     # Add character-specific data
-    character_context = try do
-      character = Characters.get_character!(character_id)
-      %{
-        character_name: character.name,
-        character_archetype: character.archetype,
-        character_focus: character.focus_area,
-        character_trust_level: get_character_trust_level(user_id, character_id),
-        character_requirements: character.trust_requirement
-      }
-    rescue
-      Ecto.NoResultsError -> %{}
-    end
+    character_context =
+      try do
+        character = Characters.get_character!(character_id)
+
+        %{
+          character_name: character.name,
+          character_archetype: character.archetype,
+          character_focus: character.focus_area,
+          character_trust_level: get_character_trust_level(user_id, character_id),
+          character_requirements: character.trust_requirement
+        }
+      rescue
+        Ecto.NoResultsError -> %{}
+      end
 
     Map.merge(base_context, character_context)
   end
 
-  def build_character_context(user_id, character_name) when is_integer(user_id) and is_binary(character_name) do
+  def build_character_context(user_id, character_name)
+      when is_integer(user_id) and is_binary(character_name) do
     case Characters.get_character_by_slug(character_name) do
       nil -> build_context(user_id)
       character -> build_character_context(user_id, character.id)
@@ -124,7 +128,8 @@ defmodule GreenManTavern.MindsDB.ContextBuilder do
   defp get_active_systems(user_id) do
     try do
       from(us in Systems.UserSystem,
-        join: s in Systems.System, on: us.system_id == s.id,
+        join: s in Systems.System,
+        on: us.system_id == s.id,
         where: us.user_id == ^user_id and us.status == "active",
         select: s.name
       )
@@ -155,7 +160,8 @@ defmodule GreenManTavern.MindsDB.ContextBuilder do
   defp get_character_relationships(user_id) do
     try do
       from(uc in Characters.UserCharacter,
-        join: c in Characters.Character, on: uc.character_id == c.id,
+        join: c in Characters.Character,
+        on: uc.character_id == c.id,
         where: uc.user_id == ^user_id,
         select: {c.name, uc.trust_level}
       )

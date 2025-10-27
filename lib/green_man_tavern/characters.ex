@@ -67,7 +67,8 @@ defmodule GreenManTavern.Characters do
   """
   def get_character_by_slug(slug) do
     # Convert URL-friendly name back to proper name
-    proper_name = slug
+    proper_name =
+      slug
       |> String.replace("-", " ")
       |> String.split(" ")
       |> Enum.map(&String.capitalize/1)

@@ -10,9 +10,7 @@ defmodule GreenManTavern.DocumentsFixtures do
   def document_fixture(attrs \\ %{}) do
     {:ok, document} =
       attrs
-      |> Enum.into(%{
-
-      })
+      |> Enum.into(%{})
       |> GreenManTavern.Documents.create_document()
 
     document

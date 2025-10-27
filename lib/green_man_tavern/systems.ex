@@ -144,7 +144,8 @@ defmodule GreenManTavern.Systems do
   def get_user_systems(user_id) when is_integer(user_id) do
     from(us in UserSystem,
       where: us.user_id == ^user_id and us.status in ["active", "planned"],
-      join: s in System, on: s.id == us.system_id,
+      join: s in System,
+      on: s.id == us.system_id,
       preload: [system: s],
       select: us
     )
@@ -217,7 +218,8 @@ defmodule GreenManTavern.Systems do
         # Delete user_connections that reference connections involving this system
         from(uc in UserConnection,
           where: uc.user_id == ^user_id,
-          join: c in Connection, on: c.id == uc.connection_id,
+          join: c in Connection,
+          on: c.id == uc.connection_id,
           where: c.from_system_id == ^system_id or c.to_system_id == ^system_id
         )
         |> Repo.delete_all()
@@ -240,7 +242,8 @@ defmodule GreenManTavern.Systems do
   @doc """
   Gets a user system by user and system IDs.
   """
-  def get_user_system_by_user_and_system(user_id, system_id) when is_integer(user_id) and is_integer(system_id) do
+  def get_user_system_by_user_and_system(user_id, system_id)
+      when is_integer(user_id) and is_integer(system_id) do
     Repo.get_by(UserSystem, user_id: user_id, system_id: system_id)
   end
 

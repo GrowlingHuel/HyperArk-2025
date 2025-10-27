@@ -43,7 +43,7 @@
     </div>
   </div>
   
-  <!-- Diagram canvas -->
+<!-- Diagram canvas -->
   <div class="diagram-canvas">
     <svg
       viewBox="0 0 1200 800"
@@ -53,10 +53,10 @@
       <!-- Background grid and arrow markers -->
       <defs>
         <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-          <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#EEEEEE" stroke-width="1"/>
+          <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#EEEEEE" stroke-width="1" />
         </pattern>
         
-        <!-- Active connection arrow (green) -->
+<!-- Active connection arrow (green) -->
         <marker
           id="arrow-active"
           markerWidth="10"
@@ -69,7 +69,7 @@
           <path d="M0,0 L0,6 L9,3 z" fill="#22c55e" />
         </marker>
         
-        <!-- Potential connection arrow (orange) -->
+<!-- Potential connection arrow (orange) -->
         <marker
           id="arrow-potential"
           markerWidth="10"
@@ -83,8 +83,8 @@
         </marker>
       </defs>
       <rect width="100%" height="100%" fill="url(#grid)" />
-
-      <!-- CONNECTIONS FIRST (behind nodes) -->
+      
+<!-- CONNECTIONS FIRST (behind nodes) -->
       <%= for connection <- @user_connections do %>
         <%= if from = find_system(@user_systems, connection.connection.from_system_id) do %>
           <%= if to = find_system(@user_systems, connection.connection.to_system_id) do %>
@@ -94,8 +94,8 @@
           <% end %>
         <% end %>
       <% end %>
-
-      <!-- User Systems (on top of connections) -->
+      
+<!-- User Systems (on top of connections) -->
       <%= if @user_systems == [] do %>
         <text
           x="600"
@@ -112,8 +112,8 @@
           {render_node(user_system, @selected_node_id == user_system.system.id)}
         <% end %>
       <% end %>
-
-      <!-- Potential Connections (if enabled) -->
+      
+<!-- Potential Connections (if enabled) -->
       <%= if @show_connections do %>
         <%= for user_system <- @user_systems do %>
           <%= for other_system <- @user_systems, other_system.id != user_system.id do %>
@@ -132,8 +132,8 @@
         <% end %>
       <% end %>
     </svg>
-
-    <!-- Canvas Controls -->
+    
+<!-- Canvas Controls -->
     <div class="canvas-controls">
       <div class="controls-row">
         <label class="control-checkbox">
@@ -144,7 +144,7 @@
           />
           <span>Show Potential Connections</span>
         </label>
-        
+
         <label class="control-checkbox">
           <input
             type="checkbox"
@@ -155,8 +155,8 @@
         </label>
       </div>
     </div>
-
-    <!-- Legend -->
+    
+<!-- Legend -->
     <div class="canvas-legend">
       <div class="legend-item">
         <div class="legend-color active"></div>
@@ -172,8 +172,8 @@
       </div>
     </div>
   </div>
-
-  <!-- Selected System Details -->
+  
+<!-- Selected System Details -->
   <%= if @selected_system do %>
     <div class="system-details">
       <div class="details-header">

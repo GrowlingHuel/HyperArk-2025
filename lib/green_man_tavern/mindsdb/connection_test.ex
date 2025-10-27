@@ -31,4 +31,3 @@ defmodule GreenManTavern.MindsDB.ConnectionTest do
     Client.query_agent(agent_name, test_message, test_context)
   end
 end
-

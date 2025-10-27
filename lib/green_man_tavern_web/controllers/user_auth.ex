@@ -160,12 +160,14 @@ defmodule GreenManTavernWeb.UserAuth do
       end
   """
   def on_mount(:mount_current_user, _params, session, socket) do
-    socket = Phoenix.LiveView.attach_hook(socket, :current_user, :handle_info, fn
-      :logout, socket ->
-        {:cont, %{socket | assigns: Map.put(socket.assigns, :current_user, nil)}}
-    end)
+    socket =
+      Phoenix.LiveView.attach_hook(socket, :current_user, :handle_info, fn
+        :logout, socket ->
+          {:cont, %{socket | assigns: Map.put(socket.assigns, :current_user, nil)}}
+      end)
 
-    {:cont, %{socket | assigns: Map.put(socket.assigns, :current_user, get_user_from_session(session))}}
+    {:cont,
+     %{socket | assigns: Map.put(socket.assigns, :current_user, get_user_from_session(session))}}
   end
 
   def on_mount(:ensure_authenticated, _params, session, socket) do

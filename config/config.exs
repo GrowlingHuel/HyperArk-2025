@@ -33,10 +33,14 @@ config :green_man_tavern, GreenManTavernWeb.Endpoint,
     store: :cookie,
     key: "_green_man_tavern_key",
     signing_salt: System.get_env("SESSION_SIGNING_SALT", "1DDWx4YS"),
-    max_age: 60 * 60 * 24 * 60,  # 60 days
-    http_only: true,              # Prevents JavaScript access (XSS protection)
-    secure: Application.compile_env(:green_man_tavern, :environment) != :dev,  # HTTPS-only in production
-    same_site: "Lax"              # CSRF protection
+    # 60 days
+    max_age: 60 * 60 * 24 * 60,
+    # Prevents JavaScript access (XSS protection)
+    http_only: true,
+    # HTTPS-only in production
+    secure: Application.compile_env(:green_man_tavern, :environment) != :dev,
+    # CSRF protection
+    same_site: "Lax"
   ]
 
 # Configures the mailer

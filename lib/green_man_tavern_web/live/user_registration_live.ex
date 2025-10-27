@@ -113,7 +113,10 @@ defmodule GreenManTavernWeb.UserRegistrationLive do
 
         socket =
           socket
-          |> put_flash(:info, "User created successfully. Please check your email for confirmation instructions.")
+          |> put_flash(
+            :info,
+            "User created successfully. Please check your email for confirmation instructions."
+          )
           |> Phoenix.LiveView.push_navigate(to: ~p"/")
 
         {:noreply, socket}

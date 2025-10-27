@@ -97,7 +97,8 @@ defmodule GreenManTavernWeb.UserSessionLive do
   end
 
   def handle_event("validate", %{"user" => user_params}, socket) do
-    changeset = Accounts.change_user_session(user_params)
+    changeset =
+      Accounts.change_user_session(user_params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, form: to_form(changeset, as: "user"))}

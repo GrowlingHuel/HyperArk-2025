@@ -86,8 +86,8 @@ defmodule GreenManTavern.Documents.PDFProcessor do
       }}
   """
   @spec extract_with_metadata(Path.t()) ::
-    {:ok, %{text: String.t(), page_count: integer(), metadata: map()}} |
-    {:error, atom()}
+          {:ok, %{text: String.t(), page_count: integer(), metadata: map()}}
+          | {:error, atom()}
   def extract_with_metadata(pdf_path) do
     Logger.info("Starting PDF extraction", file: Path.basename(pdf_path))
 
@@ -102,22 +102,24 @@ defmodule GreenManTavern.Documents.PDFProcessor do
         text_length: String.length(sanitized_text)
       )
 
-      {:ok, %{
-        text: sanitized_text,
-        page_count: result.page_count,
-        metadata: %{
-          extraction_method: result.method,
-          original_size_bytes: File.stat!(pdf_path).size,
-          text_length: String.length(sanitized_text),
-          extracted_at: DateTime.utc_now() |> DateTime.truncate(:second)
-        }
-      }}
+      {:ok,
+       %{
+         text: sanitized_text,
+         page_count: result.page_count,
+         metadata: %{
+           extraction_method: result.method,
+           original_size_bytes: File.stat!(pdf_path).size,
+           text_length: String.length(sanitized_text),
+           extracted_at: DateTime.utc_now() |> DateTime.truncate(:second)
+         }
+       }}
     else
       {:error, reason} = error ->
         Logger.error("PDF extraction failed",
           file: Path.basename(pdf_path),
           reason: reason
         )
+
         error
     end
   end
@@ -148,10 +150,12 @@ defmodule GreenManTavern.Documents.PDFProcessor do
     case extract_with_library(pdf_path) do
       {:ok, _} = result ->
         result
+
       {:error, _} ->
         Logger.warning("Library extraction failed, trying pdftotext fallback",
           file: Path.basename(pdf_path)
         )
+
         extract_with_pdftotext(pdf_path)
     end
   end
@@ -176,11 +180,12 @@ defmodule GreenManTavern.Documents.PDFProcessor do
           if String.trim(combined_text) == "" do
             {:error, :no_text_content}
           else
-            {:ok, %{
-              text: combined_text,
-              page_count: page_count,
-              method: :library
-            }}
+            {:ok,
+             %{
+               text: combined_text,
+               page_count: page_count,
+               method: :library
+             }}
           end
 
         {:error, reason} ->
@@ -188,6 +193,7 @@ defmodule GreenManTavern.Documents.PDFProcessor do
             file: Path.basename(pdf_path),
             reason: reason
           )
+
           {:error, :parsing_failed}
       end
     rescue
@@ -196,6 +202,7 @@ defmodule GreenManTavern.Documents.PDFProcessor do
           file: Path.basename(pdf_path),
           error: inspect(error)
         )
+
         {:error, :library_error}
     end
   end
@@ -242,11 +249,12 @@ defmodule GreenManTavern.Documents.PDFProcessor do
             )
 
             # Run pdftotext with timeout
-            task = Task.async(fn ->
-              System.cmd(@pdftotext_path, ["-layout", pdf_path, temp_file],
-                stderr_to_stdout: true
-              )
-            end)
+            task =
+              Task.async(fn ->
+                System.cmd(@pdftotext_path, ["-layout", pdf_path, temp_file],
+                  stderr_to_stdout: true
+                )
+              end)
 
             case Task.await(task, @timeout_ms) do
               {_output, 0} ->
@@ -262,11 +270,12 @@ defmodule GreenManTavern.Documents.PDFProcessor do
                       # Count pages using pdftotext info
                       page_count = count_pages_with_pdftotext(pdf_path)
 
-                      {:ok, %{
-                        text: text,
-                        page_count: page_count,
-                        method: :pdftotext
-                      }}
+                      {:ok,
+                       %{
+                         text: text,
+                         page_count: page_count,
+                         method: :pdftotext
+                       }}
                     end
 
                   {:error, reason} ->
@@ -274,6 +283,7 @@ defmodule GreenManTavern.Documents.PDFProcessor do
                       file: Path.basename(pdf_path),
                       reason: reason
                     )
+
                     {:error, :read_error}
                 end
 
@@ -305,6 +315,7 @@ defmodule GreenManTavern.Documents.PDFProcessor do
                 file: Path.basename(pdf_path),
                 timeout_ms: @timeout_ms
               )
+
               {:error, :timeout}
           after
             # Clean up temporary file
@@ -316,6 +327,7 @@ defmodule GreenManTavern.Documents.PDFProcessor do
             file: Path.basename(pdf_path),
             reason: reason
           )
+
           {:error, :temp_file_error}
       end
     end
@@ -324,9 +336,8 @@ defmodule GreenManTavern.Documents.PDFProcessor do
   defp count_pages_with_pdftotext(pdf_path) do
     try do
       # Use pdftotext with -nopgbrk to get page count
-      {output, 0} = System.cmd(@pdftotext_path, ["-nopgbrk", pdf_path, "-"],
-        stderr_to_stdout: true
-      )
+      {output, 0} =
+        System.cmd(@pdftotext_path, ["-nopgbrk", pdf_path, "-"], stderr_to_stdout: true)
 
       # Count page breaks in output
       String.split(output, "\f") |> length()
@@ -341,14 +352,21 @@ defmodule GreenManTavern.Documents.PDFProcessor do
 
   defp sanitize_text(text) when is_binary(text) do
     text
-    |> to_string()  # Ensure proper string
-    |> String.replace(~r/\r\n/, "\n")           # Normalize line endings
-    |> String.replace(~r/\r/, "\n")             # Normalize CR
-    |> String.replace(~r/\n{3,}/, "\n\n")       # Max 2 consecutive newlines
-    |> String.replace(~r/[ \t]+/, " ")          # Collapse spaces/tabs
-    |> String.replace(~r/[\x00-\x1F\x7F]/, "")  # Remove control chars
+    # Ensure proper string
+    |> to_string()
+    # Normalize line endings
+    |> String.replace(~r/\r\n/, "\n")
+    # Normalize CR
+    |> String.replace(~r/\r/, "\n")
+    # Max 2 consecutive newlines
+    |> String.replace(~r/\n{3,}/, "\n\n")
+    # Collapse spaces/tabs
+    |> String.replace(~r/[ \t]+/, " ")
+    # Remove control chars
+    |> String.replace(~r/[\x00-\x1F\x7F]/, "")
     |> String.trim()
   end
 
-  defp sanitize_text(_text), do: ""  # Handle non-string input
+  # Handle non-string input
+  defp sanitize_text(_text), do: ""
 end

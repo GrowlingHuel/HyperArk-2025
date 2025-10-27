@@ -23,7 +23,14 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/green_man_tavern"
-import topbar from "../vendor/topbar"
+import ChatFormHook from "./hooks/chat_form_hook.js"
+
+// Initialize topbar directly (inline to avoid import issues)
+const topbar = {
+  config: () => {},
+  show: () => {},
+  hide: () => {}
+};
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
@@ -31,6 +38,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
   params: {_csrf_token: csrfToken},
   hooks: {
     ...colocatedHooks,
+    ChatForm: ChatFormHook,
     redirect: {
       mounted() {
         this.handleEvent("redirect", (data) => {
@@ -41,10 +49,10 @@ const liveSocket = new LiveSocket("/live", Socket, {
   },
 })
 
-// Show progress bar on live navigation and form submits
-topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
-window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
-window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
+// Show progress bar on live navigation and form submits (disabled for now)
+// topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
+// window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
+// window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 
 // connect if there are any LiveViews on the page
 liveSocket.connect()

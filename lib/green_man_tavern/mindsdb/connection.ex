@@ -167,6 +167,7 @@ defmodule GreenManTavern.MindsDB.Connection do
     case check_health() do
       :ok ->
         handle_healthy_check(state)
+
       {:error, reason} ->
         handle_unhealthy_check(state, reason)
     end
@@ -181,17 +182,14 @@ defmodule GreenManTavern.MindsDB.Connection do
           {:ok, _} -> :ok
           {:error, reason} -> {:error, {:sql_check_failed, reason}}
         end
+
       {:error, reason} ->
         {:error, {:http_check_failed, reason}}
     end
   end
 
   defp handle_healthy_check(state) do
-    new_state = %{state |
-      healthy: true,
-      consecutive_failures: 0,
-      last_check: DateTime.utc_now()
-    }
+    new_state = %{state | healthy: true, consecutive_failures: 0, last_check: DateTime.utc_now()}
 
     # Log restoration if we were previously unhealthy
     if state.consecutive_failures > 0 do
@@ -206,10 +204,12 @@ defmodule GreenManTavern.MindsDB.Connection do
 
   defp handle_unhealthy_check(state, reason) do
     new_failures = state.consecutive_failures + 1
-    new_state = %{state |
-      healthy: false,
-      consecutive_failures: new_failures,
-      last_check: DateTime.utc_now()
+
+    new_state = %{
+      state
+      | healthy: false,
+        consecutive_failures: new_failures,
+        last_check: DateTime.utc_now()
     }
 
     # Log failure details

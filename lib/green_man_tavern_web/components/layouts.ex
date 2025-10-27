@@ -14,7 +14,6 @@ defmodule GreenManTavernWeb.Layouts do
   # and other static content.
   embed_templates "layouts/*"
 
-
   @doc """
   Renders your app layout.
 
@@ -71,7 +70,6 @@ defmodule GreenManTavernWeb.Layouts do
     <.flash_group flash={@flash} />
     """
   end
-
 
   @doc """
   Shows the flash group with standard titles and content.

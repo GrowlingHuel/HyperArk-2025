@@ -38,7 +38,6 @@ defmodule GreenManTavern.MindsDB.QueryBuilder do
     with {:ok, safe_agent_name} <- validate_agent_name(agent_name),
          {:ok, _safe_message} <- sanitize_input(message),
          {:ok, _context_str} <- format_context_for_sql(context) do
-
       query = """
       SELECT response
       FROM mindsdb.#{safe_agent_name}
@@ -60,7 +59,6 @@ defmodule GreenManTavern.MindsDB.QueryBuilder do
   def build_agent_query_with_context(agent_name, message, context) do
     with {:ok, safe_agent_name} <- validate_agent_name(agent_name),
          {:ok, _safe_message} <- sanitize_input(message) do
-
       # Extract common context fields
       _user_location = Map.get(context, :user_location, "")
       _user_space = Map.get(context, :user_space, "")
@@ -106,13 +104,19 @@ defmodule GreenManTavern.MindsDB.QueryBuilder do
     if String.length(text) > 2000 do
       {:error, "Message too long (max 2000 characters)"}
     else
-      sanitized = text
-      |> String.replace("'", "''")     # Escape single quotes
-      |> String.replace(";", "")       # Remove semicolons
-      |> String.replace("--", "")      # Remove SQL comments
-      |> String.replace("/*", "")      # Remove block comments
-      |> String.replace("*/", "")      # Remove block comments
-      |> String.trim()
+      sanitized =
+        text
+        # Escape single quotes
+        |> String.replace("'", "''")
+        # Remove semicolons
+        |> String.replace(";", "")
+        # Remove SQL comments
+        |> String.replace("--", "")
+        # Remove block comments
+        |> String.replace("/*", "")
+        # Remove block comments
+        |> String.replace("*/", "")
+        |> String.trim()
 
       {:ok, sanitized}
     end
@@ -153,9 +157,10 @@ defmodule GreenManTavern.MindsDB.QueryBuilder do
   """
   def format_context_for_sql(context_map) when is_map(context_map) do
     # Filter out nil values and convert to JSON
-    filtered_context = context_map
-    |> Enum.reject(fn {_k, v} -> is_nil(v) end)
-    |> Map.new()
+    filtered_context =
+      context_map
+      |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+      |> Map.new()
 
     case Jason.encode(filtered_context) do
       {:ok, json_str} -> {:ok, json_str}

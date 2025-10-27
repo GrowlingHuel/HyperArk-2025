@@ -438,9 +438,8 @@ defmodule GreenManTavern.Documents do
   Returns summary map with processing statistics.
   """
   @spec process_pdf_directory(Path.t(), keyword()) ::
-    {:ok, map()} | {:error, term()}
+          {:ok, map()} | {:error, term()}
   def process_pdf_directory(directory_path, opts \\ []) do
-
     chunk_size = Keyword.get(opts, :chunk_size, 1000)
     overlap = Keyword.get(opts, :overlap, 200)
     skip_existing = Keyword.get(opts, :skip_existing, true)
@@ -451,8 +450,8 @@ defmodule GreenManTavern.Documents do
     Logger.info("Starting PDF directory processing: #{directory_path}")
 
     with {:ok, pdf_files} <- find_pdf_files(directory_path),
-         {:ok, results} <- process_files(pdf_files, chunk_size, overlap, skip_existing, batch_size) do
-
+         {:ok, results} <-
+           process_files(pdf_files, chunk_size, overlap, skip_existing, batch_size) do
       duration = System.monotonic_time(:second) - start_time
       summary = build_summary(results, duration)
       Logger.info("Processing complete: #{summary.processed} processed, #{summary.failed} failed")
@@ -511,12 +510,17 @@ defmodule GreenManTavern.Documents do
       |> Enum.reduce([], fn {file_path, index}, acc ->
         # Log progress every 5 files
         if rem(index, 5) == 0 do
-          Logger.info("Processing file #{index}/#{length(pdf_files)}: #{Path.basename(file_path)}")
+          Logger.info(
+            "Processing file #{index}/#{length(pdf_files)}: #{Path.basename(file_path)}"
+          )
         end
 
         case process_single_pdf(file_path, chunk_size, overlap, skip_existing) do
           {:ok, stats} ->
-            Logger.debug("Successfully processed: #{Path.basename(file_path)} (#{stats.chunk_count} chunks)")
+            Logger.debug(
+              "Successfully processed: #{Path.basename(file_path)} (#{stats.chunk_count} chunks)"
+            )
+
             [{:ok, stats} | acc]
 
           {:error, reason} ->
@@ -541,13 +545,13 @@ defmodule GreenManTavern.Documents do
       with {:ok, text_data} <- extract_pdf_text(file_path),
            {:ok, chunks} <- chunk_pdf_text(text_data, chunk_size, overlap),
            {:ok, document} <- store_document_with_chunks(file_path, text_data, chunks) do
-
-        {:ok, %{
-          file: filename,
-          chunk_count: length(chunks),
-          status: :processed,
-          document_id: document.id
-        }}
+        {:ok,
+         %{
+           file: filename,
+           chunk_count: length(chunks),
+           status: :processed,
+           document_id: document.id
+         }}
       end
     end
   end
@@ -579,7 +583,9 @@ defmodule GreenManTavern.Documents do
     doc_metadata = Map.merge(doc_metadata, text_data.metadata || %{})
 
     case TextChunker.chunk_with_metadata(text_data.text, doc_metadata,
-           chunk_size: chunk_size, overlap: overlap) do
+           chunk_size: chunk_size,
+           overlap: overlap
+         ) do
       {:ok, chunks} -> {:ok, chunks}
       {:error, reason} -> {:error, reason}
     end
@@ -603,7 +609,8 @@ defmodule GreenManTavern.Documents do
     }
 
     # Merge any additional metadata from PDFProcessor
-    doc_attrs = put_in(doc_attrs.metadata, Map.merge(doc_attrs.metadata, text_data.metadata || %{}))
+    doc_attrs =
+      put_in(doc_attrs.metadata, Map.merge(doc_attrs.metadata, text_data.metadata || %{}))
 
     # Use Ecto.Multi for transactional insert
     multi = Ecto.Multi.new()
@@ -611,28 +618,29 @@ defmodule GreenManTavern.Documents do
     # 1. Create Document record
     multi = Ecto.Multi.insert(multi, :document, Document.create_changeset(%Document{}, doc_attrs))
 
-# 2. Create all DocumentChunk records (batch insert)
+    # 2. Create all DocumentChunk records (batch insert)
     # We need to add document_id after the document is created
-    multi = Ecto.Multi.run(multi, :chunks, fn _repo, %{document: document} ->
-      now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-      
-      chunk_attrs =
-        chunks
-        |> Enum.map(fn chunk ->
-          %{
-            document_id: document.id,
-            content: chunk.content,
-            chunk_index: chunk.index,
-            character_count: chunk.metadata.character_count,
-            metadata: chunk.metadata,
-            inserted_at: now,
-            updated_at: now
-          }
-        end)
+    multi =
+      Ecto.Multi.run(multi, :chunks, fn _repo, %{document: document} ->
+        now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
-      {count, _} = Repo.insert_all(DocumentChunk, chunk_attrs)
-      {:ok, {count, nil}}
-    end)
+        chunk_attrs =
+          chunks
+          |> Enum.map(fn chunk ->
+            %{
+              document_id: document.id,
+              content: chunk.content,
+              chunk_index: chunk.index,
+              character_count: chunk.metadata.character_count,
+              metadata: chunk.metadata,
+              inserted_at: now,
+              updated_at: now
+            }
+          end)
+
+        {count, _} = Repo.insert_all(DocumentChunk, chunk_attrs)
+        {:ok, {count, nil}}
+      end)
 
     # Execute transaction
     case Repo.transaction(multi) do

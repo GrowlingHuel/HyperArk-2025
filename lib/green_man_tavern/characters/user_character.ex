@@ -43,7 +43,10 @@ defmodule GreenManTavern.Characters.UserCharacter do
       interaction_count: user_character.interaction_count + 1,
       first_interaction_at: user_character.first_interaction_at || now
     })
-    |> put_change(:is_trusted, user_character.trust_level + points >= get_trust_threshold(user_character))
+    |> put_change(
+      :is_trusted,
+      user_character.trust_level + points >= get_trust_threshold(user_character)
+    )
   end
 
   defp get_trust_threshold(user_character) do

@@ -66,9 +66,16 @@ defmodule GreenManTavernWeb.CharacterLive do
   def handle_event("send_message", %{}, socket) do
     message = socket.assigns.current_message || ""
 
+    IO.puts("=== SEND MESSAGE EVENT TRIGGERED ===")
+    IO.puts("Message: #{message}")
+    IO.puts("Current character: #{inspect(socket.assigns.character && socket.assigns.character.name)}")
+    IO.puts("Current chat messages count: #{length(socket.assigns.chat_messages)}")
+
     if String.trim(message) == "" do
+      IO.puts("Message is empty, ignoring")
       {:noreply, socket}
     else
+      IO.puts("Calling send_message...")
       send_message(socket, message)
     end
   end
@@ -79,12 +86,18 @@ defmodule GreenManTavernWeb.CharacterLive do
   end
 
   defp send_message(socket, message) when message in [nil, ""] do
+    IO.puts("send_message: Message is nil or empty")
     {:noreply, socket}
   end
 
   defp send_message(socket, message) do
     user_id = socket.assigns.user_id
     character = socket.assigns.character
+
+    IO.puts("=== send_message CALLED ===")
+    IO.puts("User ID: #{user_id}")
+    IO.puts("Character: #{inspect(character && character.name)}")
+    IO.puts("Current chat messages before adding: #{length(socket.assigns.chat_messages)}")
 
     # Add user message to UI
     user_message = %{
@@ -96,6 +109,8 @@ defmodule GreenManTavernWeb.CharacterLive do
 
     new_messages = socket.assigns.chat_messages ++ [user_message]
 
+    IO.puts("Added user message, new count: #{length(new_messages)}")
+
     # Update UI with user message and loading state
     socket =
       socket
@@ -103,92 +118,160 @@ defmodule GreenManTavernWeb.CharacterLive do
       |> assign(:current_message, "")
       |> assign(:is_loading, true)
 
+    IO.puts("Socket updated with new messages, character still set: #{inspect(socket.assigns.character != nil)}")
+
     # Store user message in conversation history
     if user_id do
-      Conversations.create_conversation_entry(%{
-        user_id: user_id,
-        character_id: character.id,
-        message_type: "user",
-        content: message,
-        timestamp: DateTime.utc_now()
-      })
+      try do
+        Conversations.create_conversation_entry(%{
+          user_id: user_id,
+          character_id: character.id,
+          message_type: "user",
+          content: message,
+          timestamp: DateTime.utc_now()
+        })
+        IO.puts("Conversation entry created successfully")
+      rescue
+        error -> IO.puts("ERROR creating conversation entry: #{inspect(error)}")
+      end
     end
 
     # Process with Claude API
+    IO.puts("Sending async process message to self")
     send(self(), {:process_with_claude, user_id, character, message})
+    IO.puts("Async message sent, returning socket")
 
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:process_with_claude, user_id, character, message}, socket) do
-    IO.puts("=== PROCESSING MESSAGE WITH CLAUDE ===")
+    IO.puts("=== HANDLE_INFO PROCESSING MESSAGE WITH CLAUDE ===")
     IO.puts("User: #{user_id}, Character: #{character.name}")
     IO.puts("Message: #{message}")
+    IO.puts("Socket character before processing: #{inspect(socket.assigns.character && socket.assigns.character.name)}")
+    IO.puts("Socket chat messages count: #{length(socket.assigns.chat_messages)}")
 
-    # Search knowledge base for relevant context
-    context = CharacterContext.search_knowledge_base(message, limit: 5)
-    
-    # Build character's system prompt
-    system_prompt = CharacterContext.build_system_prompt(character)
-    
-    IO.puts("=== CALLING CLAUDE API ===")
-    
-    # Query Claude API
-    result = ClaudeClient.chat(message, system_prompt, context)
-
-    IO.puts("=== CLAUDE RESPONSE ===")
-    IO.puts("Result: #{inspect(result)}")
-
-    case result do
-      {:ok, response} ->
-        # Add character response to UI
-        character_response = %{
+    try do
+      # Check API key
+      api_key = System.get_env("ANTHROPIC_API_KEY")
+      IO.puts("=== API KEY CHECK ===")
+      if api_key do
+        IO.puts("✓ API key is set (length: #{String.length(api_key)} characters)")
+      else
+        IO.puts("✗ API key is NOT set!")
+        error_message = %{
           id: System.unique_integer([:positive]),
-          type: :character,
-          content: response,
+          type: :error,
+          content: "API key not configured. Please set ANTHROPIC_API_KEY environment variable.",
+          timestamp: DateTime.utc_now()
+        }
+        new_messages = socket.assigns.chat_messages ++ [error_message]
+        {:noreply, socket |> assign(:chat_messages, new_messages) |> assign(:is_loading, false)}
+      end
+
+      # Search knowledge base for relevant context
+      IO.puts("=== SEARCHING KNOWLEDGE BASE ===")
+      context = CharacterContext.search_knowledge_base(message, limit: 5)
+
+      # Build character's system prompt
+      IO.puts("=== BUILDING SYSTEM PROMPT ===")
+      system_prompt = CharacterContext.build_system_prompt(character)
+
+      IO.puts("=== CALLING CLAUDE API ===")
+
+      # Query Claude API
+      result = ClaudeClient.chat(message, system_prompt, context)
+
+      IO.puts("=== CLAUDE RESPONSE RECEIVED ===")
+      IO.puts("Result: #{inspect(result, limit: 3)}")
+
+      case result do
+        {:ok, response} ->
+          IO.puts("=== PROCESSING SUCCESSFUL RESPONSE ===")
+          IO.puts("Socket character: #{inspect(socket.assigns.character && socket.assigns.character.name)}")
+
+          # Add character response to UI
+          character_response = %{
+            id: System.unique_integer([:positive]),
+            type: :character,
+            content: response,
+            timestamp: DateTime.utc_now()
+          }
+
+          new_messages = socket.assigns.chat_messages ++ [character_response]
+          IO.puts("New messages count: #{length(new_messages)}")
+
+          # Store character response in conversation history
+          if user_id do
+            try do
+              Conversations.create_conversation_entry(%{
+                user_id: user_id,
+                character_id: character.id,
+                message_type: "character",
+                content: response,
+                timestamp: DateTime.utc_now()
+              })
+              IO.puts("Character conversation entry created")
+            rescue
+              error -> IO.puts("ERROR creating character conversation entry: #{inspect(error)}")
+            end
+          end
+
+          # Update trust level based on interaction
+          if user_id do
+            update_trust_level(user_id, character.id, message, response)
+          end
+
+          final_socket = socket
+            |> assign(:chat_messages, new_messages)
+            |> assign(:is_loading, false)
+
+          IO.puts("Final socket character: #{inspect(final_socket.assigns.character && final_socket.assigns.character.name)}")
+          IO.puts("=== RETURNING SOCKET WITH RESPONSE ===")
+
+          {:noreply, final_socket}
+
+        {:error, reason} ->
+          IO.puts("=== ERROR PROCESSING RESPONSE ===")
+          IO.puts("Reason: #{inspect(reason)}")
+
+          # Show error message to user
+          error_message = %{
+            id: System.unique_integer([:positive]),
+            type: :error,
+            content: "I apologize, but I'm having trouble responding right now. Error: #{reason}",
+            timestamp: DateTime.utc_now()
+          }
+
+          new_messages = socket.assigns.chat_messages ++ [error_message]
+
+          {:noreply,
+           socket
+           |> assign(:chat_messages, new_messages)
+           |> assign(:is_loading, false)
+           |> put_flash(:error, "Failed to get response from character")}
+      end
+    rescue
+      error ->
+        IO.puts("=== EXCEPTION IN handle_info ===")
+        IO.puts("Error: #{inspect(error)}")
+        IO.puts("Stacktrace: #{inspect(__STACKTRACE__)}")
+
+        # Try to recover by showing an error message
+        error_message = %{
+          id: System.unique_integer([:positive]),
+          type: :error,
+          content: "An unexpected error occurred. Please try again.",
           timestamp: DateTime.utc_now()
         }
 
-        new_messages = socket.assigns.chat_messages ++ [character_response]
-
-        # Store character response in conversation history
-        if user_id do
-          Conversations.create_conversation_entry(%{
-            user_id: user_id,
-            character_id: character.id,
-            message_type: "character",
-            content: response,
-            timestamp: DateTime.utc_now()
-          })
-        end
-
-        # Update trust level based on interaction
-        if user_id do
-          update_trust_level(user_id, character.id, message, response)
-        end
+        new_messages = (socket.assigns.chat_messages || []) ++ [error_message]
 
         {:noreply,
          socket
          |> assign(:chat_messages, new_messages)
          |> assign(:is_loading, false)}
-
-      {:error, reason} ->
-        # Show error message to user
-        error_message = %{
-          id: System.unique_integer([:positive]),
-          type: :error,
-          content: "I apologize, but I'm having trouble responding right now. Error: #{reason}",
-          timestamp: DateTime.utc_now()
-        }
-
-        new_messages = socket.assigns.chat_messages ++ [error_message]
-
-        {:noreply,
-         socket
-         |> assign(:chat_messages, new_messages)
-         |> assign(:is_loading, false)
-         |> put_flash(:error, "Failed to get response from character")}
     end
   end
 

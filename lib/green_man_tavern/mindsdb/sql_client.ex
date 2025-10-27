@@ -2,7 +2,7 @@ defmodule GreenManTavern.MindsDB.SQLClient do
   @moduledoc """
   SQL client for MindsDB - uses HTTP API as primary method
   """
-  
+
   alias GreenManTavern.MindsDB.HTTPClient
 
   @doc """
@@ -11,7 +11,7 @@ defmodule GreenManTavern.MindsDB.SQLClient do
   def query(sql, params \\ []) do
     # Replace parameter placeholders with actual values
     sql_with_params = replace_params(sql, params)
-    
+
     # Use HTTP client - it's more reliable with MindsDB
     HTTPClient.query_sql(sql_with_params)
   end
@@ -38,10 +38,13 @@ defmodule GreenManTavern.MindsDB.SQLClient do
     # Simple parameter replacement
     Enum.reduce(params, {sql, 0}, fn param, {sql_acc, index} ->
       placeholder = "?"
-      replacement = case param do
-        str when is_binary(str) -> "'#{String.replace(str, "'", "''")}'"
-        other -> to_string(other)
-      end
+
+      replacement =
+        case param do
+          str when is_binary(str) -> "'#{String.replace(str, "'", "''")}'"
+          other -> to_string(other)
+        end
+
       new_sql = String.replace(sql_acc, placeholder, replacement, global: false)
       {new_sql, index + 1}
     end)

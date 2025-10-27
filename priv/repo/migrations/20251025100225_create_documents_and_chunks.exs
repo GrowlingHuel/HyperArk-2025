@@ -18,7 +18,10 @@ defmodule GreenManTavern.Repo.Migrations.CreateDocumentsAndChunks do
     # Create document_chunks table
     create table(:document_chunks, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :document_id, references(:documents, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :document_id, references(:documents, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :content, :text, null: false
       add :chunk_index, :integer, null: false
       add :character_count, :integer, default: 0, null: false

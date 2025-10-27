@@ -6,7 +6,6 @@ defmodule GreenManTavernWeb.LivingWebLive do
   alias GreenManTavern.AI.{ClaudeClient, CharacterContext}
   alias GreenManTavern.Conversations
 
-
   @impl true
   def mount(_params, _session, socket) do
     # User is guaranteed to be authenticated due to router pipeline
@@ -38,25 +37,29 @@ defmodule GreenManTavernWeb.LivingWebLive do
   @impl true
   def handle_params(params, _url, socket) do
     # Handle character parameter from URL
-    character = case params["character"] do
-      nil -> nil
-      character_id ->
-        try do
-          Characters.get_character!(String.to_integer(character_id))
-        rescue
-          _ -> nil
-        end
-    end
+    character =
+      case params["character"] do
+        nil ->
+          nil
 
-    socket = if character do
-      socket
-      |> assign(:character, character)
-      |> assign(:left_window_title, "Tavern - #{character.name}")
-    else
-      socket
-      |> assign(:character, nil)
-      |> assign(:left_window_title, "Green Man Tavern")
-    end
+        character_id ->
+          try do
+            Characters.get_character!(String.to_integer(character_id))
+          rescue
+            _ -> nil
+          end
+      end
+
+    socket =
+      if character do
+        socket
+        |> assign(:character, character)
+        |> assign(:left_window_title, "Tavern - #{character.name}")
+      else
+        socket
+        |> assign(:character, nil)
+        |> assign(:left_window_title, "Green Man Tavern")
+      end
 
     {:noreply, socket}
   end
@@ -68,13 +71,17 @@ defmodule GreenManTavernWeb.LivingWebLive do
     character = Characters.get_character!(character_id)
     IO.inspect(character.name, label: "LIVING WEB LIVE - CHARACTER SELECTION - NAME")
 
-    socket = socket
+    socket =
+      socket
       |> assign(:character, character)
       |> assign(:left_window_title, "Tavern - #{character.name}")
       |> assign(:chat_messages, [])
       |> assign(:current_message, "")
 
-    IO.inspect(socket.assigns.character, label: "LIVING WEB LIVE - SOCKET ASSIGNS AFTER SELECTION")
+    IO.inspect(socket.assigns.character,
+      label: "LIVING WEB LIVE - SOCKET ASSIGNS AFTER SELECTION"
+    )
+
     {:noreply, socket}
   end
 
@@ -152,7 +159,6 @@ defmodule GreenManTavernWeb.LivingWebLive do
     end
   end
 
-
   defp find_system(user_systems, system_id) do
     Enum.find(user_systems, fn us -> us.system.id == system_id end)
   end
@@ -171,11 +177,12 @@ defmodule GreenManTavernWeb.LivingWebLive do
       mid_y = (start_y + end_y) / 2 - 50
 
       # Determine styling based on status
-      {stroke_color, marker_id, label_color} = case connection.status do
-        "active" -> {"#22c55e", "arrow-active", "#15803d"}
-        "potential" -> {"#f97316", "arrow-potential", "#c2410c"}
-        _ -> {"#6b7280", "arrow-active", "#4b5563"}
-      end
+      {stroke_color, marker_id, label_color} =
+        case connection.status do
+          "active" -> {"#22c55e", "arrow-active", "#15803d"}
+          "potential" -> {"#f97316", "arrow-potential", "#c2410c"}
+          _ -> {"#6b7280", "arrow-active", "#4b5563"}
+        end
 
       stroke_dasharray = if connection.status == "potential", do: "8,4", else: ""
       opacity = if connection.status == "potential", do: "0.7", else: "1"
@@ -208,8 +215,8 @@ defmodule GreenManTavernWeb.LivingWebLive do
           opacity={@opacity}
           class="connection-path"
         />
-
-        <!-- Flow label -->
+        
+      <!-- Flow label -->
         <text
           x={@mid_x}
           y={@mid_y - 40}
@@ -240,10 +247,23 @@ defmodule GreenManTavernWeb.LivingWebLive do
     # Icon component
     icon_name = get_icon_component(system.icon_name)
 
-    assigns = %{icon_name: icon_name, system: system, x: x, y: y, fill_color: fill_color, border_color: border_color, border_width: border_width}
+    assigns = %{
+      icon_name: icon_name,
+      system: system,
+      x: x,
+      y: y,
+      fill_color: fill_color,
+      border_color: border_color,
+      border_width: border_width
+    }
 
     ~H"""
-    <g class="system-node" phx-click="select_node" phx-value-id={@system.id} phx-click-away="deselect_node">
+    <g
+      class="system-node"
+      phx-click="select_node"
+      phx-value-id={@system.id}
+      phx-click-away="deselect_node"
+    >
       <!-- Main rectangle -->
       <rect
         x={@x - 60}
@@ -256,8 +276,8 @@ defmodule GreenManTavernWeb.LivingWebLive do
         stroke-width={@border_width}
         class="system-rect"
       />
-
-      <!-- Process badge -->
+      
+    <!-- Process badge -->
       <%= if @system.system_type == "process" do %>
         <circle
           cx={@x}
@@ -268,21 +288,21 @@ defmodule GreenManTavernWeb.LivingWebLive do
           stroke-width="1"
         />
       <% end %>
-
-      <!-- Content area -->
+      
+    <!-- Content area -->
       <foreignObject x={@x - 50} y={@y - 30} width="100" height="60">
         <div class="node-content">
           <!-- Icon -->
           <div class="node-icon">
             <.icon name={@icon_name} class="w-8 h-8" />
           </div>
-
-          <!-- System name -->
+          
+    <!-- System name -->
           <div class="node-name">
             {@system.name}
           </div>
-
-          <!-- Requirements for process nodes -->
+          
+    <!-- Requirements for process nodes -->
           <%= if @system.system_type == "process" do %>
             <div class="node-requirements">
               {@system.requirements}
@@ -296,13 +316,20 @@ defmodule GreenManTavernWeb.LivingWebLive do
 
   defp get_category_colors(category, system_type) do
     case {category, system_type} do
-      {"food", _} -> {"#dcfce7", "#16a34a"}  # light green, dark green
-      {_, "process"} -> {"#fef3c7", "#d97706"}  # light amber, dark amber
-      {_, "storage"} -> {"#ffedd5", "#ea580c"}  # light orange, dark orange
-      {"water", _} -> {"#dbeafe", "#2563eb"}  # light blue, dark blue
-      {"waste", _} -> {"#dbeafe", "#2563eb"}  # light blue, dark blue
-      {"energy", _} -> {"#fef9c3", "#ca8a04"}  # light yellow, dark yellow
-      _ -> {"#f3f4f6", "#6b7280"}  # light grey, dark grey
+      # light green, dark green
+      {"food", _} -> {"#dcfce7", "#16a34a"}
+      # light amber, dark amber
+      {_, "process"} -> {"#fef3c7", "#d97706"}
+      # light orange, dark orange
+      {_, "storage"} -> {"#ffedd5", "#ea580c"}
+      # light blue, dark blue
+      {"water", _} -> {"#dbeafe", "#2563eb"}
+      # light blue, dark blue
+      {"waste", _} -> {"#dbeafe", "#2563eb"}
+      # light yellow, dark yellow
+      {"energy", _} -> {"#fef9c3", "#ca8a04"}
+      # light grey, dark grey
+      _ -> {"#f3f4f6", "#6b7280"}
     end
   end
 
@@ -327,7 +354,8 @@ defmodule GreenManTavernWeb.LivingWebLive do
       "Flame" -> "hero-fire"
       "ArrowUp" -> "hero-arrow-up"
       "ArrowDown" -> "hero-arrow-down"
-      _ -> "hero-cube"  # default
+      # default
+      _ -> "hero-cube"
     end
   end
 

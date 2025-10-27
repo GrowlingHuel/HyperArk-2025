@@ -185,7 +185,9 @@ defmodule GreenManTavern.Accounts do
   """
   def get_user_by_session_token(token) do
     # Use Phoenix.Token to verify and extract user ID from secure token
-    case Phoenix.Token.verify(GreenManTavernWeb.Endpoint, "user session", token, max_age: 60 * 24 * 60 * 60) do
+    case Phoenix.Token.verify(GreenManTavernWeb.Endpoint, "user session", token,
+           max_age: 60 * 24 * 60 * 60
+         ) do
       {:ok, user_id} -> get_user!(user_id)
       {:error, _reason} -> nil
     end
@@ -196,7 +198,10 @@ defmodule GreenManTavern.Accounts do
   """
   def generate_user_session_token(user) do
     # Use Phoenix.Token for cryptographically secure session tokens
-    Phoenix.Token.sign(GreenManTavernWeb.Endpoint, "user session", user.id, max_age: 60 * 24 * 60 * 60) # 60 days
+    # 60 days
+    Phoenix.Token.sign(GreenManTavernWeb.Endpoint, "user session", user.id,
+      max_age: 60 * 24 * 60 * 60
+    )
   end
 
   @doc """

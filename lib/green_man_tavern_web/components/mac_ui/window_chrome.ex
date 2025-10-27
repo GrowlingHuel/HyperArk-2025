@@ -20,7 +20,7 @@ defmodule GreenManTavernWeb.Components.MacUI.WindowChrome do
         <div class="mac-window-title truncate">{@title}</div>
       </div>
       <div class="mac-window-content mac-content-area">
-        <%= render_slot(@inner_block) %>
+        {render_slot(@inner_block)}
       </div>
     </div>
     """

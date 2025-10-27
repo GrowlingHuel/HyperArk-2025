@@ -137,7 +137,15 @@ defmodule GreenManTavern.Documents.TextChunker do
     end
   end
 
-  defp do_build_chunks([sentence | rest], chunk_size, overlap, chunks, current, start_pos, last_chunk) do
+  defp do_build_chunks(
+         [sentence | rest],
+         chunk_size,
+         overlap,
+         chunks,
+         current,
+         start_pos,
+         last_chunk
+       ) do
     new_content = if current == "", do: sentence, else: current <> " " <> sentence
 
     if String.length(new_content) >= chunk_size do

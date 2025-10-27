@@ -68,7 +68,11 @@ defmodule GreenManTavern.MindsDB.HTTPClient do
 
     Logger.info("mindsdb.request get_model", model: model_name)
 
-    case Req.post(url: url, json: %{query: "DESCRIBE #{model_name}"}, receive_timeout: @default_timeout) do
+    case Req.post(
+           url: url,
+           json: %{query: "DESCRIBE #{model_name}"},
+           receive_timeout: @default_timeout
+         ) do
       {:ok, %Req.Response{status: 200, body: body}} ->
         {:ok, body}
 

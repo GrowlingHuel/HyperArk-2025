@@ -69,10 +69,12 @@ defmodule GreenManTavern.Knowledge.PDFExtractor do
     with :ok <- validate_file(file_path),
          {:ok, raw_text} <- perform_extraction(file_path) do
       cleaned_text = clean_text(raw_text)
+
       Logger.info("Successfully extracted text",
         file_path: file_path,
         text_length: String.length(cleaned_text)
       )
+
       {:ok, cleaned_text}
     else
       error ->
@@ -80,6 +82,7 @@ defmodule GreenManTavern.Knowledge.PDFExtractor do
           file_path: file_path,
           error: error
         )
+
         {:error, error}
     end
   end
@@ -117,6 +120,7 @@ defmodule GreenManTavern.Knowledge.PDFExtractor do
         file_path: file_path,
         metadata: metadata
       )
+
       {:ok, metadata}
     else
       error ->
@@ -124,6 +128,7 @@ defmodule GreenManTavern.Knowledge.PDFExtractor do
           file_path: file_path,
           error: error
         )
+
         {:error, error}
     end
   end
@@ -152,7 +157,8 @@ defmodule GreenManTavern.Knowledge.PDFExtractor do
       ["Short text"]
   """
   @spec chunk_text(String.t(), integer()) :: [String.t()]
-  def chunk_text(text, chunk_size \\ @default_chunk_size) when is_binary(text) and is_integer(chunk_size) do
+  def chunk_text(text, chunk_size \\ @default_chunk_size)
+      when is_binary(text) and is_integer(chunk_size) do
     # Validate chunk size
     validated_size =
       chunk_size
@@ -202,8 +208,7 @@ defmodule GreenManTavern.Knowledge.PDFExtractor do
   """
   @spec extract_with_chunks(String.t(), integer()) :: {:ok, map()} | {:error, term()}
   def extract_with_chunks(file_path, chunk_size \\ @default_chunk_size)
-    when is_binary(file_path) and is_integer(chunk_size) do
-
+      when is_binary(file_path) and is_integer(chunk_size) do
     Logger.info("Extracting and chunking PDF",
       file_path: file_path,
       chunk_size: chunk_size
@@ -211,7 +216,6 @@ defmodule GreenManTavern.Knowledge.PDFExtractor do
 
     with {:ok, text} <- extract_text(file_path),
          {:ok, metadata} <- extract_metadata(file_path) do
-
       chunks = chunk_text(text, chunk_size)
 
       result = %{
@@ -317,8 +321,10 @@ defmodule GreenManTavern.Knowledge.PDFExtractor do
 
   defp clean_text(text) do
     text
-    |> String.replace(~r/\s+/, " ")  # Replace multiple whitespace with single space
-    |> String.replace(~r/\n\s*\n/, "\n\n")  # Normalize paragraph breaks
+    # Replace multiple whitespace with single space
+    |> String.replace(~r/\s+/, " ")
+    # Normalize paragraph breaks
+    |> String.replace(~r/\n\s*\n/, "\n\n")
     |> String.trim()
   end
 

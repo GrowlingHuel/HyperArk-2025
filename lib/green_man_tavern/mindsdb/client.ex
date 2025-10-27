@@ -14,7 +14,8 @@ defmodule GreenManTavern.MindsDB.Client do
 
   Returns {:ok, answer} | {:error, reason}.
   """
-  def query_agent(agent_name, question, context \\ %{}) when is_binary(agent_name) and is_binary(question) do
+  def query_agent(agent_name, question, context \\ %{})
+      when is_binary(agent_name) and is_binary(question) do
     host = Application.get_env(:green_man_tavern, :mindsdb_host, "localhost")
     port = Application.get_env(:green_man_tavern, :mindsdb_http_port, 47_334)
 
@@ -28,7 +29,9 @@ defmodule GreenManTavern.MindsDB.Client do
     case Req.post(url: url, json: %{query: query}, receive_timeout: @default_timeout) do
       {:ok, %Req.Response{status: 200, body: body}} ->
         case decode_body(body) do
-          {:ok, answer} -> {:ok, answer}
+          {:ok, answer} ->
+            {:ok, answer}
+
           {:error, _reason} ->
             # Fallback to mock response when MindsDB returns decode errors
             Logger.info("mindsdb.fallback", reason: "MindsDB decode error, using mock response")
@@ -82,7 +85,11 @@ defmodule GreenManTavern.MindsDB.Client do
 
     Logger.info("mindsdb.request list_agents")
 
-    case Req.post(url: url, json: %{query: "SHOW MODELS WHERE type = 'model'"}, receive_timeout: 20_000) do
+    case Req.post(
+           url: url,
+           json: %{query: "SHOW MODELS WHERE type = 'model'"},
+           receive_timeout: 20_000
+         ) do
       {:ok, %Req.Response{status: 200, body: body}} ->
         with {:ok, %{"data" => data}} <- Jason.decode(body),
              true <- is_list(data) do
@@ -91,8 +98,11 @@ defmodule GreenManTavern.MindsDB.Client do
           _ -> {:error, "Unexpected response while listing agents"}
         end
 
-      {:ok, %Req.Response{status: status}} -> {:error, "MindsDB API error: #{status}"}
-      {:error, err} -> {:error, "HTTP request failed: #{inspect(err)}"}
+      {:ok, %Req.Response{status: status}} ->
+        {:error, "MindsDB API error: #{status}"}
+
+      {:error, err} ->
+        {:error, "HTTP request failed: #{inspect(err)}"}
     end
   end
 
@@ -129,6 +139,7 @@ defmodule GreenManTavern.MindsDB.Client do
     case data do
       [[answer | _] | _] when is_binary(answer) ->
         {:ok, answer}
+
       _ ->
         {:error, "Unexpected data structure: #{inspect(data)}"}
     end
@@ -141,7 +152,6 @@ defmodule GreenManTavern.MindsDB.Client do
   defp decode_body(response) do
     {:error, "Unexpected response format: #{inspect(response)}"}
   end
-
 
   defp sanitize_agent_name(name) when is_binary(name) do
     allowed = [

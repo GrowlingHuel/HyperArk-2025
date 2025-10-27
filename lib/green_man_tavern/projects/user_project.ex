@@ -27,6 +27,9 @@ defmodule GreenManTavern.Projects.UserProject do
     ])
     |> validate_required([:user_id, :project_type, :status, :mentioned_at, :confidence_score])
     |> validate_inclusion(:status, ["desire", "planning", "in_progress", "completed", "abandoned"])
-    |> validate_number(:confidence_score, greater_than_or_equal_to: 0.0, less_than_or_equal_to: 1.0)
+    |> validate_number(:confidence_score,
+      greater_than_or_equal_to: 0.0,
+      less_than_or_equal_to: 1.0
+    )
   end
 end

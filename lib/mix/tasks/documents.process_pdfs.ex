@@ -122,7 +122,8 @@ defmodule Mix.Tasks.Documents.ProcessPdfs do
     [
       chunk_size: opts[:chunk_size] || 1000,
       overlap: opts[:overlap] || 200,
-      skip_existing: opts[:skip_existing] != false,  # Default to true
+      # Default to true
+      skip_existing: opts[:skip_existing] != false,
       batch_insert_size: opts[:batch_size] || 100
     ]
   end
@@ -153,9 +154,11 @@ defmodule Mix.Tasks.Documents.ProcessPdfs do
 
     if summary.failed > 0 do
       Mix.shell().error("❌ Failed Files:")
+
       Enum.each(summary.errors, fn error ->
         Mix.shell().error("   • #{error.file}: #{error.reason}")
       end)
+
       Mix.shell().info("")
     end
 
