@@ -127,8 +127,7 @@ defmodule GreenManTavernWeb.CharacterLive do
           user_id: user_id,
           character_id: character.id,
           message_type: "user",
-          content: message,
-          timestamp: DateTime.utc_now()
+          message_content: message
         })
         IO.puts("Conversation entry created successfully")
       rescue
@@ -209,8 +208,7 @@ defmodule GreenManTavernWeb.CharacterLive do
                 user_id: user_id,
                 character_id: character.id,
                 message_type: "character",
-                content: response,
-                timestamp: DateTime.utc_now()
+                message_content: response
               })
               IO.puts("Character conversation entry created")
             rescue
@@ -291,8 +289,8 @@ defmodule GreenManTavernWeb.CharacterLive do
             %{
               id: conv.id,
               type: String.to_atom(conv.message_type),
-              content: conv.content,
-              timestamp: conv.timestamp
+              content: conv.message_content,
+              timestamp: conv.inserted_at
             }
           end)
 
