@@ -12,3 +12,6 @@
 
 # Import character seeds
 Code.eval_file("priv/repo/seeds/characters.exs")
+
+# Import project seeds
+Code.eval_file("priv/repo/seeds/003_projects.exs")
