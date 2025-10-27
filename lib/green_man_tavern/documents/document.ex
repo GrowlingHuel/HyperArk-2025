@@ -3,7 +3,7 @@ defmodule GreenManTavern.Documents.Document do
   Schema for managing PDF documents in the knowledge base.
 
   Documents represent uploaded PDF files that have been processed
-  and chunked for use with MindsDB agents. Each document contains
+  and chunked for AI processing. Each document contains
   metadata about the original file and references to its chunks.
 
   ## Fields

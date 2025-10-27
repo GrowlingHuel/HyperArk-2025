@@ -3,7 +3,7 @@ defmodule GreenManTavern.Knowledge.PDFExtractor do
   Extracts text content from PDF files for knowledge base ingestion.
 
   Handles various PDF formats and provides clean text output suitable
-  for MindsDB knowledge bases. Supports text extraction, metadata
+  for the knowledge base. Supports text extraction, metadata
   retrieval, and intelligent text chunking for optimal processing.
 
   ## Features
@@ -56,7 +56,7 @@ defmodule GreenManTavern.Knowledge.PDFExtractor do
 
   ## Examples
 
-      iex> PDFExtractor.extract_text("priv/mindsdb/knowledge/permaculture_guide.pdf")
+      iex> PDFExtractor.extract_text("priv/pdfs/permaculture_guide.pdf")
       {:ok, "Introduction to Permaculture\\n\\nPermaculture is a design system..."}
 
       iex> PDFExtractor.extract_text("nonexistent.pdf")
@@ -104,7 +104,7 @@ defmodule GreenManTavern.Knowledge.PDFExtractor do
 
   ## Examples
 
-      iex> PDFExtractor.extract_metadata("priv/mindsdb/knowledge/guide.pdf")
+      iex> PDFExtractor.extract_metadata("priv/pdfs/guide.pdf")
       {:ok, %{title: "Permaculture Guide", author: "John Doe", pages: 45}}
 
       iex> PDFExtractor.extract_metadata("corrupted.pdf")

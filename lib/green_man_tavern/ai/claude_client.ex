@@ -2,8 +2,8 @@ defmodule GreenManTavern.AI.ClaudeClient do
   @moduledoc """
   Client for interacting with Anthropic's Claude API.
 
-  This module handles direct API communication with Claude, replacing
-  the previous MindsDB integration.
+  This module handles direct API communication with Claude for
+  character conversations and AI-powered interactions.
   """
 
   require Logger

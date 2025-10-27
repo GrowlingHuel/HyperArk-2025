@@ -68,12 +68,12 @@ defmodule GreenManTavern.Conversations do
         # Create a changeset to get proper error handling
         changeset = %ConversationHistory{} |> ConversationHistory.changeset(attrs)
         {:error, %{changeset | errors: [{:user_id, {"is required for security", []}} | changeset.errors]}}
-      
+
       user_id when is_integer(user_id) ->
         %ConversationHistory{}
         |> ConversationHistory.changeset(attrs)
         |> Repo.insert()
-      
+
       _ ->
         changeset = %ConversationHistory{} |> ConversationHistory.changeset(attrs)
         {:error, %{changeset | errors: [{:user_id, {"must be an integer", []}} | changeset.errors]}}

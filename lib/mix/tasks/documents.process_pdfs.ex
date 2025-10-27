@@ -169,8 +169,7 @@ defmodule Mix.Tasks.Documents.ProcessPdfs do
 
     Mix.shell().info("""
     Next Steps:
-    • Run 'mix mindsdb.setup' to install character agents
-    • Upload knowledge base to MindsDB
+    • PDFs are ready for AI processing
     • Test character conversations with the processed content
     """)
   end
