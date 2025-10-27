@@ -17,11 +17,11 @@ defmodule GreenManTavernWeb.BannerMenuComponent do
       <div class="banner-left">
         <span class="banner-logo">🍃 HyperArk</span>
       </div>
-      
+
     <!-- RIGHT: Navigation buttons -->
       <div class="banner-right">
         <.link navigate={~p"/"} class="banner-menu-item">Tavern</.link>
-        
+
     <!-- Characters Selector -->
         <div class="character-selector">
           <select
@@ -43,7 +43,7 @@ defmodule GreenManTavernWeb.BannerMenuComponent do
         </div>
 
         <.link navigate={~p"/living-web"} class="banner-menu-item">Living Web</.link>
-        
+
     <!-- Authentication Section -->
         <div class="banner-auth-section">
           <%= if @current_user do %>

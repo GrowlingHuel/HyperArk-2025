@@ -215,7 +215,7 @@ defmodule GreenManTavernWeb.LivingWebLive do
           opacity={@opacity}
           class="connection-path"
         />
-        
+
       <!-- Flow label -->
         <text
           x={@mid_x}
@@ -276,7 +276,7 @@ defmodule GreenManTavernWeb.LivingWebLive do
         stroke-width={@border_width}
         class="system-rect"
       />
-      
+
     <!-- Process badge -->
       <%= if @system.system_type == "process" do %>
         <circle
@@ -288,7 +288,7 @@ defmodule GreenManTavernWeb.LivingWebLive do
           stroke-width="1"
         />
       <% end %>
-      
+
     <!-- Content area -->
       <foreignObject x={@x - 50} y={@y - 30} width="100" height="60">
         <div class="node-content">
@@ -296,12 +296,12 @@ defmodule GreenManTavernWeb.LivingWebLive do
           <div class="node-icon">
             <.icon name={@icon_name} class="w-8 h-8" />
           </div>
-          
+
     <!-- System name -->
           <div class="node-name">
             {@system.name}
           </div>
-          
+
     <!-- Requirements for process nodes -->
           <%= if @system.system_type == "process" do %>
             <div class="node-requirements">
