@@ -64,4 +64,3 @@ defmodule GreenManTavern.Systems.Project do
     end
   end
 end
-

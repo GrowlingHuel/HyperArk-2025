@@ -55,4 +55,3 @@ defmodule GreenManTavern.Diagrams.CompositeSystem do
     end
   end
 end
-

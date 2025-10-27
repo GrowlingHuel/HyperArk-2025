@@ -476,4 +476,3 @@ IO.puts("  - Food: #{length(food_systems)}")
 IO.puts("  - Water: #{length(water_systems)}")
 IO.puts("  - Waste: #{length(waste_systems)}")
 IO.puts("  - Energy: #{length(energy_systems)}")
-

@@ -1,210 +1,51 @@
-<!-- This entire file renders inside right-container's mac-content-area -->
 <div class="living-web-page">
-  <!-- Systems Library sidebar -->
-  <div class="systems-library">
-    <h2>Systems Library</h2>
-    <div class="space-filter">
-      Space: <span class="space-type">{@user_space_type}</span>
+  <div class="mac-window living-web-container">
+    <!-- Title Bar -->
+    <div class="mac-title-bar">
+      <div class="mac-title">Living Web</div>
     </div>
 
-    <div class="categories-list">
-      <%= for {category, systems} <- @systems_by_category do %>
-        <div class="category-section">
-          <div class="category-header" phx-click="toggle_category" phx-value-category={category}>
-            <span class="category-icon">▼</span>
-            <span class="category-name">{Systems.get_category_info(category) |> elem(0)}</span>
-            <span class="category-count">({length(systems)})</span>
-          </div>
-          <div class="category-systems">
-            <%= for system <- systems do %>
-              <div class="system-item" phx-click="select_system" phx-value-system_id={system.id}>
-                <div class="system-icon" style={"background-color: #{system.color_scheme}"}>
-                  <span class="icon-text">{system.icon_name}</span>
+    <!-- Content: Two-panel layout -->
+    <div class="living-web-content">
+      <!-- Left Panel: Systems Library -->
+      <div class="living-web-library">
+        <div class="library-header">SYSTEMS LIBRARY</div>
+
+        <!-- Projects by Category -->
+        <%= for category <- ["food", "water", "waste", "energy"] do %>
+          <% category_projects = Enum.filter(@projects, & &1.category == category) %>
+          <%= if length(category_projects) > 0 do %>
+            <div class="library-section">
+              <div class="library-section-title"><%= String.upcase(category) %></div>
+              <%= for project <- category_projects do %>
+                <div class="library-item" draggable="true">
+                  <span class="library-icon">📦</span>
+                  <span class="library-name"><%= project.name %></span>
                 </div>
-                <div class="system-info">
-                  <div class="system-name">{system.name}</div>
-                  <div class="system-type">{system.system_type}</div>
-                </div>
-                <div class="system-actions">
-                  <button
-                    class="add-button"
-                    phx-click="add_system"
-                    phx-value-system_id={system.id}
-                    phx-click-away="deselect_system"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            <% end %>
-          </div>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+
+        <!-- MY SYSTEMS Section -->
+        <div class="library-section">
+          <div class="library-section-title">MY SYSTEMS</div>
+          <div class="library-placeholder">(No composite systems yet)</div>
         </div>
-      <% end %>
-    </div>
-  </div>
-  
-<!-- Diagram canvas -->
-  <div class="diagram-canvas">
-    <svg
-      viewBox="0 0 1200 800"
-      class="living-web-canvas"
-      phx-click="deselect_node"
-    >
-      <!-- Background grid and arrow markers -->
-      <defs>
-        <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-          <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#EEEEEE" stroke-width="1" />
-        </pattern>
-        
-<!-- Active connection arrow (green) -->
-        <marker
-          id="arrow-active"
-          markerWidth="10"
-          markerHeight="10"
-          refX="9"
-          refY="3"
-          orient="auto"
-          markerUnits="strokeWidth"
-        >
-          <path d="M0,0 L0,6 L9,3 z" fill="#22c55e" />
-        </marker>
-        
-<!-- Potential connection arrow (orange) -->
-        <marker
-          id="arrow-potential"
-          markerWidth="10"
-          markerHeight="10"
-          refX="9"
-          refY="3"
-          orient="auto"
-          markerUnits="strokeWidth"
-        >
-          <path d="M0,0 L0,6 L9,3 z" fill="#f97316" />
-        </marker>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#grid)" />
-      
-<!-- CONNECTIONS FIRST (behind nodes) -->
-      <%= for connection <- @user_connections do %>
-        <%= if from = find_system(@user_systems, connection.connection.from_system_id) do %>
-          <%= if to = find_system(@user_systems, connection.connection.to_system_id) do %>
-            <%= if rendered = render_connection(connection, from, to, @show_potential) do %>
-              {rendered}
-            <% end %>
-          <% end %>
-        <% end %>
-      <% end %>
-      
-<!-- User Systems (on top of connections) -->
-      <%= if @user_systems == [] do %>
-        <text
-          x="600"
-          y="400"
-          text-anchor="middle"
-          font-family="Monaco, monospace"
-          font-size="16"
-          fill="#666666"
-        >
-          Drag systems from the library to start building your Living Web
-        </text>
-      <% else %>
-        <%= for user_system <- @user_systems do %>
-          {render_node(user_system, @selected_node_id == user_system.system.id)}
-        <% end %>
-      <% end %>
-      
-<!-- Potential Connections (if enabled) -->
-      <%= if @show_connections do %>
-        <%= for user_system <- @user_systems do %>
-          <%= for other_system <- @user_systems, other_system.id != user_system.id do %>
-            <line
-              x1={user_system.position_x}
-              y1={user_system.position_y}
-              x2={other_system.position_x}
-              y2={other_system.position_y}
-              stroke="#FFA500"
-              stroke-width="2"
-              stroke-dasharray="5,5"
-              opacity="0.6"
-              class="potential-connection"
-            />
-          <% end %>
-        <% end %>
-      <% end %>
-    </svg>
-    
-<!-- Canvas Controls -->
-    <div class="canvas-controls">
-      <div class="controls-row">
-        <label class="control-checkbox">
-          <input
-            type="checkbox"
-            checked={@show_connections}
-            phx-click="toggle_connections"
-          />
-          <span>Show Potential Connections</span>
-        </label>
+      </div>
 
-        <label class="control-checkbox">
-          <input
-            type="checkbox"
-            checked={@show_potential}
-            phx-click="toggle_potential"
-          />
-          <span>Show Potential Flows</span>
-        </label>
-      </div>
-    </div>
-    
-<!-- Legend -->
-    <div class="canvas-legend">
-      <div class="legend-item">
-        <div class="legend-color active"></div>
-        <span>Active System</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-color potential"></div>
-        <span>Potential Connection</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-color process"></div>
-        <span>Process Node</span>
+      <!-- Right Panel: Canvas -->
+      <div class="living-web-canvas">
+        <div
+          id="xyflow-container"
+          phx-hook="XyflowEditor"
+          data-nodes={Jason.encode!(@nodes)}
+          data-edges={Jason.encode!(@edges)}
+          class="xyflow-editor"
+        >
+          <!-- XyFlow editor will render here -->
+        </div>
       </div>
     </div>
   </div>
-  
-<!-- Selected System Details -->
-  <%= if @selected_system do %>
-    <div class="system-details">
-      <div class="details-header">
-        <h4>{@selected_system.name}</h4>
-        <button class="close-button" phx-click="deselect_system">×</button>
-      </div>
-      <div class="details-content">
-        <div class="detail-row">
-          <span class="detail-label">Type:</span>
-          <span class="detail-value">{@selected_system.system_type}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Category:</span>
-          <span class="detail-value">{@selected_system.category}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Space Required:</span>
-          <span class="detail-value">{@selected_system.space_required}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Skill Level:</span>
-          <span class="detail-value">{@selected_system.skill_level}</span>
-        </div>
-        <div class="detail-description">
-          <p>{@selected_system.description}</p>
-        </div>
-        <div class="detail-requirements">
-          <h5>Requirements:</h5>
-          <p>{@selected_system.requirements}</p>
-        </div>
-      </div>
-    </div>
-  <% end %>
 </div>

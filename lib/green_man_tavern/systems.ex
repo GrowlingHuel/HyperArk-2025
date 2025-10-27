@@ -7,6 +7,7 @@ defmodule GreenManTavern.Systems do
   alias GreenManTavern.Repo
 
   alias GreenManTavern.Systems.System
+  alias GreenManTavern.Systems.Project
   alias GreenManTavern.Systems.UserSystem
   alias GreenManTavern.Systems.Connection
   alias GreenManTavern.Systems.UserConnection
@@ -64,6 +65,13 @@ defmodule GreenManTavern.Systems do
   def list_systems_by_space(space_type) when is_binary(space_type) do
     from(s in System, where: ilike(s.space_required, ^"%#{space_type}%"))
     |> Repo.all()
+  end
+
+  @doc """
+  Returns the list of all projects.
+  """
+  def list_projects do
+    Repo.all(Project)
   end
 
   @doc """

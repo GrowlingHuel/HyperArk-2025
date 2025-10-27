@@ -47,4 +47,3 @@ defmodule GreenManTavern.Diagrams.Diagram do
     end
   end
 end
-

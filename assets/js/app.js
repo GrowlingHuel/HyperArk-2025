@@ -24,6 +24,7 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/green_man_tavern"
 import ChatFormHook from "./hooks/chat_form_hook.js"
+import XyflowEditorHook from "./hooks/xyflow_editor.js"
 
 // Initialize topbar directly (inline to avoid import issues)
 const topbar = {
@@ -39,6 +40,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
   hooks: {
     ...colocatedHooks,
     ChatForm: ChatFormHook,
+    XyflowEditor: XyflowEditorHook,
     redirect: {
       mounted() {
         this.handleEvent("redirect", (data) => {
