@@ -110,31 +110,4 @@ defmodule GreenManTavern.Documents.Document do
     end
   end
 
-  defp validate_metadata_structure(metadata) do
-    # Check for required fields
-    required_fields = [:category]
-    missing_fields = Enum.filter(required_fields, &(not Map.has_key?(metadata, &1)))
-
-    if Enum.empty?(missing_fields) do
-      # Validate field values
-      cond do
-        not is_binary(metadata[:category]) ->
-          {:error, "category must be a string"}
-
-        not is_nil(metadata[:author]) and not is_binary(metadata[:author]) ->
-          {:error, "author must be a string"}
-
-        not is_nil(metadata[:date]) and not is_binary(metadata[:date]) ->
-          {:error, "date must be a string"}
-
-        not is_nil(metadata[:tags]) and not is_list(metadata[:tags]) ->
-          {:error, "tags must be a list"}
-
-        true ->
-          :ok
-      end
-    else
-      {:error, "missing required fields: #{Enum.join(missing_fields, ", ")}"}
-    end
-  end
 end

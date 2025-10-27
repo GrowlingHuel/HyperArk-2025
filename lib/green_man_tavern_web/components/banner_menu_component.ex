@@ -42,8 +42,6 @@ defmodule GreenManTavernWeb.BannerMenuComponent do
           </select>
         </div>
 
-        <.link navigate={~p"/database"} class="banner-menu-item">Database</.link>
-        <.link navigate={~p"/garden"} class="banner-menu-item">Garden</.link>
         <.link navigate={~p"/living-web"} class="banner-menu-item">Living Web</.link>
         
     <!-- Authentication Section -->

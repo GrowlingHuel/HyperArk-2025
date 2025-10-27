@@ -543,8 +543,4 @@ defmodule GreenManTavernWeb.LivingWebLive do
     end
   end
 
-  defp update_trust_level(_user_id, _character_id, _message, _response) do
-    # TODO: Implement trust level updates
-    :ok
-  end
 end

@@ -104,12 +104,13 @@ defmodule GreenManTavernWeb.UserRegistrationLive do
 
   def handle_event("save", %{"user" => user_params}, socket) do
     case Accounts.register_user(user_params) do
-      {:ok, user} ->
-        {:ok, _} =
-          Accounts.deliver_user_confirmation_instructions(
-            user,
-            &url(~p"/users/confirm/#{&1}")
-          )
+      {:ok, _user} ->
+        # TODO: Implement user confirmation system
+        # {:ok, _} =
+        #   Accounts.deliver_user_confirmation_instructions(
+        #     _user,
+        #     &url(~p"/users/confirm/#{&1}")
+        #   )
 
         socket =
           socket

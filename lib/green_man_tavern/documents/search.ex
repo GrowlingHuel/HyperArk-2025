@@ -9,7 +9,7 @@ defmodule GreenManTavern.Documents.Search do
 
   import Ecto.Query
   alias GreenManTavern.Repo
-  alias GreenManTavern.Documents.{Document, DocumentChunk}
+  alias GreenManTavern.Documents.DocumentChunk
 
   @doc """
   Search for relevant document chunks based on a query string.
