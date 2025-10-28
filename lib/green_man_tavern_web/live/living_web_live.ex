@@ -1,5 +1,6 @@
 defmodule GreenManTavernWeb.LivingWebLive do
   use GreenManTavernWeb, :live_view
+  require Logger
 
   alias GreenManTavern.Systems
   alias GreenManTavern.Diagrams
@@ -10,7 +11,7 @@ defmodule GreenManTavernWeb.LivingWebLive do
 
     # Load all projects
     projects = Systems.list_projects()
-    IO.puts("Loaded #{length(projects)} projects")
+    Logger.info("Loaded #{length(projects)} projects")
 
     # Get or create a diagram for the current user
     case Diagrams.get_or_create_diagram(current_user.id) do
@@ -52,8 +53,7 @@ defmodule GreenManTavernWeb.LivingWebLive do
 
   @impl true
   def handle_event("node_added", params, socket) do
-    IO.puts("=== NODE ADDED ===")
-    IO.inspect(params, label: "Params")
+    Logger.debug("node_added: params=#{inspect(params)}")
 
     case handle_node_added(params, socket) do
       {:ok, updated_socket, node_data} ->
@@ -63,7 +63,7 @@ defmodule GreenManTavernWeb.LivingWebLive do
         {:noreply, updated_socket}
 
       {:error, reason} ->
-        IO.puts("Error adding node: #{inspect(reason)}")
+        Logger.error("Error adding node: #{inspect(reason)}")
 
         # Extract temp_id if it exists
         temp_id = params["temp_id"]
@@ -80,16 +80,14 @@ defmodule GreenManTavernWeb.LivingWebLive do
 
   @impl true
   def handle_event("node_moved", params, socket) do
-    IO.puts("=== NODE MOVED ===")
-    IO.inspect(params, label: "Params")
+    Logger.debug("node_moved: params=#{inspect(params)}")
 
     {:noreply, socket}
   end
 
   @impl true
   def handle_event("edge_added", params, socket) do
-    IO.puts("=== EDGE ADDED ===")
-    IO.inspect(params, label: "Params")
+    Logger.debug("edge_added: params=#{inspect(params)}")
 
     {:noreply, socket}
   end
@@ -180,7 +178,7 @@ defmodule GreenManTavernWeb.LivingWebLive do
         {:ok, updated_diagram}
 
       {:error, changeset} ->
-        IO.inspect(changeset.errors, label: "Diagram update errors")
+        Logger.error("Diagram update errors: #{inspect(changeset.errors)}")
         {:error, "Failed to update diagram"}
     end
   end
