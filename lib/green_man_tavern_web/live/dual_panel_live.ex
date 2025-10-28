@@ -105,6 +105,72 @@ defmodule GreenManTavernWeb.DualPanelLive do
     {:noreply, socket}
   end
 
+  # ==== Living Web: Right-panel-only events ====
+  # Add node to diagram
+  @impl true
+  def handle_event("node_added", %{"project_id" => project_id_str, "x" => x_str, "y" => y_str} = params, socket) do
+    temp_id = Map.get(params, "temp_id")
+
+    with {:ok, project_id} <- parse_integer(project_id_str),
+         {:ok, x} <- parse_integer(x_str),
+         {:ok, y} <- parse_integer(y_str),
+         {:ok, _node_id, updated_socket, node_payload} <- add_node(socket, project_id, x, y, temp_id) do
+      # Push success event with enriched node data
+      updated_socket =
+        push_event(updated_socket, "node_added_success", node_payload)
+
+      {:noreply, updated_socket}
+    else
+      _ ->
+        {:noreply, push_event(socket, "node_add_error", %{temp_id: temp_id, message: "Failed to add node"})}
+    end
+  end
+
+  # Move node position
+  @impl true
+  def handle_event("node_moved", %{"node_id" => node_id, "position_x" => x_str, "position_y" => y_str}, socket) do
+    with {:ok, x} <- parse_integer(x_str),
+         {:ok, y} <- parse_integer(y_str),
+         {:ok, updated_socket} <- move_node(socket, node_id, x, y) do
+      {:noreply, updated_socket}
+    else
+      _ -> {:noreply, socket}
+    end
+  end
+
+  # Add edge (basic placeholder that stores edge data)
+  @impl true
+  def handle_event("edge_added", %{"source_id" => source_id, "target_id" => target_id} = params, socket) do
+    edge_id = Map.get(params, "edge_id") || ("edge_" <> Base.encode16(:crypto.strong_rand_bytes(6), case: :lower))
+    diagram = socket.assigns.diagram
+    edges = socket.assigns.edges || %{}
+
+    new_edge = %{
+      "source_id" => source_id,
+      "target_id" => target_id
+    }
+
+    updated_edges = Map.put(edges, edge_id, new_edge)
+
+    updated_socket =
+      case diagram do
+        nil -> assign(socket, :edges, updated_edges)
+        d ->
+          case Diagrams.update_diagram(d, %{edges: updated_edges}) do
+            {:ok, d2} -> socket |> assign(:diagram, d2) |> assign(:edges, updated_edges)
+            _ -> socket
+          end
+      end
+
+    {:noreply, updated_socket}
+  end
+
+  # Node selected (no-op for now; keep right panel state only)
+  @impl true
+  def handle_event("node_selected", _params, socket) do
+    {:noreply, socket}
+  end
+
   # Chat event handlers
   @impl true
   def handle_event("send_message", %{}, socket) do
@@ -272,6 +338,96 @@ defmodule GreenManTavernWeb.DualPanelLive do
           Map.put(acc, node_id, enriched)
       end
     end)
+  end
+
+  # ==== Living Web helpers ====
+  defp parse_integer(string) when is_binary(string) do
+    case Integer.parse(string) do
+      {int, ""} -> {:ok, int}
+      _ -> {:error, :invalid_integer}
+    end
+  end
+
+  defp parse_integer(int) when is_integer(int), do: {:ok, int}
+  defp parse_integer(_), do: {:error, :invalid_type}
+
+  defp add_node(socket, project_id, x, y, temp_id) do
+    projects = socket.assigns.projects || []
+    project = Enum.find(projects, &(&1.id == project_id))
+    diagram = socket.assigns.diagram
+
+    node_id = "node_" <> Base.encode16(:crypto.strong_rand_bytes(8), case: :lower)
+
+    base_nodes = socket.assigns.nodes || %{}
+    new_node_data = %{
+      "project_id" => project_id,
+      "x" => x,
+      "y" => y,
+      "instance_scale" => 1.0
+    }
+
+    raw_nodes = Map.put(base_nodes, node_id, new_node_data)
+    edges = socket.assigns.edges || %{}
+
+    # Persist if we have a diagram
+    updated_socket =
+      case diagram do
+        nil -> socket
+        d ->
+          case Diagrams.update_diagram(d, %{nodes: raw_nodes}) do
+            {:ok, d2} -> assign(socket, :diagram, d2)
+            _ -> socket
+          end
+      end
+
+    # Enrich with names
+    enriched_nodes = enrich_nodes_with_project_data(raw_nodes, projects)
+    updated_socket = updated_socket |> assign(:nodes, enriched_nodes) |> assign(:edges, edges)
+
+    node_payload = %{
+      temp_id: temp_id,
+      id: node_id,
+      project_id: project && project.id,
+      name: project && project.name,
+      category: project && project.category,
+      inputs: project && project.inputs,
+      outputs: project && project.outputs,
+      position: %{x: x, y: y},
+      icon_name: project && project.icon_name
+    }
+
+    {:ok, node_id, updated_socket, node_payload}
+  end
+
+  defp move_node(socket, node_id, x, y) do
+    nodes = socket.assigns.nodes || %{}
+    projects = socket.assigns.projects || []
+    diagram = socket.assigns.diagram
+
+    case Map.fetch(nodes, node_id) do
+      :error -> {:ok, socket}
+      {:ok, _node} ->
+        # Update raw nodes first (preserve original structure keys)
+        raw_nodes =
+          nodes
+          |> Enum.into(%{}, fn {id, data} ->
+            {id, Map.merge(data, %{"x" => if(id == node_id, do: x, else: data["x"]), "y" => if(id == node_id, do: y, else: data["y"])})}
+          end)
+
+        # Persist
+        updated_socket =
+          case diagram do
+            nil -> socket
+            d ->
+              case Diagrams.update_diagram(d, %{nodes: raw_nodes}) do
+                {:ok, d2} -> assign(socket, :diagram, d2)
+                _ -> socket
+              end
+          end
+
+        enriched = enrich_nodes_with_project_data(raw_nodes, projects)
+        {:ok, updated_socket |> assign(:nodes, enriched)}
+    end
   end
 
   defp update_trust_level(user_id, character_id, user_message, character_response) do
