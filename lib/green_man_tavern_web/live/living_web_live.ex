@@ -52,7 +52,27 @@ defmodule GreenManTavernWeb.LivingWebLive do
     IO.puts("=== NODE ADDED ===")
     IO.inspect(params, label: "Params")
 
-    {:noreply, socket}
+    case handle_node_added(params, socket) do
+      {:ok, updated_socket, node_data} ->
+        # Push node data back to client
+        updated_socket = push_event(updated_socket, "node_added_success", node_data)
+
+        {:noreply, updated_socket}
+
+      {:error, reason} ->
+        IO.puts("Error adding node: #{inspect(reason)}")
+
+        # Extract temp_id if it exists
+        temp_id = params["temp_id"]
+
+        # Push error event to client
+        socket =
+          socket
+          |> put_flash(:error, "Failed to add node: #{inspect(reason)}")
+          |> push_event("node_add_error", %{temp_id: temp_id, message: "Failed to add node: #{inspect(reason)}"})
+
+        {:noreply, socket}
+    end
   end
 
   @impl true
@@ -70,4 +90,96 @@ defmodule GreenManTavernWeb.LivingWebLive do
 
     {:noreply, socket}
   end
+
+  defp handle_node_added(%{"project_id" => project_id_str, "x" => x_str, "y" => y_str} = params, socket) do
+    # Get temp_id if present, otherwise use nil
+    temp_id = Map.get(params, "temp_id")
+
+    with {:ok, project_id} <- parse_integer(project_id_str),
+         {:ok, x} <- parse_integer(x_str),
+         {:ok, y} <- parse_integer(y_str),
+         project when not is_nil(project) <- get_project_safe(project_id),
+         node_id <- generate_node_id(),
+         {:ok, diagram} <- add_node_to_diagram(socket.assigns.diagram, node_id, project.id, x, y) do
+      # Update socket assigns
+      updated_socket =
+        socket
+        |> assign(:diagram, diagram)
+        |> assign(:nodes, diagram.nodes)
+
+      # Prepare node data for the client
+      node_data = %{
+        temp_id: temp_id,
+        id: node_id,
+        project_id: project.id,
+        name: project.name,
+        category: project.category,
+        inputs: project.inputs,
+        outputs: project.outputs,
+        position: %{x: x, y: y},
+        icon_name: project.icon_name
+      }
+
+      {:ok, updated_socket, node_data}
+    else
+      nil ->
+        {:error, "Project not found"}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp handle_node_added(_params, _socket) do
+    {:error, "Invalid parameters"}
+  end
+
+  defp parse_integer(string) when is_binary(string) do
+    case Integer.parse(string) do
+      {int, ""} -> {:ok, int}
+      _ -> {:error, :invalid_integer}
+    end
+  end
+
+  defp parse_integer(integer) when is_integer(integer), do: {:ok, integer}
+  defp parse_integer(_), do: {:error, :invalid_type}
+
+  defp get_project_safe(project_id) do
+    try do
+      Systems.get_project!(project_id)
+    rescue
+      Ecto.NoResultsError -> nil
+    end
+  end
+
+  defp generate_node_id do
+    # Generate a unique node ID using crypto
+    random_bytes = :crypto.strong_rand_bytes(8)
+    node_id = "node_" <> Base.encode16(random_bytes, case: :lower)
+    node_id
+  end
+
+  defp add_node_to_diagram(diagram, node_id, project_id, x, y) do
+    # Create the new node map with simplified structure
+    new_node = %{
+      "project_id" => project_id,
+      "x" => x,
+      "y" => y,
+      "instance_scale" => 1.0
+    }
+
+    # Add the node to the existing nodes map
+    updated_nodes = Map.put(diagram.nodes, node_id, new_node)
+
+    # Update the diagram
+    case Diagrams.update_diagram(diagram, %{nodes: updated_nodes}) do
+      {:ok, updated_diagram} ->
+        {:ok, updated_diagram}
+
+      {:error, changeset} ->
+        IO.inspect(changeset.errors, label: "Diagram update errors")
+        {:error, "Failed to update diagram"}
+    end
+  end
+
 end

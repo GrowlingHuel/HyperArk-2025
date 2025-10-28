@@ -75,6 +75,11 @@ defmodule GreenManTavern.Systems do
   end
 
   @doc """
+  Gets a single project.
+  """
+  def get_project!(id), do: Repo.get!(Project, id)
+
+  @doc """
   Gets a single system.
   """
   def get_system!(id), do: Repo.get!(System, id)

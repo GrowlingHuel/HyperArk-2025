@@ -1,0 +1,301 @@
+/* Living Web - Layout Styles */
+
+/* Main page wrapper - fills viewport */
+.living-web-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Container - Mac window styling */
+.living-web-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 600px;
+  background: #FFF;
+}
+
+/* Content area - horizontal flex layout */
+.living-web-content {
+  display: flex;
+  flex: 1;
+  min-height: 500px;
+  overflow: hidden;
+}
+
+/* Left Panel: Systems Library */
+.living-web-library {
+  width: 200px;
+  flex-shrink: 0;
+  background: #E8E8E8;
+  border-right: 2px solid #000;
+  padding: 10px;
+  overflow-y: auto;
+  font-family: 'Chicago', 'Geneva', sans-serif;
+}
+
+/* Right Panel: Canvas */
+.living-web-canvas {
+  flex: 1;
+  min-height: 500px;
+  background: #F8F8F8;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #000;
+}
+
+/* Canvas container */
+#xyflow-container {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+  min-height: 500px !important;
+  overflow: hidden !important;
+}
+
+/* Canvas editor wrapper */
+.xyflow-editor {
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+  background: #F8F8F8;
+  cursor: default;
+}
+
+/* Visual indicator when dragging over canvas */
+.xyflow-editor.xyflow-drag-over {
+  background: #EEE;
+  border: 2px dashed #000;
+  cursor: copy !important;
+}
+
+/* Flow canvas created by JS hook */
+.flow-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: #F8F8F8;
+  overflow: visible;
+}
+
+/* Library items dragging state */
+.library-item.dragging {
+  opacity: 0.5;
+}
+
+/* Living Web - HyperCard-Style Node Styling */
+
+/* Main node container */
+.xyflow-node {
+  background: #FFF !important;
+  border: 2px solid #000 !important;
+  border-radius: 0 !important;
+  box-shadow: 
+    3px 3px 0 #000,
+    6px 6px 0 #CCC !important;
+  font-family: 'Chicago', 'Geneva', 'Monaco', monospace;
+  font-size: 11px;
+  color: #000;
+  min-width: 120px;
+  min-height: 60px;
+}
+
+/* Node when selected */
+.xyflow-node.selected {
+  border: 2px solid #000 !important;
+  box-shadow: 
+    4px 4px 0 #000,
+    8px 8px 0 #999 !important;
+}
+
+/* Node name/label at top */
+.xyflow-node-label {
+  padding: 8px 10px;
+  background: #FFF;
+  border-bottom: 1px solid #000;
+  font-weight: bold;
+  font-size: 12px;
+  color: #000;
+  text-align: center;
+  font-family: 'Chicago', 'Geneva', monospace;
+}
+
+/* Node body/content */
+.xyflow-node-body {
+  padding: 8px;
+  background: #FFF;
+  min-height: 40px;
+  position: relative;
+}
+
+/* Input handles (left side) */
+.xyflow-handle.xyflow-handle-top,
+.xyflow-handle.xyflow-handle-bottom {
+  background: #FFF !important;
+  border: 2px solid #000 !important;
+  width: 12px !important;
+  height: 12px !important;
+  border-radius: 0 !important;
+}
+
+/* Output handles (right side) */
+.xyflow-handle.xyflow-handle-right {
+  background: #999 !important;
+  border: 2px solid #000 !important;
+  width: 12px !important;
+  height: 12px !important;
+  border-radius: 0 !important;
+}
+
+/* Handle hover effect */
+.xyflow-handle:hover {
+  background: #666 !important;
+  border-color: #000 !important;
+  box-shadow: 2px 2px 0 #000 !important;
+}
+
+/* Connectable handles */
+.xyflow-handle.connectable {
+  cursor: crosshair;
+}
+
+.xyflow-handle.connectable:hover {
+  background: #333 !important;
+  border-color: #000 !important;
+}
+
+/* Edge styles */
+.xyflow-edge {
+  stroke: #000 !important;
+  stroke-width: 2px !important;
+}
+
+/* Edge when selected */
+.xyflow-edge.selected {
+  stroke: #000 !important;
+  stroke-width: 3px !important;
+}
+
+/* Edge path */
+.xyflow-edge-path {
+  stroke: #000 !important;
+  stroke-width: 2px !important;
+  fill: none !important;
+}
+
+/* Background pattern for canvas */
+.xyflow-editor-background {
+  background: #F8F8F8;
+  background-image: 
+    linear-gradient(#DDD 1px, transparent 1px),
+    linear-gradient(90deg, #DDD 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Port resource type colors */
+.xyflow-handle[data-type="food"] {
+  background: #E8E8E8 !important;
+  border-color: #666 !important;
+}
+
+.xyflow-handle[data-type="water"] {
+  background: #D8D8D8 !important;
+  border-color: #555 !important;
+}
+
+.xyflow-handle[data-type="waste"] {
+  background: #C8C8C8 !important;
+  border-color: #444 !important;
+}
+
+.xyflow-handle[data-type="energy"] {
+  background: #B8B8B8 !important;
+  border-color: #333 !important;
+}
+
+/* Node category styling */
+.xyflow-node[data-category="food"] {
+  border-left: 4px solid #666 !important;
+}
+
+.xyflow-node[data-category="water"] {
+  border-left: 4px solid #555 !important;
+}
+
+.xyflow-node[data-category="waste"] {
+  border-left: 4px solid #444 !important;
+}
+
+.xyflow-node[data-category="energy"] {
+  border-left: 4px solid #333 !important;
+}
+
+/* Node drag state */
+.xyflow-node.dragging {
+  box-shadow: 
+    1px 1px 0 #000,
+    3px 3px 0 #999 !important;
+  opacity: 0.8;
+}
+
+/* Custom node content */
+.xyflow-node-custom {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Node metadata display */
+.xyflow-node-meta {
+  padding: 4px 8px;
+  background: #F5F5F5;
+  border-top: 1px solid #CCC;
+  font-size: 9px;
+  color: #666;
+  font-family: 'Monaco', 'Courier', monospace;
+}
+
+/* Connection line preview */
+.xyflow-connection-line {
+  stroke: #999 !important;
+  stroke-width: 2px !important;
+  stroke-dasharray: 5,5;
+  pointer-events: none;
+}
+
+/* Controls */
+.xyflow-controls button {
+  background: #FFF !important;
+  border: 2px solid #000 !important;
+  border-radius: 0 !important;
+  color: #000 !important;
+  font-family: 'Geneva', 'Monaco', monospace;
+  box-shadow: 1px 1px 0 #000 !important;
+}
+
+.xyflow-controls button:hover {
+  background: #F0F0F0 !important;
+  box-shadow: 2px 2px 0 #000 !important;
+}
+
+/* Minimap */
+.xyflow-minimap {
+  background: #FFF !important;
+  border: 2px solid #000 !important;
+  border-radius: 0 !important;
+}
+
+/* Selection box */
+.xyflow-selection {
+  border: 2px dashed #000 !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+
