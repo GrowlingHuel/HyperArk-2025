@@ -1,0 +1,214 @@
+<style>
+  .dual-panel-container {
+    display: flex;
+    height: calc(100vh - 40px);
+    overflow: hidden;
+    background: #CCCCCC;
+    gap: 8px;
+    padding: 8px;
+  }
+  .dual-left-panel {
+    width: 50%;
+    background: #FFF;
+    border: 1px solid #000;
+    overflow-y: auto;
+  }
+  .dual-right-panel {
+    width: 50%;
+    background: #FFF;
+    border: 1px solid #000;
+    overflow-y: auto;
+  }
+  .panel-header {
+    height: 20px;
+    background: #CCC;
+    border-bottom: 2px solid #000;
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    font-family: Monaco, monospace;
+    font-size: 11px;
+    font-weight: bold;
+  }
+  .panel-content {
+    padding: 12px;
+  }
+</style>
+
+<div class="dual-panel-container">
+  <!-- LEFT PANEL -->
+  <div class="dual-left-panel">
+    <div class="panel-header">
+      <%= case @left_panel_view do %>
+        <% :tavern_home -> %>
+          Green Man Tavern
+        <% :character_chat -> %>
+          Chat with {@selected_character.name}
+      <% end %>
+    </div>
+    <div class="panel-content">
+      <%= case @left_panel_view do %>
+        <% :tavern_home -> %>
+          <h2>Welcome to the Green Man Tavern</h2>
+          <p>Select a character from the dropdown above to begin your journey.</p>
+          <p>Each character has unique knowledge and perspectives to share about permaculture and sustainable living.</p>
+          <div style="margin-top: 20px; text-align: center;">
+            <img src="/images/the_tavern.png" alt="Tavern" style="max-width: 100%; border: 1px solid #000;" />
+          </div>
+        
+        <% :character_chat -> %>
+          <div>
+            <h2>{@selected_character.name}</h2>
+            <p style="color: #666; font-size: 11px;">{@selected_character.archetype}</p>
+            
+            <div style="margin: 12px 0;">
+              <strong>Focus Area:</strong>
+              <p style="color: #666; font-size: 11px;">{@selected_character.focus_area}</p>
+            </div>
+            
+            <%= if @selected_character.icon_name do %>
+              <div style="margin: 12px 0;">
+                <img
+                  src={"/images/characters/#{@selected_character.icon_name}.png"}
+                  alt={@selected_character.name}
+                  style="width: 100%; border: 1px solid #000;"
+                  onerror="this.style.display='none';"
+                />
+              </div>
+            <% end %>
+            
+            <div style="margin: 12px 0; padding: 8px; border: 1px solid #CCC; background: #F9F9F9;">
+              <strong>Description:</strong>
+              <p style="color: #666; font-size: 11px; line-height: 1.4;">{@selected_character.description}</p>
+            </div>
+            
+            <!-- Chat messages -->
+            <div style="margin: 12px 0;">
+              <h3 style="font-size: 13px; margin-bottom: 8px;">Chat</h3>
+              <div id="chat-messages" style="height: 300px; border: 1px solid #CCC; padding: 8px; overflow-y: auto; font-size: 11px;">
+                <%= if @chat_messages && length(@chat_messages) > 0 do %>
+                  <%= for message <- @chat_messages do %>
+                    <div style="margin-bottom: 8px; padding: 4px;">
+                      <strong style="color: #666; font-size: 10px;">
+                        <%= if message.type == :user, do: "You", else: @selected_character.name %>
+                      </strong>
+                      <p style="color: #333; margin-top: 2px;">{message.content}</p>
+                    </div>
+                  <% end %>
+                <% else %>
+                  <p style="color: #999; font-style: italic; text-align: center;">Start a conversation...</p>
+                <% end %>
+              </div>
+              
+              <!-- Chat form -->
+              <.form for={to_form(%{}, as: :chat)} phx-submit="send_message" phx-change="update_message">
+                <input
+                  type="text"
+                  name="message"
+                  phx-debounce="100"
+                  placeholder="Type your message..."
+                  style="width: 100%; padding: 6px; border: 1px solid #CCC; font-size: 11px; margin-top: 8px;"
+                />
+                <button type="submit" disabled={@is_loading} style="margin-top: 4px; padding: 4px 12px; background: #CCC; border: 1px solid #000; font-size: 11px;">
+                  {if @is_loading, do: "Sending...", else: "Send"}
+                </button>
+              </.form>
+            </div>
+          </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="dual-right-panel">
+    <div class="panel-header">
+      <%= case @right_panel_action do %>
+        <% :home -> %>
+          Welcome
+        <% :living_web -> %>
+          Living Web
+        <% _ -> %>
+          Content
+      <% end %>
+    </div>
+    <div class="panel-content">
+      <%= case @right_panel_action do %>
+        <% :home -> %>
+          <h2>Welcome to HyperArk</h2>
+          <p>Navigate using the menu above to explore different areas of the application.</p>
+        
+        <% :living_web -> %>
+          <%= if assigns[:nodes] && assigns[:edges] do %>
+            <style>
+              .living-web-content { flex: 1; display: flex; overflow: hidden; }
+              .living-web-library { width: 200px; background: #E8E8E8; border-right: 2px solid #000; overflow-y: auto; padding: 10px; font-family: 'Chicago', 'Geneva', sans-serif; }
+              .living-web-canvas { flex: 1; background: #F8F8F8; border: 2px solid #000; position: relative; min-height: 500px; overflow: hidden; }
+              #xyflow-container { width: 100%; height: 100%; min-height: 500px; position: relative; background: #FAFAFA; overflow: hidden; }
+              .flow-canvas { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; }
+              .library-header { font-size: 11px; font-weight: bold; color: #000; text-transform: uppercase; letter-spacing: 1px; padding: 8px 0; border-bottom: 1px solid #000; margin-bottom: 10px; }
+              .library-section { margin-bottom: 16px; }
+              .library-section-title { font-size: 9px; font-weight: bold; color: #000; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 6px; background: #EEE; border: 1px solid #000; margin-bottom: 6px; }
+              .library-item { display: flex; align-items: center; padding: 6px 8px; margin-bottom: 4px; background: #FFF; border: 1px solid #CCC; font-size: 11px; }
+              .draggable-project-item { cursor: grab; user-select: none; }
+              .draggable-project-item:hover { background: #EEE; border-color: #000; }
+              .library-icon { margin-right: 6px; font-size: 14px; }
+              .library-name { color: #000; font-family: 'Geneva', 'Helvetica', sans-serif; }
+            </style>
+            
+            <div class="living-web-content">
+              <!-- Left Panel: Systems Library -->
+              <div class="living-web-library">
+                <div class="library-header">SYSTEMS LIBRARY</div>
+
+                <!-- Projects by Category -->
+                <%= for category <- ["food", "water", "waste", "energy"] do %>
+                  <% category_projects = Enum.filter(assigns[:projects] || [], & &1.category == category) %>
+                  <%= if length(category_projects) > 0 do %>
+                    <div class="library-section">
+                      <div class="library-section-title"><%= String.upcase(category) %></div>
+                      <%= for project <- category_projects do %>
+                        <div 
+                          class="library-item draggable-project-item" 
+                          draggable="true" 
+                          data-project-id={project.id}
+                          data-project-name={project.name}
+                        >
+                          <span class="library-icon">📦</span>
+                          <span class="library-name"><%= project.name %></span>
+                        </div>
+                      <% end %>
+                    </div>
+                  <% end %>
+                <% end %>
+
+                <!-- MY SYSTEMS Section -->
+                <div class="library-section">
+                  <div class="library-section-title">MY SYSTEMS</div>
+                  <div class="library-placeholder">(No composite systems yet)</div>
+                </div>
+              </div>
+
+              <!-- Right Panel: Canvas -->
+              <div class="living-web-canvas">
+                <div
+                  id="xyflow-container"
+                  phx-hook="XyflowEditor"
+                  data-nodes={Jason.encode!(@nodes)}
+                  data-edges={Jason.encode!(@edges)}
+                  class="xyflow-editor"
+                  style="width: 100%; height: 100%; min-height: 500px; position: relative; background: #FAFAFA;"
+                >
+                  <!-- XyFlow editor will render here -->
+                </div>
+              </div>
+            </div>
+          <% else %>
+            <p>Loading Living Web...</p>
+          <% end %>
+        
+        <% _ -> %>
+          <p>Content area</p>
+      <% end %>
+    </div>
+  </div>
+</div>
