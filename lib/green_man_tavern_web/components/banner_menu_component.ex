@@ -33,7 +33,7 @@ defmodule GreenManTavernWeb.BannerMenuComponent do
             <option value="">Characters</option>
             <%= for character <- @characters do %>
               <option
-                value={character.id}
+                value={to_kebab_case(character.name)}
                 selected={is_current_character?(character, @current_character)}
               >
                 {character.name}
@@ -63,5 +63,12 @@ defmodule GreenManTavernWeb.BannerMenuComponent do
 
   defp is_current_character?(character, current_character) do
     current_character && current_character.name == character.name
+  end
+
+  defp to_kebab_case(string) do
+    string
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9]+/, "-")
+    |> String.trim("-")
   end
 end

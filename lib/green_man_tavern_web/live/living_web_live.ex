@@ -16,8 +16,11 @@ defmodule GreenManTavernWeb.LivingWebLive do
     case Diagrams.get_or_create_diagram(current_user.id) do
       {:ok, diagram} ->
         # Initialize nodes and edges from the diagram
-        nodes = if is_map(diagram.nodes) and diagram.nodes != %{}, do: diagram.nodes, else: %{}
+        raw_nodes = if is_map(diagram.nodes) and diagram.nodes != %{}, do: diagram.nodes, else: %{}
         edges = if is_map(diagram.edges) and diagram.edges != %{}, do: diagram.edges, else: %{}
+
+        # Enrich nodes with project names
+        nodes = enrich_nodes_with_project_data(raw_nodes, projects)
 
         socket =
           socket
@@ -180,6 +183,32 @@ defmodule GreenManTavernWeb.LivingWebLive do
         IO.inspect(changeset.errors, label: "Diagram update errors")
         {:error, "Failed to update diagram"}
     end
+  end
+
+  defp enrich_nodes_with_project_data(raw_nodes, projects) do
+    # Create a map of project_id -> project for quick lookup
+    project_map = Map.new(projects, fn p -> {p.id, p} end)
+
+    # Enrich each node with project data
+    Enum.reduce(raw_nodes, %{}, fn {node_id, node_data}, acc ->
+      project_id = node_data["project_id"]
+      project = Map.get(project_map, project_id)
+
+      if project do
+        enriched_node = Map.merge(node_data, %{
+          "name" => project.name,
+          "category" => project.category
+        })
+        Map.put(acc, node_id, enriched_node)
+      else
+        # If project not found, keep the node but with a default name
+        enriched_node = Map.merge(node_data, %{
+          "name" => "Unknown Project",
+          "category" => "unknown"
+        })
+        Map.put(acc, node_id, enriched_node)
+      end
+    end)
   end
 
 end

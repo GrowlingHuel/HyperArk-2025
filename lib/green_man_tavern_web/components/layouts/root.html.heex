@@ -47,35 +47,16 @@
           }
         });
 
-        // Character selection function - now uses URL parameters
-        window.selectCharacterFromDropdown = function(characterId) {
-          console.log("Character selected from dropdown:", characterId);
+        // Character selection function - navigates to /characters/:character_name
+        window.selectCharacterFromDropdown = function(characterName) {
+          console.log("Character selected from dropdown:", characterName);
           
-          // Store in session storage for persistence
-          if (characterId) {
-            sessionStorage.setItem('selectedCharacterId', characterId.toString());
-          } else {
-            sessionStorage.removeItem('selectedCharacterId');
+          if (characterName) {
+            // Navigate to /characters/character-name-in-kebab-case
+            const characterUrl = `/characters/${characterName}`;
+            window.location.href = characterUrl;
           }
-          
-          // Navigate to current page with character parameter
-          const currentPath = window.location.pathname;
-          const newUrl = characterId ? `${currentPath}?character=${characterId}` : currentPath;
-          window.location.href = newUrl;
         };
-
-        // Load character from session storage on page load
-        document.addEventListener('DOMContentLoaded', function() {
-          const selectedCharacterId = sessionStorage.getItem('selectedCharacterId');
-          if (selectedCharacterId) {
-            console.log("Restoring character from session:", selectedCharacterId);
-            // Update the select element
-            const select = document.getElementById('character-select');
-            if (select) {
-              select.value = selectedCharacterId;
-            }
-          }
-        });
           // Replace the existing chat JavaScript with this updated version
         // This handles BOTH user messages and character responses
 
