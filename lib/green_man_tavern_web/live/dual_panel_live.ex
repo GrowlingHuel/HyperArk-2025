@@ -168,23 +168,32 @@ defmodule GreenManTavernWeb.DualPanelLive do
     # Fetch project
     project = Systems.get_project!(project_id)
 
-    # Create simple node (no collision detection)
-    node = %{
-      id: temp_id,
-      type: "default",
-      position: %{x: x, y: y},
-      data: %{
-        label: "#{project.icon} #{project.name}",
-        project_id: project_id
-      }
+  # Update nodes map (do NOT use ReactFlow structure; keep existing simple map)
+  nodes =
+    Map.put(nodes, temp_id, %{
+      "name" => project.name,
+      "category" => project.category,
+      "project_id" => project_id,
+      "x" => x,
+      "y" => y,
+      "instance_scale" => 1.0
+    })
+
+  socket = assign(socket, :nodes, nodes)
+
+  # Build ReactFlow node payload for client (diagram component)
+  node_data = %{
+    id: temp_id,
+    type: "default",
+    position: %{x: x, y: y},
+    data: %{
+      label: "#{project.icon_name} #{project.name}",
+      project_id: project_id
     }
+  }
 
-    # Update nodes
-    nodes = nodes ++ [node]
-    socket = assign(socket, :nodes, nodes)
-
-    # Push to client
-    socket = push_event(socket, "node_added_success", %{node: node})
+  # Push to client with ReactFlow format; assigns.nodes keeps simple map format
+  socket = push_event(socket, "node_added_success", %{node: node_data})
 
     {:noreply, socket}
   end
