@@ -71,19 +71,40 @@ defmodule GreenManTavernWeb.DualPanelLive do
   end
 
   @impl true
+  # LEFT WINDOW: Character selection should only affect left-side chat state.
+  # - Loads character, conversation history, and clears input
+  # - DOES NOT touch right window state (current page or page_data)
   def handle_event("select_character", %{"character_slug" => slug}, socket) do
     case Characters.get_character_by_slug(slug) do
       nil ->
         {:noreply, socket}
 
       character ->
-        socket =
-          socket
-          |> assign(:selected_character, character)
-          |> assign(:left_panel_view, :character_chat)
-          |> assign(:chat_messages, [])
+        user_id = socket.assigns.user_id
 
-        {:noreply, socket}
+        # Load recent conversation without altering right window
+        messages =
+          if user_id && character do
+            Conversations.get_recent_conversation(user_id, character.id, 20)
+            |> Enum.reverse()
+            |> Enum.map(fn conv ->
+              %{
+                id: conv.id,
+                type: String.to_atom(conv.message_type),
+                content: conv.message_content,
+                timestamp: conv.inserted_at
+              }
+            end)
+          else
+            []
+          end
+
+        {:noreply,
+         socket
+         |> assign(:selected_character, character)
+         |> assign(:left_panel_view, :character_chat)
+         |> assign(:chat_messages, messages)
+         |> assign(:current_message, "")}
     end
   end
 
@@ -98,14 +119,41 @@ defmodule GreenManTavernWeb.DualPanelLive do
   end
 
   @impl true
-  def handle_event("navigate_right", %{"action" => action}, socket) do
-    action_atom = String.to_existing_atom(action)
+  # RIGHT WINDOW: Page navigation should only affect right-side page state.
+  # - Changes current page (:living_web | :database | :garden)
+  # - Loads page-specific data into :page_data
+  # - DOES NOT touch left window chat state
+  def handle_event("navigate", %{"page" => page}, socket) do
+    page_atom =
+      case page do
+        "living_web" -> :living_web
+        "database" -> :database
+        "garden" -> :garden
+        other -> String.to_existing_atom(other)
+      end
 
-    socket =
-      socket
-      |> assign(:right_panel_action, action_atom)
+    page_data =
+      case page_atom do
+        :living_web -> %{projects: socket.assigns[:projects], diagram: socket.assigns[:diagram]}
+        :database -> %{}
+        :garden -> %{}
+        _ -> %{}
+      end
 
-    {:noreply, socket}
+    {:noreply,
+     socket
+     |> assign(:right_panel_action, page_atom)
+     |> assign(:page_data, page_data)}
+  end
+
+  # LEFT WINDOW CLEAR ONLY: HyperArk click clears chat state, preserves right page.
+  def handle_event("navigate", %{"page" => "hyperark"}, socket) do
+    {:noreply,
+     socket
+     |> assign(:selected_character, nil)
+     |> assign(:chat_messages, [])
+     |> assign(:current_message, "")
+     |> assign(:left_panel_view, :tavern_home)}
   end
 
   # ==== Living Web: Right-panel-only events ====

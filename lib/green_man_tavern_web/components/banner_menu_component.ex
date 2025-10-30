@@ -20,7 +20,7 @@ defmodule GreenManTavernWeb.BannerMenuComponent do
 
     <!-- RIGHT: Navigation buttons -->
       <div class="banner-right">
-        <.link navigate={~p"/"} class="banner-menu-item">Tavern</.link>
+        <a href="#" phx-click="navigate" phx-value-page="hyperark" class="banner-menu-item">Tavern</a>
 
     <!-- Characters Selector -->
         <div class="character-selector">
@@ -42,7 +42,7 @@ defmodule GreenManTavernWeb.BannerMenuComponent do
           </select>
         </div>
 
-        <.link navigate={~p"/living-web"} class="banner-menu-item">Living Web</.link>
+        <a href="#" phx-click="navigate" phx-value-page="living_web" class="banner-menu-item">Living Web</a>
 
     <!-- Authentication Section -->
         <div class="banner-auth-section">
