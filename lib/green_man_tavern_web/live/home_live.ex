@@ -102,6 +102,21 @@ defmodule GreenManTavernWeb.HomeLive do
         })
       end
 
+      # Extract and persist facts asynchronously
+      Task.start(fn ->
+        alias GreenManTavern.AI.FactExtractor
+        alias GreenManTavern.Accounts
+
+        facts = FactExtractor.extract_facts(message, character.name)
+        if length(facts) > 0 do
+          user = Accounts.get_user!(user_id)
+          existing = (user.profile_data || %{})["facts"] || []
+          merged = FactExtractor.merge_facts(existing, facts)
+          new_pd = Map.put(user.profile_data || %{}, "facts", merged)
+          _ = Accounts.update_user(user, %{profile_data: new_pd})
+        end
+      end)
+
       socket =
         socket
         |> assign(:chat_messages, new_messages)
@@ -141,9 +156,10 @@ defmodule GreenManTavernWeb.HomeLive do
     IO.puts("=== CHECKING SOCKET CHARACTER ===")
     IO.puts("Socket character: #{inspect(socket.assigns.character)}")
 
-    # Search knowledge base
-    IO.puts("=== SEARCHING KNOWLEDGE BASE ===")
-    context = CharacterContext.search_knowledge_base(message, limit: 5)
+    # Build combined context with user facts + knowledge base
+    IO.puts("=== BUILDING CONTEXT WITH FACTS ===")
+    user = if user_id, do: Accounts.get_user!(user_id), else: nil
+    context = CharacterContext.build_context(user, message, limit: 5)
     IO.puts("=== CONTEXT RETRIEVED ===")
     IO.puts(context)
 

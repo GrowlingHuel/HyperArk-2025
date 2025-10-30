@@ -83,19 +83,23 @@
           messageDiv.id = `message-${message.id}`;
           
           if (message.type === "user") {
-            // User message styling
+            // User message styling (right aligned, greyscale)
             messageDiv.innerHTML = `
-              <div style="margin-bottom: 8px; padding: 4px; border-left: 2px solid #666;">
-                <div style="font-weight: bold; font-size: 10px; color: #666; margin-bottom: 2px;">You</div>
-                <div style="color: #333;">${escapeHtml(message.content)}</div>
+              <div style="margin-bottom: 8px; padding: 4px; text-align: right;">
+                <div style="display: inline-block; max-width: 90%; text-align: left;">
+                  <div style="font-weight: bold; font-size: 10px; color: #666; margin-bottom: 2px;">You</div>
+                  <div style="color: #333; border: 1px solid #999; background: #FFF; padding: 4px; white-space: pre-wrap;">${escapeHtml(message.content)}</div>
+                </div>
               </div>
             `;
           } else {
-            // Character message styling
+            // Character message styling (left aligned, greyscale)
             messageDiv.innerHTML = `
-              <div style="margin-bottom: 8px; padding: 4px; border-left: 2px solid #2d7d2d;">
-                <div style="font-weight: bold; font-size: 10px; color: #2d7d2d; margin-bottom: 2px;">${escapeHtml(message.character_name)}</div>
-                <div style="color: #333; white-space: pre-wrap;">${escapeHtml(message.content)}</div>
+              <div style="margin-bottom: 8px; padding: 4px; text-align: left;">
+                <div style="display: inline-block; max-width: 90%; text-align: left;">
+                  <div style="font-weight: bold; font-size: 10px; color: #666; margin-bottom: 2px;">${escapeHtml(message.character_name)}</div>
+                  <div style="color: #333; border: 1px solid #999; background: #FFF; padding: 4px; white-space: pre-wrap;">${escapeHtml(message.content)}</div>
+                </div>
               </div>
             `;
           }

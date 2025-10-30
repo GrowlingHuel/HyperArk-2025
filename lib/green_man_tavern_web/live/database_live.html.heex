@@ -1,0 +1,57 @@
+<div class="panel-content">
+  <h2>Facts</h2>
+  <div style="margin: 8px 0;">
+    <.form for={to_form(%{}, as: :fact)} phx-submit="add_fact" id="add-fact-form">
+      <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;">
+        <input name="fact[type]" placeholder="type" />
+        <input name="fact[key]" placeholder="key" />
+        <input name="fact[value]" placeholder="value" />
+        <input name="fact[confidence]" placeholder="confidence" />
+        <input name="fact[source]" placeholder="source" />
+        <input name="fact[context]" placeholder="context (optional)" />
+      </div>
+      <button type="submit" style="margin-top: 6px;" class="mac-button">Add Fact</button>
+    </.form>
+  </div>
+
+  <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+    <thead>
+      <tr>
+        <th style="border:1px solid #000; padding: 4px;">Type</th>
+        <th style="border:1px solid #000; padding: 4px;">Key</th>
+        <th style="border:1px solid #000; padding: 4px;">Value</th>
+        <th style="border:1px solid #000; padding: 4px;">Confidence</th>
+        <th style="border:1px solid #000; padding: 4px;">Source</th>
+        <th style="border:1px solid #000; padding: 4px;">Learned At</th>
+        <th style="border:1px solid #000; padding: 4px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <%= for {fact, idx} <- Enum.with_index(@facts || []) do %>
+        <tr>
+          <td style="border:1px solid #000; padding: 4px;">
+            <input value={fact["type"]} phx-blur="update_fact" phx-value-index={idx} phx-value-field="type"/>
+          </td>
+          <td style="border:1px solid #000; padding: 4px;">
+            <input value={fact["key"]} phx-blur="update_fact" phx-value-index={idx} phx-value-field="key"/>
+          </td>
+          <td style="border:1px solid #000; padding: 4px;">
+            <input value={fact["value"]} phx-blur="update_fact" phx-value-index={idx} phx-value-field="value"/>
+          </td>
+          <td style="border:1px solid #000; padding: 4px;">
+            <input value={to_string(fact["confidence"] || "")} phx-blur="update_fact" phx-value-index={idx} phx-value-field="confidence"/>
+          </td>
+          <td style="border:1px solid #000; padding: 4px;">
+            <input value={fact["source"]} phx-blur="update_fact" phx-value-index={idx} phx-value-field="source"/>
+          </td>
+          <td style="border:1px solid #000; padding: 4px;">{fact["learned_at"]}</td>
+          <td style="border:1px solid #000; padding: 4px;">
+            <button phx-click="delete_fact" phx-value-index={idx} class="mac-button">Delete</button>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+

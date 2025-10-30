@@ -8,6 +8,133 @@
   .flow-canvas { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; }
 </style>
 
+<style>
+  /* Base node styling - HyperCard aesthetic (React Flow compatibility) */
+  .react-flow__node {
+    border: 2px solid #000 !important;
+    border-radius: 0 !important;
+    padding: 8px 12px !important;
+    min-width: 140px !important;
+    max-width: 160px !important;
+    box-shadow: 3px 3px 0px rgba(0,0,0,0.4) !important;
+    background: #E8E8E8 !important;
+    font-family: Monaco, 'Courier New', monospace !important;
+    font-size: 11px !important;
+    text-align: center !important;
+    cursor: move !important;
+  }
+
+  /* Hover state - deeper shadow, thicker border */
+  .react-flow__node:hover {
+    border: 3px solid #000 !important;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.5) !important;
+    background: #F0F0F0 !important;
+  }
+
+  /* Selected state */
+  .react-flow__node.selected {
+    border: 3px solid #000 !important;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.6) !important;
+    background: #FFF !important;
+  }
+
+  /* Icon styling */
+  .node-icon {
+    font-size: 28px !important;
+    line-height: 1 !important;
+    margin-bottom: 4px !important;
+    display: block !important;
+  }
+
+  /* Name styling */
+  .node-name {
+    font-weight: bold !important;
+    font-size: 11px !important;
+    color: #000 !important;
+    line-height: 1.3 !important;
+    word-wrap: break-word !important;
+  }
+
+  /* Category-specific backgrounds (greyscale only) */
+  .node-food { background: #E8E8E8 !important; }
+  .node-water { background: #D0D0D0 !important; }
+  .node-waste { background: #BABABA !important; }
+  .node-energy { background: #F0F0F0 !important; }
+  .node-processing { background: #C8C8C8 !important; }
+  .node-storage { background: #DCDCDC !important; }
+
+  /* Remove XyFlow default styles that conflict */
+  .react-flow__node-default {
+    padding: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  /* Handle styling (connection points) */
+  .react-flow__handle {
+    width: 8px !important;
+    height: 8px !important;
+    border: 1px solid #000 !important;
+    background: #FFF !important;
+    border-radius: 0 !important;
+  }
+
+  .react-flow__handle:hover {
+    background: #000 !important;
+  }
+
+  /* Edge/connection styling */
+  .react-flow__edge-path {
+    stroke: #000 !important;
+    stroke-width: 2px !important;
+  }
+
+  .react-flow__edge.selected .react-flow__edge-path {
+    stroke-width: 3px !important;
+  }
+
+  /* Background styling */
+  .react-flow__background {
+    background: #F8F8F8 !important;
+  }
+
+  /* Minimap (if you add it later) */
+  .react-flow__minimap {
+    border: 2px solid #000 !important;
+    border-radius: 0 !important;
+  }
+</style>
+<style>
+  /* HyperCard-style node visuals */
+  .flow-node {
+    border: 2px solid #000;
+    border-radius: 0;
+    padding: 12px;
+    min-width: 140px;
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.3);
+    background: #E8E8E8;
+    font-family: Monaco, monospace;
+    font-size: 11px;
+    text-align: center;
+  }
+  .flow-node:hover {
+    border: 3px solid #000;
+    box-shadow: 3px 3px 0px rgba(0,0,0,0.5);
+    cursor: pointer;
+  }
+  .node-icon { font-size: 24px; margin-bottom: 4px; }
+  .node-name { font-weight: bold; font-size: 11px; color: #000; }
+  /* Category-specific backgrounds */
+  .node-food { background: #E8E8E8; }
+  .node-water { background: #D0D0D0; }
+  .node-waste { background: #B8B8B8; }
+  .node-energy { background: #F0F0F0; }
+  .node-processing { background: #C0C0C0; }
+  .node-storage { background: #E0E0E0; }
+  /* State indicators */
+  .node-planned { border-style: dashed; }
+  .node-problem { border-top: 3px solid #CC0000; }
+</style>
+
 <div class="living-web-page">
   <div class="mac-window living-web-container">
     <!-- Title Bar -->
@@ -57,7 +184,7 @@
           data-nodes={Jason.encode!(@nodes)}
           data-edges={Jason.encode!(@edges)}
           class="xyflow-editor"
-          style="width: 100%; height: 100%; min-height: 500px; position: relative; background: #FAFAFA;"
+          style="width: 100%; height: 100%; min-height: 500px; position: relative; background: #FAFAFA; background-image: radial-gradient(circle, #CCCCCC 1px, transparent 1px); background-size: 20px 20px;"
         >
           <!-- XyFlow editor will render here -->
         </div>

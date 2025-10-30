@@ -5,8 +5,52 @@
  * Uses vanilla JS with DOM manipulation - no React needed.
  */
 
+const GRID_SIZE = 20;
+
+function snapToGrid(position) {
+  return {
+    x: Math.round(position.x / GRID_SIZE) * GRID_SIZE,
+    y: Math.round(position.y / GRID_SIZE) * GRID_SIZE
+  };
+}
+
+// Collision detection helper using spiral search and grid snapping
+function findNonOverlappingPosition(x, y, existingNodes) {
+  const SPACING = 50; // minimum distance between nodes
+  let finalX = Math.round(x / GRID_SIZE) * GRID_SIZE;
+  let finalY = Math.round(y / GRID_SIZE) * GRID_SIZE;
+  let attempts = 0;
+  const maxAttempts = 20;
+
+  const isTooClose = (px, py) => {
+    return existingNodes.some((node) => {
+      const nx = typeof node.x === 'number' ? node.x : (node.position && node.position.x) || 0;
+      const ny = typeof node.y === 'number' ? node.y : (node.position && node.position.y) || 0;
+      const dx = nx - px;
+      const dy = ny - py;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      return distance < SPACING;
+    });
+  };
+
+  while (attempts < maxAttempts && isTooClose(finalX, finalY)) {
+    const angle = (attempts / maxAttempts) * Math.PI * 2;
+    const radius = 50 + attempts * 20;
+    finalX = x + Math.cos(angle) * radius;
+    finalY = y + Math.sin(angle) * radius;
+    const snapped = snapToGrid({ x: finalX, y: finalY });
+    finalX = snapped.x;
+    finalY = snapped.y;
+    attempts++;
+  }
+
+  return { x: finalX, y: finalY };
+}
+
 const XyflowEditorHook = {
   mounted() {
+    console.log("=== XyflowEditor Hook Mounted ===");
+    console.log("Container element:", this.el);
     this.container = this.el;
     this.nodes = [];
     this.edges = [];
@@ -15,6 +59,9 @@ const XyflowEditorHook = {
     // Load initial nodes and edges from data attributes
     this.loadInitialData();
     
+    // Log container dimensions
+    console.log("Container dimensions:", { width: this.el.offsetWidth, height: this.el.offsetHeight });
+
     // Render the nodes
     this.renderNodes();
     
@@ -26,6 +73,15 @@ const XyflowEditorHook = {
     
     // Setup server event listeners
     this.setupServerEvents();
+
+    // Debug: log nodes_updated events pushed from server
+    this.handleEvent("nodes_updated", ({ nodes, edges }) => {
+      console.log("Nodes updated:", nodes);
+      console.log("Node count:", Array.isArray(nodes) ? nodes.length : (nodes && Object.keys(nodes).length) || 0);
+      if (Array.isArray(nodes) && nodes.length > 0) {
+        console.log("First node structure:", JSON.stringify(nodes[0], null, 2));
+      }
+    });
   },
 
   updated() {
@@ -33,6 +89,22 @@ const XyflowEditorHook = {
     this.loadInitialData();
     this.renderNodes();
     this.setupLibraryItemDrag();
+
+    // Inspect rendered nodes in DOM
+    const reactNodes = document.querySelectorAll('.react-flow__node');
+    console.log("Rendered .react-flow__node in DOM:", reactNodes.length);
+    if (reactNodes.length > 0) {
+      const cs = window.getComputedStyle(reactNodes[0]);
+      console.log("First RF node HTML:", reactNodes[0].innerHTML);
+      console.log("First RF node computed styles:", { border: cs.border, background: cs.backgroundColor, padding: cs.padding });
+    }
+    const domNodes = this.container.querySelectorAll('.flow-node');
+    console.log("Rendered .flow-node in DOM:", domNodes.length);
+    if (domNodes.length > 0) {
+      const cs2 = window.getComputedStyle(domNodes[0]);
+      console.log("First flow-node HTML:", domNodes[0].innerHTML);
+      console.log("First flow-node computed styles:", { border: cs2.border, background: cs2.backgroundColor, padding: cs2.padding });
+    }
   },
 
   destroyed() {
@@ -95,35 +167,52 @@ const XyflowEditorHook = {
   },
 
   renderNode(node) {
+    console.log("Creating node (renderNode):", node);
     // Create node element
     const nodeEl = document.createElement('div');
-    nodeEl.className = 'flow-node';
+    const category = (node.category || '').toLowerCase();
+    const categoryClass = category ? `node-${category}` : '';
+    const statusClass = node.status === 'planned' ? 'node-planned' : (node.status === 'problem' ? 'node-problem' : '');
+    nodeEl.className = ['flow-node', categoryClass, statusClass].filter(Boolean).join(' ');
     nodeEl.style.position = 'absolute';
     nodeEl.style.left = `${node.x}px`;
     nodeEl.style.top = `${node.y}px`;
-    nodeEl.style.width = '150px';
+    nodeEl.style.width = '140px';
+    nodeEl.style.minHeight = '80px';
     nodeEl.style.height = 'auto';
-    nodeEl.style.background = '#FFF';
     nodeEl.style.border = '2px solid #000';
     nodeEl.style.borderRadius = '0';
-    nodeEl.style.padding = '10px';
+    nodeEl.style.padding = '12px';
+    nodeEl.style.background = getCategoryBackground(category);
     nodeEl.style.cursor = 'move';
     nodeEl.style.userSelect = 'none';
     nodeEl.dataset.nodeId = node.id;
+    nodeEl.dataset.category = category;
 
     // Add HyperCard styling
-    nodeEl.style.boxShadow = '3px 3px 0 #000, 6px 6px 0 #CCC';
+    nodeEl.style.boxShadow = '2px 2px 0 rgba(0,0,0,0.3)';
     nodeEl.style.fontFamily = "'Chicago', 'Geneva', 'Monaco', monospace";
     nodeEl.style.fontSize = '11px';
     nodeEl.style.color = '#000';
 
-    // Add node label
-    const label = document.createElement('div');
-    label.style.fontWeight = 'bold';
-    label.style.marginBottom = '5px';
-    label.style.borderBottom = '1px solid #000';
-    label.textContent = node.name || 'Node';
-    nodeEl.appendChild(label);
+    // Icon
+    const iconDiv = document.createElement('div');
+    iconDiv.className = 'node-icon';
+    iconDiv.textContent = getCategoryIcon(node);
+    iconDiv.style.fontSize = '28px';
+    iconDiv.style.lineHeight = '1';
+    iconDiv.style.marginBottom = '8px';
+    iconDiv.style.display = 'block';
+    nodeEl.appendChild(iconDiv);
+
+    // Name
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'node-name';
+    nameDiv.textContent = node.name || 'Node';
+    nameDiv.style.fontWeight = 'bold';
+    nameDiv.style.fontSize = '11px';
+    nameDiv.style.lineHeight = '1.3';
+    nodeEl.appendChild(nameDiv);
 
     // Make node draggable
     this.makeDraggable(nodeEl);
@@ -176,8 +265,15 @@ const XyflowEditorHook = {
 
       // Send position update to server
       const nodeId = element.dataset.nodeId;
-      const x = parseInt(element.style.left);
-      const y = parseInt(element.style.top);
+      let x = parseInt(element.style.left);
+      let y = parseInt(element.style.top);
+
+      // Snap to grid on drop
+      const snapped = snapToGrid({ x, y });
+      x = snapped.x;
+      y = snapped.y;
+      element.style.left = `${x}px`;
+      element.style.top = `${y}px`;
 
       this.pushEvent('node_moved', {
         node_id: nodeId,
@@ -219,8 +315,14 @@ const XyflowEditorHook = {
       if (!projectId) return;
 
       const rect = container.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      let rawX = e.clientX - rect.left;
+      let rawY = e.clientY - rect.top;
+
+      // Collision-avoidance with spiral + grid snapping
+      const finalPos = findNonOverlappingPosition(rawX, rawY, this.nodes);
+      let x = finalPos.x;
+      let y = finalPos.y;
+      console.log('Drop requested at', { rawX, rawY }, 'adjusted to', { x, y });
 
       const tempId = 'temp_' + Date.now();
       
@@ -243,19 +345,24 @@ const XyflowEditorHook = {
     nodeEl.style.position = 'absolute';
     nodeEl.style.left = `${x}px`;
     nodeEl.style.top = `${y}px`;
-    nodeEl.style.width = '150px';
-    nodeEl.style.height = '60px';
+    nodeEl.style.width = '140px';
+    nodeEl.style.minHeight = '80px';
+    nodeEl.style.height = 'auto';
     nodeEl.style.background = '#FFF';
     nodeEl.style.border = '2px dashed #000';
     nodeEl.style.borderRadius = '0';
-    nodeEl.style.padding = '10px';
+    nodeEl.style.padding = '12px';
     nodeEl.style.opacity = '0.7';
     nodeEl.style.fontFamily = "'Chicago', 'Geneva', 'Monaco', monospace";
     nodeEl.style.fontSize = '11px';
     nodeEl.style.color = '#000';
     nodeEl.style.boxShadow = '2px 2px 0 #666';
     nodeEl.dataset.nodeId = id;
-    nodeEl.textContent = label;
+    nodeEl.style.textAlign = 'center';
+    nodeEl.innerHTML = `
+      <div style="font-size: 28px; line-height:1; margin-bottom: 8px;">⌛</div>
+      <div style="font-weight: bold; font-size: 11px; line-height: 1.3;">${label}</div>
+    `;
     nodeEl.id = id;
 
     this.canvas.appendChild(nodeEl);
@@ -320,33 +427,50 @@ const XyflowEditorHook = {
   },
 
   addRealNode(nodeData) {
+    console.log("Creating node (addRealNode):", nodeData);
     const nodeEl = document.createElement('div');
-    nodeEl.className = 'flow-node';
+    const category = (nodeData.category || '').toLowerCase();
+    const categoryClass = category ? `node-${category}` : '';
+    const statusClass = nodeData.status === 'planned' ? 'node-planned' : (nodeData.status === 'problem' ? 'node-problem' : '');
+    nodeEl.className = ['flow-node', categoryClass, statusClass].filter(Boolean).join(' ');
     nodeEl.style.position = 'absolute';
     nodeEl.style.left = `${nodeData.position.x}px`;
     nodeEl.style.top = `${nodeData.position.y}px`;
-    nodeEl.style.width = '150px';
+    nodeEl.style.width = '140px';
+    nodeEl.style.minHeight = '80px';
     nodeEl.style.height = 'auto';
-    nodeEl.style.background = '#FFF';
     nodeEl.style.border = '2px solid #000';
     nodeEl.style.borderRadius = '0';
-    nodeEl.style.padding = '10px';
+    nodeEl.style.padding = '12px';
+    nodeEl.style.background = getCategoryBackground(category);
     nodeEl.style.cursor = 'move';
     nodeEl.style.userSelect = 'none';
     nodeEl.style.fontFamily = "'Chicago', 'Geneva', 'Monaco', monospace";
     nodeEl.style.fontSize = '11px';
     nodeEl.style.color = '#000';
-    nodeEl.style.boxShadow = '3px 3px 0 #000, 6px 6px 0 #CCC';
+    nodeEl.style.boxShadow = '2px 2px 0 rgba(0,0,0,0.3)';
     nodeEl.dataset.nodeId = nodeData.id;
+    nodeEl.dataset.category = category;
     nodeEl.id = nodeData.id;
 
-    // Add node label
-    const label = document.createElement('div');
-    label.style.fontWeight = 'bold';
-    label.style.marginBottom = '5px';
-    label.style.borderBottom = '1px solid #000';
-    label.textContent = nodeData.name || 'Node';
-    nodeEl.appendChild(label);
+    // Icon
+    const iconDiv = document.createElement('div');
+    iconDiv.className = 'node-icon';
+    iconDiv.textContent = getCategoryIcon(nodeData);
+    iconDiv.style.fontSize = '28px';
+    iconDiv.style.lineHeight = '1';
+    iconDiv.style.marginBottom = '8px';
+    iconDiv.style.display = 'block';
+    nodeEl.appendChild(iconDiv);
+
+    // Name
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'node-name';
+    nameDiv.textContent = nodeData.name || 'Node';
+    nameDiv.style.fontWeight = 'bold';
+    nameDiv.style.fontSize = '11px';
+    nameDiv.style.lineHeight = '1.3';
+    nodeEl.appendChild(nameDiv);
 
     this.makeDraggable(nodeEl);
     this.canvas.appendChild(nodeEl);
@@ -355,10 +479,62 @@ const XyflowEditorHook = {
     this.nodes.push({
       id: nodeData.id,
       name: nodeData.name,
+      category: nodeData.category,
+      status: nodeData.status,
       x: nodeData.position.x,
       y: nodeData.position.y
     });
   }
 };
 
+function getCategoryIcon(node) {
+  if (node.icon) return node.icon;
+  const category = (node.category || '').toLowerCase();
+  switch (category) {
+    case 'food': return '🌱';
+    case 'water': return '💧';
+    case 'waste': return '♻️';
+    case 'energy': return '⚡';
+    case 'processing': return '⚙️';
+    case 'storage': return '📦';
+    default: return '▣';
+  }
+}
+
 export default XyflowEditorHook;
+
+// Helpers appended to hook
+function getCategoryBackground(category) {
+  switch ((category || '').toLowerCase()) {
+    case 'food': return '#E8E8E8';
+    case 'water': return '#D0D0D0';
+    case 'waste': return '#BABABA';
+    case 'energy': return '#F0F0F0';
+    case 'processing': return '#C8C8C8';
+    case 'storage': return '#DCDCDC';
+    default: return '#E8E8E8';
+  }
+}
+
+function isPositionOccupied(x, y, existingNodes, threshold = 50) {
+  return existingNodes.some((n) => {
+    const nx = typeof n.x === 'number' ? n.x : (n.position && n.position.x) || 0;
+    const ny = typeof n.y === 'number' ? n.y : (n.position && n.position.y) || 0;
+    const dx = nx - x;
+    const dy = ny - y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    return distance < threshold;
+  });
+}
+
+XyflowEditorHook.findAvailablePosition = function(initialX, initialY) {
+  let finalX = initialX;
+  let finalY = initialY;
+  let attempts = 0;
+  while (isPositionOccupied(finalX, finalY, this.nodes) && attempts < 10) {
+    finalX += 30;
+    finalY += 30;
+    attempts++;
+  }
+  return { x: finalX, y: finalY };
+};

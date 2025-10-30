@@ -12,6 +12,7 @@ defmodule GreenManTavern.Characters.Character do
     field :color_scheme, :string
     field :trust_requirement, :string
     field :mindsdb_agent_name, :string
+    field :system_prompt, :string
 
     has_many :user_characters, GreenManTavern.Characters.UserCharacter
     has_many :quests, GreenManTavern.Quests.Quest
@@ -30,7 +31,8 @@ defmodule GreenManTavern.Characters.Character do
       :icon_name,
       :color_scheme,
       :trust_requirement,
-      :mindsdb_agent_name
+      :mindsdb_agent_name,
+      :system_prompt
     ])
     |> validate_required([:name, :archetype])
     |> unique_constraint(:name)

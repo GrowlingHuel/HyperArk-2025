@@ -34,6 +34,28 @@ const topbar = {
 };
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+// Simple stepped animation hook for thinking dots (no smooth transitions)
+const ThinkingDotsHook = {
+  mounted() {
+    const dots = Array.from(this.el.querySelectorAll('.dot'))
+    let index = 0
+    this._interval = setInterval(() => {
+      dots.forEach((dot, i) => {
+        const active = i === index
+        dot.style.background = active ? '#000' : '#CCC'
+        dot.style.border = '1px solid #000'
+        dot.style.width = dot.style.width || '8px'
+        dot.style.height = dot.style.height || '8px'
+        dot.style.display = 'inline-block'
+      })
+      index = (index + 1) % dots.length
+    }, 300)
+  },
+  destroyed() {
+    if (this._interval) clearInterval(this._interval)
+  }
+}
+
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
@@ -41,6 +63,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
     ...colocatedHooks,
     ChatForm: ChatFormHook,
     XyflowEditor: XyflowEditorHook,
+    ThinkingDots: ThinkingDotsHook,
     redirect: {
       mounted() {
         this.handleEvent("redirect", (data) => {

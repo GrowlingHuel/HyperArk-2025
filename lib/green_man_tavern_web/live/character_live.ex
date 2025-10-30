@@ -130,6 +130,22 @@ defmodule GreenManTavernWeb.CharacterLive do
       end
     end
 
+    # Extract and persist facts asynchronously
+    if user_id && character do
+      Task.start(fn ->
+        alias GreenManTavern.AI.FactExtractor
+        alias GreenManTavern.Accounts
+        facts = FactExtractor.extract_facts(message, character.name)
+        if length(facts) > 0 do
+          user = Accounts.get_user!(user_id)
+          existing = (user.profile_data || %{})["facts"] || []
+          merged = FactExtractor.merge_facts(existing, facts)
+          new_pd = Map.put(user.profile_data || %{}, "facts", merged)
+          _ = Accounts.update_user(user, %{profile_data: new_pd})
+        end
+      end)
+    end
+
     # Process with Claude API
     Logger.debug("Sending async process message to self")
     send(self(), {:process_with_claude, user_id, character, message})
@@ -159,9 +175,10 @@ defmodule GreenManTavernWeb.CharacterLive do
         {:noreply, socket |> assign(:chat_messages, new_messages) |> assign(:is_loading, false)}
       end
 
-      # Search knowledge base for relevant context
-      Logger.debug("Searching knowledge base")
-      context = CharacterContext.search_knowledge_base(message, limit: 5)
+    # Build context with user facts + knowledge base
+    Logger.debug("Building context with facts")
+    user = if user_id, do: Accounts.get_user!(user_id), else: nil
+    context = CharacterContext.build_context(user, message, limit: 5)
 
       # Build character's system prompt
       Logger.debug("Building system prompt")
