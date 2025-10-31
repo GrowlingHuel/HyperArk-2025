@@ -3,7 +3,7 @@ defmodule GreenManTavernWeb.CharacterLive do
   require Logger
 
   alias GreenManTavern.Characters
-  alias GreenManTavern.AI.{ClaudeClient, CharacterContext}
+  alias GreenManTavern.AI.{OpenAIClient, CharacterContext}
   alias GreenManTavern.Conversations
   alias GreenManTavern.Accounts
 
@@ -187,7 +187,7 @@ defmodule GreenManTavernWeb.CharacterLive do
       Logger.debug("Calling Claude API")
 
       # Query Claude API
-      result = ClaudeClient.chat(message, system_prompt, context)
+      result = OpenAIClient.chat(message, system_prompt, context)
 
       Logger.debug("Claude response received: #{inspect(result, limit: 3)}")
 

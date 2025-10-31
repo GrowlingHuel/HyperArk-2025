@@ -6,7 +6,7 @@ defmodule GreenManTavernWeb.DualPanelLive do
   alias Phoenix.PubSub
   alias GreenManTavern.Characters
   alias GreenManTavern.{Systems, Diagrams, Conversations, Accounts}
-  alias GreenManTavern.AI.{ClaudeClient, CharacterContext}
+  alias GreenManTavern.AI.{OpenAIClient, CharacterContext}
 
   @pubsub GreenManTavern.PubSub
   @topic "navigation"
@@ -412,13 +412,13 @@ defmodule GreenManTavernWeb.DualPanelLive do
   def handle_info({:process_with_claude, user_id, character, message}, socket) do
     Logger.debug("[DualPanel] handle_info(:process_with_claude) triggered user_id=#{inspect(user_id)} character=#{inspect(character && character.name)}")
     try do
-      api_key = System.get_env("ANTHROPIC_API_KEY")
+      api_key = System.get_env("OPENROUTER_API_KEY")
       if is_nil(api_key) or api_key == "" do
-        Logger.debug("[DualPanel] Missing ANTHROPIC_API_KEY; returning error to UI")
+        Logger.debug("[DualPanel] Missing OPENROUTER_API_KEY; returning error to UI")
         error_message = %{
           id: System.unique_integer([:positive]),
           type: :error,
-          content: "API key not configured. Please set ANTHROPIC_API_KEY environment variable.",
+          content: "API key not configured. Please set OPENROUTER_API_KEY environment variable.",
           timestamp: DateTime.utc_now()
         }
         new_messages = socket.assigns.chat_messages ++ [error_message]
@@ -433,10 +433,10 @@ defmodule GreenManTavernWeb.DualPanelLive do
         system_prompt = CharacterContext.build_system_prompt(character)
         Logger.debug("[DualPanel] System prompt present?=#{system_prompt != nil and String.trim(system_prompt) != ""} len=#{String.length(system_prompt || "")}")
 
-        # Query Claude API
-        Logger.debug("[DualPanel] Calling ClaudeClient.chat... msg_len=#{String.length(message)}")
-        result = ClaudeClient.chat(message, system_prompt, context)
-        Logger.debug("[DualPanel] ClaudeClient result: #{inspect(result, limit: 100)}")
+        # Query OpenAI via OpenRouter
+        Logger.debug("[DualPanel] Calling OpenAIClient.chat... msg_len=#{String.length(message)}")
+        result = OpenAIClient.chat(message, system_prompt, context)
+        Logger.debug("[DualPanel] OpenAIClient result: #{inspect(result, limit: 100)}")
 
         case result do
           {:ok, response} ->

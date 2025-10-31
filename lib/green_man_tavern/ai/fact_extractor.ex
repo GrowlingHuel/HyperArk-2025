@@ -16,7 +16,7 @@ defmodule GreenManTavern.AI.FactExtractor do
   """
 
   require Logger
-  alias GreenManTavern.AI.ClaudeClient
+  alias GreenManTavern.AI.OpenAIClient
 
   @extraction_instructions ~S"""
   Extract ALL factual information from the user message that should be remembered.
@@ -65,7 +65,7 @@ defmodule GreenManTavern.AI.FactExtractor do
     User said: "#{user_message}"
     """
 
-    case ClaudeClient.chat(prompt, system_prompt) do
+    case OpenAIClient.chat(prompt, system_prompt) do
       {:ok, json_text} ->
         Logger.info("[Facts] Raw response: #{String.slice(inspect(json_text), 0, 400)}...")
         parsed = parse_facts_json(json_text, character_name)

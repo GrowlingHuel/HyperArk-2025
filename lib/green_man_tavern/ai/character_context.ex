@@ -283,18 +283,22 @@ defmodule GreenManTavern.AI.CharacterContext do
   Builds full context for Claude by combining user profile facts and knowledge search.
   """
   def build_context(user, message, opts \\ []) do
-    limit = Keyword.get(opts, :limit, 5)
+    # limit = Keyword.get(opts, :limit, 5)  # DISABLED: Not using PDF KB anymore
     facts = get_user_facts(user)
     facts_block = format_facts_block(facts)
-
-    kb = search_knowledge_base(message, limit: limit)
+    # kb = search_knowledge_base(message, limit: limit)  # DISABLED: PDF retrieval removed to save costs
 
     String.trim_trailing("""
     #{facts_block}
-
-    CONTEXT FROM KNOWLEDGE BASE:
-    #{kb}
     """)
+
+    # Old version with KB:
+    # String.trim_trailing("""
+    # #{facts_block}
+    #
+    # CONTEXT FROM KNOWLEDGE BASE:
+    # #{kb}
+    # """)
   end
 
   defp get_user_facts(nil), do: []
