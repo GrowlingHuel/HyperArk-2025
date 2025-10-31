@@ -245,15 +245,27 @@ defmodule GreenManTavernWeb.DualPanelLive do
     IO.puts("🗑️ Deleting nodes: #{inspect(node_ids)}")
 
     existing_nodes = socket.assigns[:nodes] || %{}
+    diagram = socket.assigns.diagram
 
-    # Remove nodes from assigns
+    # Remove nodes from map
     updated_nodes = Enum.reduce(node_ids, existing_nodes, fn node_id, acc ->
       Map.delete(acc, node_id)
     end)
 
     IO.puts("📊 Nodes before: #{map_size(existing_nodes)}, after: #{map_size(updated_nodes)}")
 
-    socket = assign(socket, :nodes, updated_nodes)
+    # Persist to DB when diagram exists
+    {socket, persisted_nodes} =
+      case diagram do
+        nil -> {socket, updated_nodes}
+        d ->
+          case Diagrams.update_diagram(d, %{nodes: updated_nodes}) do
+            {:ok, d2} -> {socket |> assign(:diagram, d2), updated_nodes}
+            _ -> {socket, updated_nodes}
+          end
+      end
+
+    socket = assign(socket, :nodes, persisted_nodes)
 
     # Inform client to cleanup DOM and local state
     {:noreply, push_event(socket, "nodes_deleted_success", %{node_ids: node_ids})}
@@ -265,6 +277,7 @@ defmodule GreenManTavernWeb.DualPanelLive do
     IO.puts("👻 Hiding nodes: #{inspect(node_ids)}")
 
     existing_nodes = socket.assigns[:nodes] || %{}
+    diagram = socket.assigns.diagram
 
     # Add hidden: true to specified nodes
     updated_nodes = Enum.into(existing_nodes, %{}, fn {id, node} ->
@@ -277,7 +290,17 @@ defmodule GreenManTavernWeb.DualPanelLive do
 
     IO.puts("📊 Marked #{length(node_ids)} nodes as hidden")
 
-    socket = assign(socket, :nodes, updated_nodes)
+    # Persist to DB when diagram exists
+    socket =
+      case diagram do
+        nil -> socket
+        d ->
+          case Diagrams.update_diagram(d, %{nodes: updated_nodes}) do
+            {:ok, d2} -> socket |> assign(:diagram, d2)
+            _ -> socket
+          end
+      end
+      |> assign(:nodes, updated_nodes)
 
     # Inform client to remove hidden nodes from DOM
     {:noreply, push_event(socket, "nodes_hidden_success", %{node_ids: node_ids})}
@@ -289,6 +312,7 @@ defmodule GreenManTavernWeb.DualPanelLive do
     IO.puts("👁️ Showing all hidden nodes")
 
     existing_nodes = socket.assigns[:nodes] || %{}
+    diagram = socket.assigns.diagram
 
     # Remove hidden flag from all nodes
     updated_nodes = Enum.into(existing_nodes, %{}, fn {id, node} ->
@@ -302,7 +326,17 @@ defmodule GreenManTavernWeb.DualPanelLive do
 
     IO.puts("📊 Unhid #{hidden_count} nodes")
 
-    socket = assign(socket, :nodes, updated_nodes)
+    # Persist to DB when diagram exists
+    socket =
+      case diagram do
+        nil -> socket
+        d ->
+          case Diagrams.update_diagram(d, %{nodes: updated_nodes}) do
+            {:ok, d2} -> socket |> assign(:diagram, d2)
+            _ -> socket
+          end
+      end
+      |> assign(:nodes, updated_nodes)
 
     # Client will re-render via LiveView update; also push completion event
     {:noreply, push_event(socket, "show_all_success", %{nodes: updated_nodes})}
@@ -314,9 +348,21 @@ defmodule GreenManTavernWeb.DualPanelLive do
     IO.puts("🧹 Clearing entire canvas")
 
     node_count = map_size(socket.assigns[:nodes] || %{})
+    diagram = socket.assigns.diagram
 
-    # Clear all nodes
-    socket = assign(socket, :nodes, %{})
+    updated_nodes = %{}
+
+    # Persist to DB when diagram exists
+    socket =
+      case diagram do
+        nil -> socket
+        d ->
+          case Diagrams.update_diagram(d, %{nodes: updated_nodes}) do
+            {:ok, d2} -> socket |> assign(:diagram, d2)
+            _ -> socket
+          end
+      end
+      |> assign(:nodes, updated_nodes)
 
     IO.puts("📊 Cleared #{node_count} nodes from canvas")
 
