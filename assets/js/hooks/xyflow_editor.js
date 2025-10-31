@@ -68,6 +68,8 @@ const XyflowEditorHook = {
     
     // Setup drag and drop
     this.setupDragAndDrop();
+    // Setup toolbar action buttons
+    this.setupToolbarButtons();
     
     // Setup library item drag handlers
     this.setupLibraryItemDrag();
@@ -82,6 +84,27 @@ const XyflowEditorHook = {
       if (Array.isArray(nodes) && nodes.length > 0) {
         console.log("First node structure:", JSON.stringify(nodes[0], null, 2));
       }
+    });
+
+    // Listen for successful nodes deletion
+    this.handleEvent("nodes_deleted_success", ({ node_ids }) => {
+      if (!Array.isArray(node_ids)) return;
+      node_ids.forEach((nodeId) => {
+        const nodeEl = document.querySelector(`[data-node-id="${nodeId}"]`);
+        if (nodeEl) {
+          nodeEl.remove();
+        }
+        // Remove from nodes array
+        this.nodes = (this.nodes || []).filter((n) => n.id !== nodeId);
+        // Remove from selection
+        if (this.selectedNodes) {
+          this.selectedNodes.delete(nodeId);
+        }
+      });
+      if (this.updateSelectionCount) {
+        this.updateSelectionCount();
+      }
+      console.log(`Deleted ${node_ids.length} nodes`);
     });
   },
 
@@ -394,6 +417,25 @@ const XyflowEditorHook = {
         temp_id: tempId
       });
     });
+  },
+
+  // Toolbar buttons for actions on selected nodes
+  setupToolbarButtons() {
+    // Delete Selected button
+    const deleteBtn = document.getElementById('delete-selected-btn');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', () => {
+        if (!this.selectedNodes || this.selectedNodes.size === 0) {
+          alert('No nodes selected');
+          return;
+        }
+        // No confirmation - just delete immediately
+        // Send selected node ids to server
+        this.pushEvent('nodes_deleted', {
+          node_ids: Array.from(this.selectedNodes)
+        });
+      });
+    }
   },
 
   addTemporaryNode(id, x, y, label) {

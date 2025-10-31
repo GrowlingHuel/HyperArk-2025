@@ -211,6 +211,26 @@ defmodule GreenManTavernWeb.DualPanelLive do
     end
   end
 
+  # Delete selected nodes
+  @impl true
+  def handle_event("nodes_deleted", %{"node_ids" => node_ids}, socket) do
+    IO.puts("🗑️ Deleting nodes: #{inspect(node_ids)}")
+
+    existing_nodes = socket.assigns[:nodes] || %{}
+
+    # Remove nodes from assigns
+    updated_nodes = Enum.reduce(node_ids, existing_nodes, fn node_id, acc ->
+      Map.delete(acc, node_id)
+    end)
+
+    IO.puts("📊 Nodes before: #{map_size(existing_nodes)}, after: #{map_size(updated_nodes)}")
+
+    socket = assign(socket, :nodes, updated_nodes)
+
+    # Inform client to cleanup DOM and local state
+    {:noreply, push_event(socket, "nodes_deleted_success", %{node_ids: node_ids})}
+  end
+
   # Add edge (basic placeholder that stores edge data)
   @impl true
   def handle_event("edge_added", %{"source_id" => source_id, "target_id" => target_id} = params, socket) do
