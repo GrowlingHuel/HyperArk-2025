@@ -118,6 +118,16 @@ defmodule GreenManTavernWeb.DualPanelLive do
     {:noreply, socket}
   end
 
+  # LEFT WINDOW CLEAR ONLY: HyperArk click clears chat state, preserves right page.
+  def handle_event("navigate", %{"page" => "hyperark"}, socket) do
+    {:noreply,
+     socket
+     |> assign(:selected_character, nil)
+     |> assign(:chat_messages, [])
+     |> assign(:current_message, "")
+     |> assign(:left_panel_view, :tavern_home)}
+  end
+
   @impl true
   # RIGHT WINDOW: Page navigation should only affect right-side page state.
   # - Changes current page (:living_web | :database | :garden)
@@ -129,6 +139,7 @@ defmodule GreenManTavernWeb.DualPanelLive do
         "living_web" -> :living_web
         "database" -> :database
         "garden" -> :garden
+        "hyperark" -> :hyperark
         other -> String.to_existing_atom(other)
       end
 
@@ -144,16 +155,6 @@ defmodule GreenManTavernWeb.DualPanelLive do
      socket
      |> assign(:right_panel_action, page_atom)
      |> assign(:page_data, page_data)}
-  end
-
-  # LEFT WINDOW CLEAR ONLY: HyperArk click clears chat state, preserves right page.
-  def handle_event("navigate", %{"page" => "hyperark"}, socket) do
-    {:noreply,
-     socket
-     |> assign(:selected_character, nil)
-     |> assign(:chat_messages, [])
-     |> assign(:current_message, "")
-     |> assign(:left_panel_view, :tavern_home)}
   end
 
   # ==== Living Web: Right-panel-only events ====
