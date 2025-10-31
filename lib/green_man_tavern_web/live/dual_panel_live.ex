@@ -231,6 +231,71 @@ defmodule GreenManTavernWeb.DualPanelLive do
     {:noreply, push_event(socket, "nodes_deleted_success", %{node_ids: node_ids})}
   end
 
+  # Hide selected nodes (marks them as hidden, doesn't delete)
+  @impl true
+  def handle_event("nodes_hidden", %{"node_ids" => node_ids}, socket) do
+    IO.puts("👻 Hiding nodes: #{inspect(node_ids)}")
+
+    existing_nodes = socket.assigns[:nodes] || %{}
+
+    # Add hidden: true to specified nodes
+    updated_nodes = Enum.into(existing_nodes, %{}, fn {id, node} ->
+      if id in node_ids do
+        {id, Map.put(node, "hidden", true)}
+      else
+        {id, node}
+      end
+    end)
+
+    IO.puts("📊 Marked #{length(node_ids)} nodes as hidden")
+
+    socket = assign(socket, :nodes, updated_nodes)
+
+    # Inform client to remove hidden nodes from DOM
+    {:noreply, push_event(socket, "nodes_hidden_success", %{node_ids: node_ids})}
+  end
+
+  # Show all nodes (removes hidden flag from all nodes)
+  @impl true
+  def handle_event("show_all_nodes", _params, socket) do
+    IO.puts("👁️ Showing all hidden nodes")
+
+    existing_nodes = socket.assigns[:nodes] || %{}
+
+    # Remove hidden flag from all nodes
+    updated_nodes = Enum.into(existing_nodes, %{}, fn {id, node} ->
+      {id, Map.delete(node, "hidden")}
+    end)
+
+    # Count how many were unhidden
+    hidden_count = Enum.count(existing_nodes, fn {_id, node} ->
+      Map.get(node, "hidden") == true
+    end)
+
+    IO.puts("📊 Unhid #{hidden_count} nodes")
+
+    socket = assign(socket, :nodes, updated_nodes)
+
+    # Client will re-render via LiveView update; also push completion event
+    {:noreply, push_event(socket, "show_all_success", %{nodes: updated_nodes})}
+  end
+
+  # Clear entire canvas (removes all nodes)
+  @impl true
+  def handle_event("clear_canvas", _params, socket) do
+    IO.puts("🧹 Clearing entire canvas")
+
+    node_count = map_size(socket.assigns[:nodes] || %{})
+
+    # Clear all nodes
+    socket = assign(socket, :nodes, %{})
+
+    IO.puts("📊 Cleared #{node_count} nodes from canvas")
+
+    # Inform client to clear canvas
+    {:noreply, push_event(socket, "canvas_cleared", %{})}
+  end
+
   # Add edge (basic placeholder that stores edge data)
   @impl true
   def handle_event("edge_added", %{"source_id" => source_id, "target_id" => target_id} = params, socket) do
@@ -495,6 +560,14 @@ defmodule GreenManTavernWeb.DualPanelLive do
       _ -> {:error, :invalid_integer}
     end
   end
+
+  # Helper to filter out hidden nodes before sending to client
+  defp filter_visible_nodes(nodes) when is_map(nodes) do
+    nodes
+    |> Enum.reject(fn {_id, node} -> Map.get(node, "hidden") == true end)
+    |> Enum.into(%{})
+  end
+  defp filter_visible_nodes(_), do: %{}
 
   defp parse_integer(int) when is_integer(int), do: {:ok, int}
   defp parse_integer(_), do: {:error, :invalid_type}

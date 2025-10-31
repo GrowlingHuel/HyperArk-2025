@@ -338,7 +338,7 @@
                 <div
                   id="xyflow-container"
                   phx-hook="XyflowEditor"
-                  data-nodes={Jason.encode!(@nodes)}
+                  data-nodes={Jason.encode!(filter_visible_nodes(@nodes))}
                   data-edges={Jason.encode!(@edges)}
                   data-projects={Jason.encode!(projects_for_json(@projects))}
                   class="xyflow-editor"

@@ -106,6 +106,42 @@ const XyflowEditorHook = {
       }
       console.log(`Deleted ${node_ids.length} nodes`);
     });
+
+    // Listen for nodes hidden success
+    this.handleEvent("nodes_hidden_success", ({ node_ids }) => {
+      if (!Array.isArray(node_ids)) return;
+      node_ids.forEach((nodeId) => {
+        const nodeEl = document.querySelector(`[data-node-id="${nodeId}"]`);
+        if (nodeEl) {
+          nodeEl.remove();
+        }
+        if (this.selectedNodes) {
+          this.selectedNodes.delete(nodeId);
+        }
+      });
+      if (this.updateSelectionCount) {
+        this.updateSelectionCount();
+      }
+      console.log(`Hidden ${node_ids.length} nodes`);
+    });
+
+    // Listen for show all success (server will trigger LV re-render)
+    this.handleEvent("show_all_success", ({ nodes }) => {
+      console.log('Showing all nodes, will trigger re-render');
+    });
+
+    // Listen for canvas cleared
+    this.handleEvent("canvas_cleared", () => {
+      if (this.canvas) {
+        this.canvas.innerHTML = '';
+      }
+      this.nodes = [];
+      this.selectedNodes = new Set();
+      if (this.updateSelectionCount) {
+        this.updateSelectionCount();
+      }
+      console.log('Canvas cleared');
+    });
   },
 
   updated() {
@@ -434,6 +470,42 @@ const XyflowEditorHook = {
         this.pushEvent('nodes_deleted', {
           node_ids: Array.from(this.selectedNodes)
         });
+      });
+    }
+
+    // Hide Selected button
+    const hideBtn = document.getElementById('hide-selected-btn');
+    if (hideBtn) {
+      hideBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!this.selectedNodes || this.selectedNodes.size === 0) {
+          alert('No nodes selected');
+          return;
+        }
+        this.pushEvent('nodes_hidden', {
+          node_ids: Array.from(this.selectedNodes)
+        });
+      });
+    }
+
+    // Show All button
+    const showAllBtn = document.getElementById('show-all-btn');
+    if (showAllBtn) {
+      showAllBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.pushEvent('show_all_nodes', {});
+      });
+    }
+
+    // Clear All button
+    const clearAllBtn = document.getElementById('clear-all-btn');
+    if (clearAllBtn) {
+      clearAllBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.pushEvent('clear_canvas', {});
       });
     }
   },
