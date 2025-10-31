@@ -178,6 +178,8 @@
           Welcome
         <% :living_web -> %>
           Living Web
+        <% :planting_guide -> %>
+          Planting Guide
         <% _ -> %>
           Content
       <% end %>
@@ -352,6 +354,55 @@
             <p>Loading Living Web...</p>
           <% end %>
         
+        <% :planting_guide -> %>
+          <style>
+            .pg-toolbar { display: flex; gap: 8px; align-items: center; border: 2px solid #000; background: #EEE; padding: 8px; font-family: Geneva, Helvetica, Arial, sans-serif; font-size: 11px; }
+            .pg-btn { border: 2px solid #000; background: #FFF; padding: 4px 8px; cursor: pointer; box-shadow: 2px 2px 0 #000; }
+            .pg-btn[aria-pressed="true"] { background: #DDD; }
+            .pg-grid { margin-top: 10px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+            .pg-card { border: 2px solid #000; background: #FFF; padding: 10px; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); font-family: 'Chicago','Geneva','Monaco',monospace; font-size: 11px; }
+            .pg-legend { border: 2px solid #000; background: #FFF; padding: 8px; margin: 10px 0; }
+          </style>
+
+          <div class="pg-toolbar" role="region" aria-label="Planting Guide Filters">
+            <div>Hemisphere:</div>
+            <button class="pg-btn" phx-click="garden_filter_changed" phx-value-hemisphere="N">Northern</button>
+            <button class="pg-btn" phx-click="garden_filter_changed" phx-value-hemisphere="S">Southern</button>
+            <div style="margin-left: 12px;">Climate:</div>
+            <select class="pg-btn" phx-change="garden_filter_changed" name="climate">
+              <option value="all">All</option>
+              <option value="temperate">Temperate</option>
+              <option value="mediterranean">Mediterranean</option>
+              <option value="tropical">Tropical</option>
+            </select>
+            <div style="margin-left: 12px;">Family:</div>
+            <select class="pg-btn" phx-change="garden_filter_changed" name="family">
+              <option value="all">All</option>
+            </select>
+          </div>
+
+          <div class="pg-toolbar" role="region" aria-label="Month Selector">
+            <%= for {m, idx} <- Enum.with_index(["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]) do %>
+              <button class="pg-btn" phx-click="garden_filter_changed" phx-value-month={idx+1}>{m}</button>
+            <% end %>
+          </div>
+
+          <div class="pg-legend">
+            <strong>Companion Legend:</strong>
+            <div style="display:flex; gap:12px; margin-top:6px;">
+              <span>[Good]</span>
+              <span>[Bad]</span>
+              <span>[Neutral]</span>
+            </div>
+          </div>
+
+          <div class="pg-grid">
+            <div class="pg-card">
+              <div style="font-weight:bold;">Planting Guide is coming soon.</div>
+              <div>This placeholder confirms navigation works without affecting the left panel.</div>
+            </div>
+          </div>
+
         <% _ -> %>
           <p>Content area</p>
       <% end %>

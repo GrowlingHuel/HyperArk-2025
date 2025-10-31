@@ -139,6 +139,7 @@ defmodule GreenManTavernWeb.DualPanelLive do
         "living_web" -> :living_web
         "database" -> :database
         "garden" -> :garden
+        "planting_guide" -> :planting_guide
         "hyperark" -> :hyperark
         other -> String.to_existing_atom(other)
       end
@@ -148,6 +149,7 @@ defmodule GreenManTavernWeb.DualPanelLive do
         :living_web -> %{projects: socket.assigns[:projects], diagram: socket.assigns[:diagram]}
         :database -> %{}
         :garden -> %{}
+        :planting_guide -> %{}
         _ -> %{}
       end
 
