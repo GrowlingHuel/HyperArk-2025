@@ -1,0 +1,23 @@
+[
+  {"plant_id": 101, "month": 10, "hemisphere": "N", "action": "plant"},
+  {"plant_id": 102, "month": 10, "hemisphere": "N", "action": "plant"},
+  {"plant_id": 103, "month": 10, "hemisphere": "N", "action": "plant"},
+  {"plant_id": 104, "month": 5,  "hemisphere": "N", "action": "plant"},
+  {"plant_id": 104, "month": 9,  "hemisphere": "N", "action": "harvest"},
+  {"plant_id": 104, "month": 11, "hemisphere": "S", "action": "plant"},
+  {"plant_id": 104, "month": 3,  "hemisphere": "S", "action": "harvest"},
+  {"plant_id": 105, "month": 5,  "hemisphere": "N", "action": "plant"},
+  {"plant_id": 105, "month": 6,  "hemisphere": "N", "action": "maintain"},
+  {"plant_id": 105, "month": 11, "hemisphere": "S", "action": "plant"},
+  {"plant_id": 106, "month": 4,  "hemisphere": "N", "action": "plant"},
+  {"plant_id": 106, "month": 7,  "hemisphere": "N", "action": "harvest"},
+  {"plant_id": 106, "month": 10, "hemisphere": "S", "action": "plant"},
+  {"plant_id": 107, "month": 6,  "hemisphere": "N", "action": "plant"},
+  {"plant_id": 107, "month": 9,  "hemisphere": "N", "action": "harvest"},
+  {"plant_id": 107, "month": 12, "hemisphere": "S", "action": "plant"},
+  {"plant_id": 108, "month": 3,  "hemisphere": "N", "action": "plant"},
+  {"plant_id": 108, "month": 6,  "hemisphere": "N", "action": "harvest"},
+  {"plant_id": 108, "month": 9,  "hemisphere": "S", "action": "plant"}
+]
+
+

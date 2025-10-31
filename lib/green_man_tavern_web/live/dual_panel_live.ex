@@ -7,6 +7,7 @@ defmodule GreenManTavernWeb.DualPanelLive do
   alias GreenManTavern.Characters
   alias GreenManTavern.{Systems, Diagrams, Conversations, Accounts}
   alias GreenManTavern.AI.{OpenAIClient, CharacterContext}
+  alias GreenManTavern.PlantingGuide
 
   @pubsub GreenManTavern.PubSub
   @topic "navigation"
@@ -149,7 +150,18 @@ defmodule GreenManTavernWeb.DualPanelLive do
         :living_web -> %{projects: socket.assigns[:projects], diagram: socket.assigns[:diagram]}
         :database -> %{}
         :garden -> %{}
-        :planting_guide -> %{}
+        :planting_guide ->
+          (
+            filters = %{
+              month: Date.utc_today().month,
+              hemisphere: "N",
+              climate: "all",
+              family: "all"
+            }
+            families = PlantingGuide.list_families()
+            plants = PlantingGuide.list_plants(filters)
+            Map.merge(filters, %{plants: plants, families: families})
+          )
         _ -> %{}
       end
 
@@ -157,6 +169,20 @@ defmodule GreenManTavernWeb.DualPanelLive do
      socket
      |> assign(:right_panel_action, page_atom)
      |> assign(:page_data, page_data)}
+  end
+
+  @impl true
+  def handle_event("garden_filter_changed", params, socket) do
+    pg = socket.assigns[:page_data] || %{}
+    filters = %{
+      month: parse_int(Map.get(params, "month")) || pg[:month] || Date.utc_today().month,
+      hemisphere: Map.get(params, "hemisphere") || Map.get(params, "hemisphere", pg[:hemisphere] || "N"),
+      climate: Map.get(params, "climate") || pg[:climate] || "all",
+      family: Map.get(params, "family") || pg[:family] || "all"
+    }
+    families = (socket.assigns[:page_data] || %{})[:families] || PlantingGuide.list_families()
+    plants = PlantingGuide.list_plants(filters)
+    {:noreply, assign(socket, :page_data, Map.merge(filters, %{plants: plants, families: families}))}
   end
 
   # ==== Living Web: Right-panel-only events ====
@@ -562,6 +588,17 @@ defmodule GreenManTavernWeb.DualPanelLive do
       _ -> {:error, :invalid_integer}
     end
   end
+
+  defp parse_int(nil), do: nil
+  defp parse_int(<<>>), do: nil
+  defp parse_int(val) when is_binary(val) do
+    case Integer.parse(val) do
+      {i, _} -> i
+      _ -> nil
+    end
+  end
+  defp parse_int(val) when is_integer(val), do: val
+  defp parse_int(_), do: nil
 
   # Helper to filter out hidden nodes before sending to client
   defp filter_visible_nodes(nodes) when is_map(nodes) do

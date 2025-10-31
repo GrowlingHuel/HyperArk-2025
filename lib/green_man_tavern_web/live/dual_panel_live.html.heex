@@ -366,24 +366,27 @@
 
           <div class="pg-toolbar" role="region" aria-label="Planting Guide Filters">
             <div>Hemisphere:</div>
-            <button class="pg-btn" phx-click="garden_filter_changed" phx-value-hemisphere="N">Northern</button>
-            <button class="pg-btn" phx-click="garden_filter_changed" phx-value-hemisphere="S">Southern</button>
+            <button class="pg-btn" aria-pressed={@page_data[:hemisphere] == "N"} phx-click="garden_filter_changed" phx-value-hemisphere="N">Northern</button>
+            <button class="pg-btn" aria-pressed={@page_data[:hemisphere] == "S"} phx-click="garden_filter_changed" phx-value-hemisphere="S">Southern</button>
             <div style="margin-left: 12px;">Climate:</div>
             <select class="pg-btn" phx-change="garden_filter_changed" name="climate">
-              <option value="all">All</option>
-              <option value="temperate">Temperate</option>
-              <option value="mediterranean">Mediterranean</option>
-              <option value="tropical">Tropical</option>
+              <option value="all" selected={@page_data[:climate] == "all"}>All</option>
+              <option value="temperate" selected={@page_data[:climate] == "temperate"}>Temperate</option>
+              <option value="mediterranean" selected={@page_data[:climate] == "mediterranean"}>Mediterranean</option>
+              <option value="tropical" selected={@page_data[:climate] == "tropical"}>Tropical</option>
             </select>
             <div style="margin-left: 12px;">Family:</div>
             <select class="pg-btn" phx-change="garden_filter_changed" name="family">
-              <option value="all">All</option>
+              <option value="all" selected={@page_data[:family] == "all"}>All</option>
+              <%= for fam <- @page_data[:families] || [] do %>
+                <option value={fam.id} selected={to_string(@page_data[:family]) == to_string(fam.id)}>{fam.name}</option>
+              <% end %>
             </select>
           </div>
 
           <div class="pg-toolbar" role="region" aria-label="Month Selector">
             <%= for {m, idx} <- Enum.with_index(["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]) do %>
-              <button class="pg-btn" phx-click="garden_filter_changed" phx-value-month={idx+1}>{m}</button>
+              <button class="pg-btn" aria-pressed={@page_data[:month] == idx+1} phx-click="garden_filter_changed" phx-value-month={idx+1}>{m}</button>
             <% end %>
           </div>
 
@@ -397,10 +400,49 @@
           </div>
 
           <div class="pg-grid">
-            <div class="pg-card">
-              <div style="font-weight:bold;">Planting Guide is coming soon.</div>
-              <div>This placeholder confirms navigation works without affecting the left panel.</div>
-            </div>
+            <%= for plant <- @page_data[:plants] || [] do %>
+              <div class="pg-card">
+                <div style="font-weight:bold;">{plant.name}</div>
+                <div>Family: {plant.family && plant.family.name || "Unknown"}</div>
+                <div>Climate: {Enum.join(plant.climate_zones || [], ", ")}</div>
+
+                <div style="margin-top:6px;">Windows:
+                  <span>
+                    <%= for w <- plant.planting_windows || [] do %>
+                      <%= if w.hemisphere == (@page_data[:hemisphere] || "N") do %>
+                        <span style="border:2px solid #000; background:#CCC; padding:2px 4px; margin-right:4px;">
+                          {Enum.at(["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], w.month-1)}
+                          - {w.action}
+                        </span>
+                      <% end %>
+                    <% end %>
+                  </span>
+                </div>
+
+                <div style="margin-top:6px;">
+                  <div><strong>Good companions:</strong>
+                    <%=
+                      good_companions = (plant.companions || [])
+                        |> Enum.filter(fn c -> c.relation == "good" end)
+                        |> Enum.map(fn c -> c.companion_plant.name end)
+                        |> Enum.join(", ")
+                      
+                      if good_companions == "", do: "None", else: good_companions
+                    %>
+                  </div>
+                  <div><strong>Bad companions:</strong>
+                    <%=
+                      bad_companions = (plant.companions || [])
+                        |> Enum.filter(fn c -> c.relation == "bad" end)
+                        |> Enum.map(fn c -> c.companion_plant.name end)
+                        |> Enum.join(", ")
+                      
+                      if bad_companions == "", do: "None", else: bad_companions
+                    %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
           </div>
 
         <% _ -> %>

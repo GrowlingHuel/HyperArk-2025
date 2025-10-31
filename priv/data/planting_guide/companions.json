@@ -1,0 +1,10 @@
+[
+  {"plant_id": 101, "companion_id": 102, "relation": "good"},
+  {"plant_id": 101, "companion_id": 103, "relation": "bad"},
+  {"plant_id": 104, "companion_id": 105, "relation": "good"},
+  {"plant_id": 104, "companion_id": 101, "relation": "bad"},
+  {"plant_id": 106, "companion_id": 102, "relation": "good"},
+  {"plant_id": 108, "companion_id": 103, "relation": "good"}
+]
+
+

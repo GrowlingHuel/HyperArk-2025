@@ -1,0 +1,12 @@
+[
+  {"id": 101, "name": "Onion", "family_id": 1, "climate": "temperate"},
+  {"id": 102, "name": "Lettuce", "family_id": 2, "climate": "temperate"},
+  {"id": 103, "name": "Kale", "family_id": 2, "climate": "temperate"},
+  {"id": 104, "name": "Tomato", "family_id": 3, "climate": ["temperate", "warm"]},
+  {"id": 105, "name": "Basil", "family_id": 6, "climate": ["warm", "tropical"]},
+  {"id": 106, "name": "Green Beans", "family_id": 4, "climate": "temperate"},
+  {"id": 107, "name": "Zucchini", "family_id": 5, "climate": "warm"},
+  {"id": 108, "name": "Strawberry", "family_id": 7, "climate": ["cool", "temperate"]}
+]
+
+
