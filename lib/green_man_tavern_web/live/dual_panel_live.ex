@@ -440,13 +440,28 @@ defmodule GreenManTavernWeb.DualPanelLive do
     project_map = Map.new(projects, fn p -> {p.id, p} end)
 
     Enum.reduce(raw_nodes, %{}, fn {node_id, node_data}, acc ->
-      project_id = node_data["project_id"]
+      # Convert project_id to integer if it's a string
+      project_id = case node_data["project_id"] do
+        id when is_integer(id) -> id
+        id when is_binary(id) -> String.to_integer(id)
+        _ -> nil
+      end
+
       case Map.get(project_map, project_id) do
         nil ->
-          enriched = Map.merge(node_data, %{"name" => "Unknown Project", "category" => "unknown"})
+          enriched = Map.merge(node_data, %{
+            "name" => "Unknown Project",
+            "category" => "unknown",
+            "icon_name" => "unknown"
+          })
           Map.put(acc, node_id, enriched)
+
         project ->
-          enriched = Map.merge(node_data, %{"name" => project.name, "category" => project.category})
+          enriched = Map.merge(node_data, %{
+            "name" => project.name,
+            "category" => project.category,
+            "icon_name" => project.icon_name
+          })
           Map.put(acc, node_id, enriched)
       end
     end)
@@ -560,4 +575,18 @@ defmodule GreenManTavernWeb.DualPanelLive do
       true -> 0.01
     end
   end
+
+  # Helper: convert Ecto structs to plain maps for JSON encoding in template
+  defp projects_for_json(projects) when is_list(projects) do
+    Enum.map(projects, fn p ->
+      %{
+        id: p.id,
+        name: p.name,
+        icon_name: p.icon_name,
+        category: p.category,
+        skill_level: Map.get(p, :skill_level)
+      }
+    end)
+  end
+  defp projects_for_json(_), do: []
 end

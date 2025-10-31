@@ -56,7 +56,7 @@ const XyflowEditorHook = {
     this.edges = [];
     this.selectedNode = null;
     
-    // Load initial nodes and edges from data attributes
+    // Load initial nodes, edges, and projects from data attributes
     this.loadInitialData();
     
     // Log container dimensions
@@ -118,9 +118,10 @@ const XyflowEditorHook = {
   },
 
   loadInitialData() {
-    // Parse nodes and edges from data attributes
+    // Parse nodes, edges, and projects from data attributes
     const nodesData = this.el.dataset.nodes;
     const edgesData = this.el.dataset.edges;
+    const projectsData = this.el.dataset.projects;
 
     if (nodesData) {
       try {
@@ -144,6 +145,19 @@ const XyflowEditorHook = {
       }
     } else {
       this.edges = [];
+    }
+
+    if (projectsData) {
+      try {
+        const parsed = JSON.parse(projectsData);
+        // Normalize to an array of projects with id, name, category, icon_name
+        this.projects = Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        console.error('Error parsing projects:', e);
+        this.projects = [];
+      }
+    } else {
+      this.projects = [];
     }
   },
 
@@ -208,7 +222,9 @@ const XyflowEditorHook = {
     // Name
     const nameDiv = document.createElement('div');
     nameDiv.className = 'node-name';
-    nameDiv.textContent = node.name || 'Node';
+    // Prefer stored node.name; otherwise look up from projects by project_id
+    const fallbackProject = getProjectById(this.projects, node.project_id);
+    nameDiv.textContent = node.name || (fallbackProject && fallbackProject.name) || 'Node';
     nameDiv.style.fontWeight = 'bold';
     nameDiv.style.fontSize = '11px';
     nameDiv.style.lineHeight = '1.3';
@@ -466,7 +482,12 @@ const XyflowEditorHook = {
     // Name
     const nameDiv = document.createElement('div');
     nameDiv.className = 'node-name';
-    nameDiv.textContent = nodeData.name || 'Node';
+    // For server-pushed ReactFlow nodeData, resolve name/category from projects if missing
+    const projId = nodeData.data && nodeData.data.project_id;
+    const fallbackProject = getProjectById(this.projects, projId);
+    const resolvedName = nodeData.name || (fallbackProject && fallbackProject.name) || 'Node';
+    const resolvedCategory = nodeData.category || (fallbackProject && fallbackProject.category) || undefined;
+    nameDiv.textContent = resolvedName;
     nameDiv.style.fontWeight = 'bold';
     nameDiv.style.fontSize = '11px';
     nameDiv.style.lineHeight = '1.3';
@@ -478,8 +499,8 @@ const XyflowEditorHook = {
     // Track in nodes array
     this.nodes.push({
       id: nodeData.id,
-      name: nodeData.name,
-      category: nodeData.category,
+      name: resolvedName,
+      category: resolvedCategory,
       status: nodeData.status,
       x: nodeData.position.x,
       y: nodeData.position.y
@@ -514,6 +535,12 @@ function getCategoryBackground(category) {
     case 'storage': return '#DCDCDC';
     default: return '#E8E8E8';
   }
+}
+
+function getProjectById(projects, projectId) {
+  if (!projects || !projectId) return null;
+  const idNum = typeof projectId === 'string' ? parseInt(projectId, 10) : projectId;
+  return projects.find((p) => p.id === idNum) || null;
 }
 
 function isPositionOccupied(x, y, existingNodes, threshold = 50) {
