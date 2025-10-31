@@ -179,6 +179,11 @@ const XyflowEditorHook = {
     this.nodes.forEach(node => {
       this.renderNode(node);
     });
+
+    // Ensure selection count reflects current state after re-render
+    if (this.updateSelectionCount) {
+      this.updateSelectionCount();
+    }
   },
 
   renderNode(node) {
@@ -235,6 +240,10 @@ const XyflowEditorHook = {
         nodeEl.classList.remove('selected');
         nodeEl.style.zIndex = '';
         nodeEl.style.border = '2px solid #000';
+      }
+      // Update selection counter in toolbar
+      if (this.updateSelectionCount) {
+        this.updateSelectionCount();
       }
     });
     nodeEl.appendChild(checkbox);
@@ -527,6 +536,10 @@ const XyflowEditorHook = {
         nodeEl.style.zIndex = '';
         nodeEl.style.border = '2px solid #000';
       }
+      // Update selection counter in toolbar
+      if (this.updateSelectionCount) {
+        this.updateSelectionCount();
+      }
     });
     nodeEl.appendChild(checkbox);
 
@@ -588,6 +601,15 @@ XyflowEditorHook.syncCheckboxState = function(nodeEl) {
     nodeEl.classList.remove('selected');
     nodeEl.style.zIndex = '';
     nodeEl.style.border = '2px solid #000';
+  }
+};
+
+// Update the toolbar selection counter based on current selection set
+XyflowEditorHook.updateSelectionCount = function() {
+  const countEl = document.getElementById('selection-count');
+  if (countEl && this.selectedNodes) {
+    const count = this.selectedNodes.size;
+    countEl.textContent = count === 1 ? '1 selected' : `${count} selected`;
   }
 };
 

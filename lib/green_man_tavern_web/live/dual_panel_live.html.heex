@@ -241,6 +241,96 @@
 
               <!-- Right Panel: Canvas -->
               <div class="living-web-canvas">
+                <!-- Toolbar for Living Web actions -->
+                <div class="living-web-toolbar" style="
+                  height: 40px;
+                  background: #E8E8E8;
+                  border-bottom: 2px solid #000;
+                  display: flex;
+                  align-items: center;
+                  padding: 0 10px;
+                  gap: 10px;
+                  font-family: 'Geneva', 'Chicago', sans-serif;
+                  font-size: 11px;
+                ">
+                  <button 
+                    id="delete-selected-btn"
+                    class="toolbar-btn"
+                    style="
+                      padding: 4px 12px;
+                      background: #FFF;
+                      border: 2px solid #000;
+                      border-radius: 0;
+                      font-size: 11px;
+                      font-family: 'Geneva', 'Chicago', sans-serif;
+                      cursor: pointer;
+                      box-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+                    "
+                  >
+                    Delete Selected
+                  </button>
+
+                  <button 
+                    id="hide-selected-btn"
+                    class="toolbar-btn"
+                    style="
+                      padding: 4px 12px;
+                      background: #FFF;
+                      border: 2px solid #000;
+                      border-radius: 0;
+                      font-size: 11px;
+                      font-family: 'Geneva', 'Chicago', sans-serif;
+                      cursor: pointer;
+                      box-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+                    "
+                  >
+                    Hide Selected
+                  </button>
+
+                  <button 
+                    id="show-all-btn"
+                    class="toolbar-btn"
+                    style="
+                      padding: 4px 12px;
+                      background: #FFF;
+                      border: 2px solid #000;
+                      border-radius: 0;
+                      font-size: 11px;
+                      font-family: 'Geneva', 'Chicago', sans-serif;
+                      cursor: pointer;
+                      box-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+                    "
+                  >
+                    Show All
+                  </button>
+
+                  <button 
+                    id="clear-all-btn"
+                    class="toolbar-btn"
+                    style="
+                      padding: 4px 12px;
+                      background: #FFF;
+                      border: 2px solid #000;
+                      border-radius: 0;
+                      font-size: 11px;
+                      font-family: 'Geneva', 'Chicago', sans-serif;
+                      cursor: pointer;
+                      box-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+                      margin-left: auto;
+                    "
+                  >
+                    Clear All
+                  </button>
+
+                  <span id="selection-count" style="
+                    font-size: 10px;
+                    color: #666;
+                    margin-left: 10px;
+                    font-family: 'Geneva', 'Chicago', sans-serif;
+                  ">
+                    0 selected
+                  </span>
+                </div>
                 <div
                   id="xyflow-container"
                   phx-hook="XyflowEditor"
@@ -248,7 +338,7 @@
                   data-edges={Jason.encode!(@edges)}
                   data-projects={Jason.encode!(projects_for_json(@projects))}
                   class="xyflow-editor"
-                  style="width: 100%; height: 100%; min-height: 500px; position: relative; background: #FAFAFA;"
+                  style="width: 100%; height: calc(100% - 40px); min-height: 460px; position: relative; background: #FAFAFA;"
                 >
                   <!-- XyFlow editor will render here -->
                 </div>
