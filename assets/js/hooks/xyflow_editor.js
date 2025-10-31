@@ -55,6 +55,7 @@ const XyflowEditorHook = {
     this.nodes = [];
     this.edges = [];
     this.selectedNode = null;
+    this.selectedNodes = new Set();
     
     // Load initial nodes, edges, and projects from data attributes
     this.loadInitialData();
@@ -209,6 +210,35 @@ const XyflowEditorHook = {
     nodeEl.style.fontSize = '11px';
     nodeEl.style.color = '#000';
 
+    // Selection checkbox (top-right)
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'node-select-checkbox';
+    checkbox.style.position = 'absolute';
+    checkbox.style.top = '4px';
+    checkbox.style.right = '4px';
+    checkbox.style.width = '16px';
+    checkbox.style.height = '16px';
+    checkbox.style.border = '1px solid #000';
+    checkbox.style.background = '#FFF';
+    checkbox.style.cursor = 'pointer';
+    checkbox.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = nodeEl.dataset.nodeId;
+      if (checkbox.checked) {
+        this.selectedNodes.add(id);
+        nodeEl.classList.add('selected');
+        nodeEl.style.zIndex = '10';
+        nodeEl.style.border = '3px solid #0066FF';
+      } else {
+        this.selectedNodes.delete(id);
+        nodeEl.classList.remove('selected');
+        nodeEl.style.zIndex = '';
+        nodeEl.style.border = '2px solid #000';
+      }
+    });
+    nodeEl.appendChild(checkbox);
+
     // Icon
     const iconDiv = document.createElement('div');
     iconDiv.className = 'node-icon';
@@ -234,6 +264,8 @@ const XyflowEditorHook = {
     this.makeDraggable(nodeEl);
 
     this.canvas.appendChild(nodeEl);
+    // Restore selection state for this node
+    this.syncCheckboxState(nodeEl);
     return nodeEl;
   },
 
@@ -469,6 +501,35 @@ const XyflowEditorHook = {
     nodeEl.dataset.category = category;
     nodeEl.id = nodeData.id;
 
+    // Selection checkbox (top-right)
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'node-select-checkbox';
+    checkbox.style.position = 'absolute';
+    checkbox.style.top = '4px';
+    checkbox.style.right = '4px';
+    checkbox.style.width = '16px';
+    checkbox.style.height = '16px';
+    checkbox.style.border = '1px solid #000';
+    checkbox.style.background = '#FFF';
+    checkbox.style.cursor = 'pointer';
+    checkbox.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = nodeEl.dataset.nodeId;
+      if (checkbox.checked) {
+        this.selectedNodes.add(id);
+        nodeEl.classList.add('selected');
+        nodeEl.style.zIndex = '10';
+        nodeEl.style.border = '3px solid #0066FF';
+      } else {
+        this.selectedNodes.delete(id);
+        nodeEl.classList.remove('selected');
+        nodeEl.style.zIndex = '';
+        nodeEl.style.border = '2px solid #000';
+      }
+    });
+    nodeEl.appendChild(checkbox);
+
     // Icon
     const iconDiv = document.createElement('div');
     iconDiv.className = 'node-icon';
@@ -495,6 +556,8 @@ const XyflowEditorHook = {
 
     this.makeDraggable(nodeEl);
     this.canvas.appendChild(nodeEl);
+    // Restore selection state for this node
+    this.syncCheckboxState(nodeEl);
 
     // Track in nodes array
     this.nodes.push({
@@ -505,6 +568,26 @@ const XyflowEditorHook = {
       x: nodeData.position.x,
       y: nodeData.position.y
     });
+  }
+};
+
+// Sync checkbox and selected styling from this.selectedNodes after (re)render
+XyflowEditorHook.syncCheckboxState = function(nodeEl) {
+  if (!nodeEl) return;
+  const nodeId = nodeEl.dataset.nodeId;
+  const checkbox = nodeEl.querySelector('.node-select-checkbox');
+  if (!checkbox) return;
+
+  if (this.selectedNodes && this.selectedNodes.has(nodeId)) {
+    checkbox.checked = true;
+    nodeEl.classList.add('selected');
+    nodeEl.style.zIndex = '10';
+    nodeEl.style.border = '3px solid #0066FF';
+  } else {
+    checkbox.checked = false;
+    nodeEl.classList.remove('selected');
+    nodeEl.style.zIndex = '';
+    nodeEl.style.border = '2px solid #000';
   }
 };
 
