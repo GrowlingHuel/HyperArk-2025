@@ -56,6 +56,7 @@ const XyflowEditorHook = {
     this.edges = [];
     this.selectedNode = null;
       this.selectedNodes = new Set();
+      this.selectedEdges = new Set(); // Track selected edges
       this.isDraggingNode = false; // Flag to prevent bounds updates during drag
       this.isMarqueeSelecting = false; // Flag for marquee selection box
       this.marqueeBox = null; // DOM element for selection box
@@ -92,6 +93,34 @@ const XyflowEditorHook = {
       if (Array.isArray(nodes) && nodes.length > 0) {
         console.log("First node structure:", JSON.stringify(nodes[0], null, 2));
       }
+      // Update edges if provided and re-render
+      if (edges !== undefined) {
+        this.edges = edges;
+        this.renderEdges();
+      }
+    });
+    
+    // Listen for edge added/updated events
+    this.handleEvent("edge_added_success", ({ edges }) => {
+      console.log("Edge added successfully, edges:", edges);
+      if (edges !== undefined) {
+        this.edges = edges;
+        this.renderEdges();
+      }
+    });
+
+    // Listen for edges deleted
+    this.handleEvent("edges_deleted_success", ({ edges }) => {
+      console.log("Edges deleted successfully, edges:", edges);
+      if (edges !== undefined) {
+        this.edges = edges;
+        this.renderEdges();
+        // Clear edge selection
+        if (this.selectedEdges) {
+          this.selectedEdges.clear();
+        }
+        this.updateSelectionCount();
+      }
     });
 
     // Listen for successful nodes deletion
@@ -107,6 +136,39 @@ const XyflowEditorHook = {
         // Remove from selection
         if (this.selectedNodes) {
           this.selectedNodes.delete(nodeId);
+        }
+        
+        // Also remove any edges connected to deleted node
+        if (this.edges) {
+          const edgesArray = Array.isArray(this.edges) 
+            ? this.edges 
+            : Object.entries(this.edges || {}).map(([edgeId, edgeData]) => ({
+                id: edgeId,
+                source_id: edgeData.source_id || edgeData.source,
+                target_id: edgeData.target_id || edgeData.target
+              }));
+          
+          const edgesToRemove = edgesArray
+            .filter(edge => edge.source_id === nodeId || edge.target_id === nodeId)
+            .map(edge => edge.id);
+          
+          // Remove from edges map
+          edgesToRemove.forEach(edgeId => {
+            if (Array.isArray(this.edges)) {
+              this.edges = this.edges.filter(e => e.id !== edgeId);
+            } else {
+              delete this.edges[edgeId];
+            }
+            // Remove from edge selection
+            if (this.selectedEdges) {
+              this.selectedEdges.delete(edgeId);
+            }
+          });
+          
+          // Re-render edges to update display
+          if (edgesToRemove.length > 0) {
+            this.renderEdges();
+          }
         }
       });
       if (this.updateSelectionCount) {
@@ -254,6 +316,21 @@ const XyflowEditorHook = {
     this.canvas.style.height = `${initialHeight}px`;
     this.canvas.style.background = 'transparent'; // Background is on .canvas-scroll-area
     
+    // Create SVG container for edges (behind nodes)
+    this.svgContainer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    this.svgContainer.style.position = 'absolute';
+    this.svgContainer.style.top = '0';
+    this.svgContainer.style.left = '0';
+    this.svgContainer.style.width = '100%';
+    this.svgContainer.style.height = '100%';
+    this.svgContainer.style.pointerEvents = 'none';
+    this.svgContainer.style.zIndex = '1';
+    this.svgContainer.style.overflow = 'visible';
+    // Set explicit SVG dimensions to match canvas
+    this.svgContainer.setAttribute('width', `${initialWidth}`);
+    this.svgContainer.setAttribute('height', `${initialHeight}`);
+    this.canvas.appendChild(this.svgContainer);
+    
     // Create a nodes container that can be transformed for negative positions
     // This container should be transparent so the canvas background shows through
     this.nodesContainer = document.createElement('div');
@@ -264,6 +341,7 @@ const XyflowEditorHook = {
     this.nodesContainer.style.height = '100%';
     this.nodesContainer.style.background = 'transparent';
     this.nodesContainer.style.pointerEvents = 'none'; // Allow clicks to pass through to nodes
+    this.nodesContainer.style.zIndex = '2';
     this.canvas.appendChild(this.nodesContainer);
     
     this.container.appendChild(this.canvas);
@@ -298,12 +376,139 @@ const XyflowEditorHook = {
       this.renderNode(node);
     });
 
+    // Render edges after nodes
+    this.renderEdges();
+
     // Update canvas size based on node bounds
     this.updateCanvasBounds();
 
     // Ensure selection count reflects current state after re-render
     if (this.updateSelectionCount) {
       this.updateSelectionCount();
+    }
+  },
+
+  renderEdges() {
+    if (!this.svgContainer || !this.edges) return;
+    
+    // Clear existing edges
+    while (this.svgContainer.firstChild) {
+      this.svgContainer.removeChild(this.svgContainer.firstChild);
+    }
+    
+    // Get transform from nodesContainer if it exists
+    const transform = this.getNodesContainerTransform();
+    const offsetX = transform.x || 0;
+    const offsetY = transform.y || 0;
+    
+    // Render each edge
+    // Edges are stored as a map: { "edge_id": { "source_id": "...", "target_id": "..." } }
+    const edgesArray = Array.isArray(this.edges) 
+      ? this.edges 
+      : Object.entries(this.edges || {}).map(([edgeId, edgeData]) => ({
+          id: edgeId,
+          source_id: edgeData.source_id || edgeData.source,
+          target_id: edgeData.target_id || edgeData.target
+        }));
+    
+    edgesArray.forEach(edge => {
+      const sourceId = edge.source_id || edge.source;
+      const targetId = edge.target_id || edge.target;
+      const edgeId = edge.id;
+      
+      const sourceNode = this.nodes.find(n => n.id === sourceId);
+      const targetNode = this.nodes.find(n => n.id === targetId);
+      
+      if (!sourceNode || !targetNode) return;
+      
+      // Get node positions (accounting for transform offset)
+      const sourceX = (sourceNode.x || sourceNode.position?.x || 0) + offsetX;
+      const sourceY = (sourceNode.y || sourceNode.position?.y || 0) + offsetY;
+      const targetX = (targetNode.x || targetNode.position?.x || 0) + offsetX;
+      const targetY = (targetNode.y || targetNode.position?.y || 0) + offsetY;
+      
+      // Get node dimensions (default to 140x80)
+      const sourceWidth = 140;
+      const sourceHeight = 80;
+      const targetWidth = 140;
+      const targetHeight = 80;
+      
+      // Calculate connection points (center-right of source, center-left of target)
+      const sourceX1 = sourceX + sourceWidth;
+      const sourceY1 = sourceY + sourceHeight / 2;
+      const targetX1 = targetX;
+      const targetY1 = targetY + targetHeight / 2;
+      
+      // Calculate Bezier curve control points for smooth curved edges
+      const dx = targetX1 - sourceX1;
+      const dy = targetY1 - sourceY1;
+      const curvature = 0.5; // Curvature factor (0 = straight, 1 = very curved)
+      
+      const cp1x = sourceX1 + dx * curvature;
+      const cp1y = sourceY1;
+      const cp2x = targetX1 - dx * curvature;
+      const cp2y = targetY1;
+      
+      // Create SVG path for Bezier curve
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const pathData = `M ${sourceX1} ${sourceY1} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${targetX1} ${targetY1}`;
+      path.setAttribute('d', pathData);
+      
+      // Check if edge is selected
+      const isSelected = this.selectedEdges && this.selectedEdges.has(edgeId);
+      path.setAttribute('stroke', isSelected ? '#000' : '#333');
+      path.setAttribute('stroke-width', isSelected ? '4' : '2');
+      path.setAttribute('fill', 'none');
+      path.setAttribute('marker-end', 'url(#arrowhead)');
+      path.dataset.edgeId = edgeId;
+      path.style.cursor = 'pointer';
+      path.style.transition = 'none'; // Instant updates for HyperCard aesthetic
+      
+      // Make edge clickable for selection
+      path.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Clear node selection when clicking edge
+        if (this.selectedNodes) {
+          this.selectedNodes.clear();
+          // Clear node visual states
+          const nodeElements = this.canvas.querySelectorAll('.flow-node');
+          nodeElements.forEach(nodeEl => {
+            const checkbox = nodeEl.querySelector('.node-select-checkbox');
+            if (checkbox) {
+              checkbox.checked = false;
+            }
+            nodeEl.classList.remove('selected');
+            const category = nodeEl.dataset.category;
+            nodeEl.style.zIndex = '';
+            nodeEl.style.border = '2px solid #000';
+            nodeEl.style.background = getCategoryBackground(category);
+            nodeEl.style.boxShadow = '2px 2px 0 rgba(0,0,0,0.3)';
+          });
+        }
+        this.toggleEdgeSelection(edgeId);
+      });
+      
+      // Add to SVG container
+      this.svgContainer.appendChild(path);
+    });
+    
+    // Create arrowhead marker definition (if it doesn't exist)
+    if (!this.svgContainer.querySelector('defs')) {
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+      marker.setAttribute('id', 'arrowhead');
+      marker.setAttribute('markerWidth', '10');
+      marker.setAttribute('markerHeight', '10');
+      marker.setAttribute('refX', '9');
+      marker.setAttribute('refY', '3');
+      marker.setAttribute('orient', 'auto');
+      
+      const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      polygon.setAttribute('points', '0 0, 10 3, 0 6');
+      polygon.setAttribute('fill', '#333');
+      marker.appendChild(polygon);
+      defs.appendChild(marker);
+      this.svgContainer.appendChild(defs);
     }
   },
 
@@ -389,15 +594,28 @@ const XyflowEditorHook = {
     iconDiv.style.textShadow = '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 -1px 0 #000, -1px 0 0 #000, 1px 0 0 #000, 0 1px 0 #000';
     nodeEl.appendChild(iconDiv);
 
-    // Name
+    // Name - with double-click editing support
     const nameDiv = document.createElement('div');
     nameDiv.className = 'node-name';
     // Prefer stored node.name; otherwise look up from projects by project_id
     const fallbackProject = getProjectById(this.projects, node.project_id);
-    nameDiv.textContent = node.name || (fallbackProject && fallbackProject.name) || 'Node';
+    const projectName = fallbackProject && fallbackProject.name || 'Node';
+    const customName = node.custom_name;
+    const resolvedName = customName || node.name || projectName;
+    nameDiv.textContent = resolvedName;
     nameDiv.style.fontWeight = 'bold';
     nameDiv.style.fontSize = '11px';
     nameDiv.style.lineHeight = '1.3';
+    nameDiv.style.cursor = 'text';
+    nameDiv.title = 'Double-click to rename';
+    nameDiv.dataset.nodeId = node.id;
+    
+    // Double-click to edit
+    nameDiv.addEventListener('dblclick', (e) => {
+      e.stopPropagation(); // Prevent node dragging
+      this.enableNodeNameEdit(nameDiv, node.id, projectName);
+    });
+    
     nodeEl.appendChild(nameDiv);
 
     // Make node draggable
@@ -502,8 +720,18 @@ const XyflowEditorHook = {
             const newY = initialPos.y + cumulativeDy;
             selectedNodeEl.style.left = `${newX}px`;
             selectedNodeEl.style.top = `${newY}px`;
+            
+            // Update node position in nodes array for edge rendering
+            const node = this.nodes.find(n => n.id === selectedId);
+            if (node) {
+              node.x = newX;
+              node.y = newY;
+            }
           }
         });
+        
+        // Re-render edges to reflect new positions
+        this.renderEdges();
       } else {
         // Single node drag: use incremental offset (standard drag behavior)
         const dx = e.clientX - startX;
@@ -515,6 +743,16 @@ const XyflowEditorHook = {
         const newY = currentTop + dy;
         element.style.left = `${newX}px`;
         element.style.top = `${newY}px`;
+        
+        // Update node position in nodes array for edge rendering
+        const node = this.nodes.find(n => n.id === nodeId);
+        if (node) {
+          node.x = newX;
+          node.y = newY;
+        }
+        
+        // Re-render edges to reflect new position
+        this.renderEdges();
         
         startX = e.clientX;
         startY = e.clientY;
@@ -555,6 +793,18 @@ const XyflowEditorHook = {
           this.pushEvent('node_moved', update);
         });
         
+        // Update nodes array with final positions
+        updates.forEach(update => {
+          const node = this.nodes.find(n => n.id === update.node_id);
+          if (node) {
+            node.x = update.position_x;
+            node.y = update.position_y;
+          }
+        });
+        
+        // Re-render edges with updated positions
+        this.renderEdges();
+        
         selectedNodesInitialPositions.clear();
       } else {
         // Single node drag
@@ -568,6 +818,16 @@ const XyflowEditorHook = {
         element.style.left = `${x}px`;
         element.style.top = `${y}px`;
 
+        // Update node position in nodes array
+        const node = this.nodes.find(n => n.id === nodeId);
+        if (node) {
+          node.x = x;
+          node.y = y;
+        }
+        
+        // Re-render edges with updated position
+        this.renderEdges();
+        
         this.pushEvent('node_moved', {
           node_id: nodeId,
           position_x: x,
@@ -684,9 +944,21 @@ const XyflowEditorHook = {
       if (e.target.closest('.flow-node') || 
           e.target.closest('.living-web-toolbar') ||
           e.target.closest('.library-header') ||
-          e.target.closest('.library-content')) {
+          e.target.closest('.library-content') ||
+          e.target.tagName === 'path') { // Don't start marquee if clicking on an edge
+        // If clicking on canvas (not edge), clear edge selection
+        if (!e.target.closest('.flow-node') && 
+            !e.target.closest('.living-web-toolbar') &&
+            !e.target.closest('.library-header') &&
+            !e.target.closest('.library-content') &&
+            e.target.tagName !== 'path') {
+          this.clearEdgeSelection();
+        }
         return;
       }
+      
+      // Clear edge selection when clicking on empty canvas
+      this.clearEdgeSelection();
       
       // Don't start marquee if user is holding a modifier key (for future multi-select)
       // For now, we'll allow it, but can check e.shiftKey, e.ctrlKey, etc. later
@@ -848,7 +1120,7 @@ const XyflowEditorHook = {
   },
 
   clearSelection() {
-    // Clear all selections
+    // Clear all node selections
     this.selectedNodes.clear();
     
     // Update all node checkboxes and visual states
@@ -865,6 +1137,9 @@ const XyflowEditorHook = {
       nodeEl.style.background = getCategoryBackground(category);
       nodeEl.style.boxShadow = '2px 2px 0 rgba(0,0,0,0.3)';
     });
+    
+    // Clear edge selections
+    this.clearEdgeSelection();
     
     this.updateSelectionCount();
   },
@@ -899,15 +1174,29 @@ const XyflowEditorHook = {
     const deleteBtn = document.getElementById('delete-selected-btn');
     if (deleteBtn) {
       deleteBtn.addEventListener('click', () => {
-        if (!this.selectedNodes || this.selectedNodes.size === 0) {
-          alert('No nodes selected');
+        const nodeCount = this.selectedNodes ? this.selectedNodes.size : 0;
+        const edgeCount = this.selectedEdges ? this.selectedEdges.size : 0;
+        
+        if (nodeCount === 0 && edgeCount === 0) {
+          alert('No nodes or edges selected');
           return;
         }
-        // No confirmation - just delete immediately
-        // Send selected node ids to server
-        this.pushEvent('nodes_deleted', {
-          node_ids: Array.from(this.selectedNodes)
-        });
+        
+        // Delete selected nodes
+        if (nodeCount > 0) {
+          this.pushEvent('nodes_deleted', {
+            node_ids: Array.from(this.selectedNodes)
+          });
+        }
+        
+        // Delete selected edges
+        if (edgeCount > 0) {
+          this.pushEvent('edges_deleted', {
+            edge_ids: Array.from(this.selectedEdges)
+          });
+          // Clear edge selection after deletion
+          this.selectedEdges.clear();
+        }
       });
     }
 
@@ -956,6 +1245,67 @@ const XyflowEditorHook = {
         this.pushEvent('clear_canvas', {});
       });
     }
+
+    // Connect button - create edge between two selected nodes
+    const connectBtn = document.getElementById('connect-btn');
+    if (connectBtn) {
+      connectBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!this.selectedNodes || this.selectedNodes.size !== 2) {
+          alert('Please select exactly 2 nodes to connect');
+          return;
+        }
+        const selectedArray = Array.from(this.selectedNodes);
+        const sourceId = selectedArray[0];
+        const targetId = selectedArray[1];
+        
+        // Push event to server to create edge
+        this.pushEvent('edge_added', {
+          source_id: sourceId,
+          target_id: targetId
+        });
+      });
+    }
+
+    // Store connect button reference for state updates
+    this.connectBtn = connectBtn;
+    
+    // Save as System button
+    const saveAsSystemBtn = document.getElementById('save-as-system-btn');
+    if (saveAsSystemBtn) {
+      saveAsSystemBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!this.selectedNodes || this.selectedNodes.size === 0) {
+          alert('Please select at least one node to save as a system');
+          return;
+        }
+        this.showSaveSystemModal();
+      });
+    }
+
+    // Store save button reference for state updates
+    this.saveAsSystemBtn = saveAsSystemBtn;
+
+    // Suggestions button
+    const suggestionsBtn = document.getElementById('suggestions-btn');
+    if (suggestionsBtn) {
+      suggestionsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.pushEvent('get_suggestions', {});
+      });
+    }
+
+    // Listen for suggestions loaded
+    this.handleEvent('suggestions_loaded', ({ suggestions }) => {
+      this.showSuggestionsPanel(suggestions || []);
+    });
+    
+    // Initial button state update
+    this.updateConnectButtonState();
+    this.updateSaveAsSystemButtonState();
   },
 
   addTemporaryNode(id, x, y, label) {
@@ -1132,18 +1482,32 @@ const XyflowEditorHook = {
     iconDiv.style.textShadow = '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 -1px 0 #000, -1px 0 0 #000, 1px 0 0 #000, 0 1px 0 #000';
     nodeEl.appendChild(iconDiv);
 
-    // Name
+    // Name - with double-click editing support
     const nameDiv = document.createElement('div');
     nameDiv.className = 'node-name';
     // For server-pushed ReactFlow nodeData, resolve name/category from projects if missing
     const projId = nodeData.data && nodeData.data.project_id;
     const fallbackProject = getProjectById(this.projects, projId);
-    const resolvedName = nodeData.name || (fallbackProject && fallbackProject.name) || 'Node';
+    const projectName = fallbackProject && fallbackProject.name || 'Node';
+    const customName = nodeData.custom_name || nodeData.data?.custom_name;
+    const resolvedName = customName || nodeData.name || projectName;
     const resolvedCategory = nodeData.category || (fallbackProject && fallbackProject.category) || undefined;
     nameDiv.textContent = resolvedName;
     nameDiv.style.fontWeight = 'bold';
     nameDiv.style.fontSize = '11px';
     nameDiv.style.lineHeight = '1.3';
+    nameDiv.style.cursor = 'text';
+    nameDiv.title = 'Double-click to rename';
+    
+    // Store nodeId for event handling
+    nameDiv.dataset.nodeId = nodeData.id;
+    
+    // Double-click to edit
+    nameDiv.addEventListener('dblclick', (e) => {
+      e.stopPropagation(); // Prevent node dragging
+      this.enableNodeNameEdit(nameDiv, nodeData.id, projectName);
+    });
+    
     nodeEl.appendChild(nameDiv);
 
     this.makeDraggable(nodeEl);
@@ -1158,15 +1522,24 @@ const XyflowEditorHook = {
     // Restore selection state for this node
     this.syncCheckboxState(nodeEl);
 
-    // Track in nodes array
-    this.nodes.push({
+    // Track in nodes array (check if already exists to avoid duplicates)
+    const existingNodeIndex = this.nodes.findIndex(n => n.id === nodeData.id);
+    const nodeEntry = {
       id: nodeData.id,
       name: resolvedName,
       category: resolvedCategory,
       status: nodeData.status,
-      x: nodeData.position.x,
-      y: nodeData.position.y
-    });
+      x: nodeData.position?.x || nodeData.x || parseInt(nodeEl.style.left) || 0,
+      y: nodeData.position?.y || nodeData.y || parseInt(nodeEl.style.top) || 0
+    };
+    
+    if (existingNodeIndex >= 0) {
+      // Update existing node
+      this.nodes[existingNodeIndex] = nodeEntry;
+    } else {
+      // Add new node
+      this.nodes.push(nodeEntry);
+    }
 
     // Update canvas bounds after new node is added
     this.updateCanvasBounds();
@@ -1223,6 +1596,12 @@ const XyflowEditorHook = {
         
         this.canvas.style.width = `${viewportWidth}px`;
         this.canvas.style.height = `${viewportHeight}px`;
+        
+        // Update SVG dimensions to match canvas
+        if (this.svgContainer) {
+          this.svgContainer.setAttribute('width', `${viewportWidth}`);
+          this.svgContainer.setAttribute('height', `${viewportHeight}`);
+        }
         this.canvas.style.minWidth = `${viewportWidth}px`;
         this.canvas.style.minHeight = `${viewportHeight}px`;
         
@@ -1260,6 +1639,12 @@ const XyflowEditorHook = {
         
         this.canvas.style.width = `${viewportWidth}px`;
         this.canvas.style.height = `${viewportHeight}px`;
+        
+        // Update SVG dimensions to match canvas
+        if (this.svgContainer) {
+          this.svgContainer.setAttribute('width', `${viewportWidth}`);
+          this.svgContainer.setAttribute('height', `${viewportHeight}`);
+        }
         this.canvas.style.minWidth = `${viewportWidth}px`;
         this.canvas.style.minHeight = `${viewportHeight}px`;
         
@@ -1531,10 +1916,368 @@ XyflowEditorHook.syncCheckboxState = function(nodeEl) {
 // Update the toolbar selection counter based on current selection set
 XyflowEditorHook.updateSelectionCount = function() {
   const countEl = document.getElementById('selection-count');
-  if (countEl && this.selectedNodes) {
-    const count = this.selectedNodes.size;
-    countEl.textContent = count === 1 ? '1 selected' : `${count} selected`;
+  if (countEl) {
+    const nodeCount = this.selectedNodes ? this.selectedNodes.size : 0;
+    const edgeCount = this.selectedEdges ? this.selectedEdges.size : 0;
+    const total = nodeCount + edgeCount;
+    
+    let text = '';
+    if (nodeCount > 0 && edgeCount > 0) {
+      text = `${nodeCount} node${nodeCount !== 1 ? 's' : ''}, ${edgeCount} edge${edgeCount !== 1 ? 's' : ''} selected`;
+    } else if (nodeCount > 0) {
+      text = `${nodeCount} node${nodeCount !== 1 ? 's' : ''} selected`;
+    } else if (edgeCount > 0) {
+      text = `${edgeCount} edge${edgeCount !== 1 ? 's' : ''} selected`;
+    } else {
+      text = '0 selected';
+    }
+    countEl.textContent = text;
   }
+  // Also update Connect button state and Save as System button state
+  this.updateConnectButtonState();
+  this.updateSaveAsSystemButtonState();
+};
+
+// Update Connect button enabled/disabled state based on selection
+XyflowEditorHook.updateConnectButtonState = function() {
+  if (!this.connectBtn) return;
+  
+  const count = this.selectedNodes ? this.selectedNodes.size : 0;
+  const isEnabled = count === 2;
+  
+  this.connectBtn.disabled = !isEnabled;
+  this.connectBtn.style.opacity = isEnabled ? '1' : '0.5';
+  this.connectBtn.style.cursor = isEnabled ? 'pointer' : 'not-allowed';
+};
+
+// Update Save as System button enabled/disabled state based on selection
+XyflowEditorHook.updateSaveAsSystemButtonState = function() {
+  if (!this.saveAsSystemBtn) return;
+  
+  const count = this.selectedNodes ? this.selectedNodes.size : 0;
+  const isEnabled = count > 0;
+  
+  this.saveAsSystemBtn.disabled = !isEnabled;
+  this.saveAsSystemBtn.style.opacity = isEnabled ? '1' : '0.5';
+  this.saveAsSystemBtn.style.cursor = isEnabled ? 'pointer' : 'not-allowed';
+};
+
+// Toggle edge selection
+XyflowEditorHook.toggleEdgeSelection = function(edgeId) {
+  if (!this.selectedEdges) {
+    this.selectedEdges = new Set();
+  }
+  
+  if (this.selectedEdges.has(edgeId)) {
+    this.selectedEdges.delete(edgeId);
+  } else {
+    this.selectedEdges.add(edgeId);
+  }
+  
+  // Re-render edges to update visual state
+  this.renderEdges();
+  
+  // Update selection count
+  this.updateSelectionCount();
+};
+
+// Clear all edge selections
+XyflowEditorHook.clearEdgeSelection = function() {
+  if (this.selectedEdges) {
+    this.selectedEdges.clear();
+    this.renderEdges();
+    this.updateSelectionCount();
+  }
+};
+
+// Show modal for saving composite system
+XyflowEditorHook.showSaveSystemModal = function() {
+  const selectedArray = Array.from(this.selectedNodes);
+  
+  // Create modal overlay
+  const overlay = document.createElement('div');
+  overlay.style.position = 'fixed';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.background = 'rgba(0, 0, 0, 0.5)';
+  overlay.style.zIndex = '10000';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+  
+  // Create modal content
+  const modal = document.createElement('div');
+  modal.style.background = '#FFF';
+  modal.style.border = '3px solid #000';
+  modal.style.borderRadius = '0';
+  modal.style.padding = '20px';
+  modal.style.width = '400px';
+  modal.style.fontFamily = "'Chicago', 'Geneva', 'Monaco', monospace";
+  modal.style.fontSize = '12px';
+  modal.style.boxShadow = '4px 4px 0 rgba(0,0,0,0.3)';
+  
+  modal.innerHTML = `
+    <div style="margin-bottom: 15px; font-weight: bold; font-size: 14px;">Save as System</div>
+    <div style="margin-bottom: 10px;">
+      <label style="display: block; margin-bottom: 5px;">Name *</label>
+      <input type="text" id="system-name-input" style="width: 100%; padding: 4px; border: 1px solid #000; border-radius: 0; font-family: inherit; font-size: 11px;" />
+    </div>
+    <div style="margin-bottom: 10px;">
+      <label style="display: block; margin-bottom: 5px;">Description</label>
+      <textarea id="system-description-input" rows="3" style="width: 100%; padding: 4px; border: 1px solid #000; border-radius: 0; font-family: inherit; font-size: 11px; resize: none;"></textarea>
+    </div>
+    <div style="margin-bottom: 15px;">
+      <label style="display: block; margin-bottom: 5px;">Icon (optional)</label>
+      <input type="text" id="system-icon-input" placeholder="e.g., 🌱" style="width: 100%; padding: 4px; border: 1px solid #000; border-radius: 0; font-family: inherit; font-size: 11px;" />
+    </div>
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button id="save-system-cancel" style="padding: 6px 12px; background: #FFF; border: 2px solid #000; border-radius: 0; cursor: pointer; font-family: inherit; font-size: 11px;">Cancel</button>
+      <button id="save-system-submit" style="padding: 6px 12px; background: #FFF; border: 2px solid #000; border-radius: 0; cursor: pointer; font-family: inherit; font-size: 11px; font-weight: bold;">Save</button>
+    </div>
+  `;
+  
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  
+  // Focus on name input
+  const nameInput = modal.querySelector('#system-name-input');
+  nameInput.focus();
+  
+  // Cancel handler
+  const cancelBtn = modal.querySelector('#save-system-cancel');
+  cancelBtn.addEventListener('click', () => {
+    document.body.removeChild(overlay);
+  });
+  
+  // Submit handler
+  const submitBtn = modal.querySelector('#save-system-submit');
+  submitBtn.addEventListener('click', () => {
+    const name = nameInput.value.trim();
+    if (!name) {
+      alert('Please enter a name for the system');
+      return;
+    }
+    
+    const description = modal.querySelector('#system-description-input').value.trim();
+    const iconName = modal.querySelector('#system-icon-input').value.trim();
+    
+    // Push event to server
+    this.pushEvent('save_composite_system', {
+      name: name,
+      description: description,
+      icon_name: iconName || null,
+      node_ids: selectedArray
+    });
+    
+    // Remove modal
+    document.body.removeChild(overlay);
+  });
+  
+  // Close on overlay click (but not modal click)
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      document.body.removeChild(overlay);
+    }
+  });
+  
+  // Close on Escape key
+  const escapeHandler = (e) => {
+    if (e.key === 'Escape') {
+      document.body.removeChild(overlay);
+      document.removeEventListener('keydown', escapeHandler);
+    }
+  };
+  document.addEventListener('keydown', escapeHandler);
+};
+
+// Show suggestions panel
+XyflowEditorHook.showSuggestionsPanel = function(suggestions) {
+  // Remove existing panel if present
+  const existing = document.getElementById('suggestions-panel');
+  if (existing) {
+    existing.remove();
+  }
+
+  if (suggestions.length === 0) {
+    alert('No suggestions available at this time.');
+    return;
+  }
+
+  // Create panel overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'suggestions-panel';
+  overlay.style.position = 'fixed';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.background = 'rgba(0, 0, 0, 0.5)';
+  overlay.style.zIndex = '10000';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+
+  // Create panel content
+  const panel = document.createElement('div');
+  panel.style.background = '#FFF';
+  panel.style.border = '3px solid #000';
+  panel.style.borderRadius = '0';
+  panel.style.padding = '20px';
+  panel.style.width = '500px';
+  panel.style.maxHeight = '70vh';
+  panel.style.overflowY = 'auto';
+  panel.style.fontFamily = "'Chicago', 'Geneva', 'Monaco', monospace";
+  panel.style.fontSize = '12px';
+  panel.style.boxShadow = '4px 4px 0 rgba(0,0,0,0.3)';
+
+  panel.innerHTML = `
+    <div style="margin-bottom: 15px; font-weight: bold; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
+      <span>Suggestions (${suggestions.length})</span>
+      <button id="suggestions-close" style="padding: 4px 8px; background: #FFF; border: 1px solid #000; border-radius: 0; cursor: pointer; font-family: inherit; font-size: 10px;">Close</button>
+    </div>
+    <div id="suggestions-list"></div>
+  `;
+
+  const listDiv = panel.querySelector('#suggestions-list');
+  
+  suggestions.forEach((suggestion, index) => {
+    const priorityColor = suggestion.priority === 'high' ? '#000' : (suggestion.priority === 'medium' ? '#333' : '#666');
+    const item = document.createElement('div');
+    item.style.padding = '10px';
+    item.style.marginBottom = '8px';
+    item.style.border = '1px solid #000';
+    item.style.background = '#FFF';
+    item.style.borderLeft = `4px solid ${priorityColor}`;
+    
+    item.innerHTML = `
+      <div style="margin-bottom: 5px; font-weight: bold; color: ${priorityColor};">
+        [${suggestion.priority.toUpperCase()}] ${suggestion.type}
+      </div>
+      <div style="margin-bottom: 8px; font-size: 11px;">
+        ${suggestion.description}
+      </div>
+      <button class="apply-suggestion-btn" data-index="${index}" style="padding: 4px 8px; background: #FFF; border: 1px solid #000; border-radius: 0; cursor: pointer; font-family: inherit; font-size: 10px;">
+        Apply
+      </button>
+    `;
+    
+    const applyBtn = item.querySelector('.apply-suggestion-btn');
+    applyBtn.addEventListener('click', () => {
+      this.pushEvent('apply_suggestion', {
+        type: suggestion.type,
+        action: suggestion.action
+      });
+      overlay.remove();
+    });
+    
+    listDiv.appendChild(item);
+  });
+
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+
+  // Close button
+  const closeBtn = panel.querySelector('#suggestions-close');
+  closeBtn.addEventListener('click', () => {
+    overlay.remove();
+  });
+
+  // Close on overlay click
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
+    }
+  });
+
+  // Close on Escape
+  const escapeHandler = (e) => {
+    if (e.key === 'Escape') {
+      overlay.remove();
+      document.removeEventListener('keydown', escapeHandler);
+    }
+  };
+  document.addEventListener('keydown', escapeHandler);
+};
+
+// Enable inline editing for node name
+XyflowEditorHook.enableNodeNameEdit = function(nameDiv, nodeId, defaultName) {
+  const currentText = nameDiv.textContent.trim();
+  
+  // Create input field
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = currentText;
+  input.style.width = '100%';
+  input.style.padding = '2px 4px';
+  input.style.border = '1px solid #000';
+  input.style.borderRadius = '0';
+  input.style.background = '#FFF';
+  input.style.color = '#000';
+  input.style.fontFamily = "'Chicago', 'Geneva', 'Monaco', monospace";
+  input.style.fontSize = '11px';
+  input.style.fontWeight = 'bold';
+  input.style.boxShadow = 'inset 1px 1px 0 rgba(0,0,0,0.3)';
+  
+  // Replace nameDiv with input
+  nameDiv.style.display = 'none';
+  nameDiv.parentNode.insertBefore(input, nameDiv);
+  input.focus();
+  input.select();
+  
+  // Save on blur or Enter
+  const saveName = () => {
+    const newName = input.value.trim();
+    const finalName = newName || defaultName;
+    
+    // Update nameDiv content
+    nameDiv.textContent = finalName;
+    nameDiv.style.display = '';
+    input.remove();
+    
+    // Only push event if name changed
+    if (finalName !== currentText && finalName !== defaultName) {
+      this.pushEvent('node_renamed', {
+        node_id: nodeId,
+        custom_name: finalName
+      });
+      
+      // Update local node data
+      const node = this.nodes.find(n => n.id === nodeId);
+      if (node) {
+        node.custom_name = finalName;
+      }
+    } else if (finalName === defaultName) {
+      // If name was reset to default, clear custom_name
+      this.pushEvent('node_renamed', {
+        node_id: nodeId,
+        custom_name: null
+      });
+      
+      const node = this.nodes.find(n => n.id === nodeId);
+      if (node) {
+        delete node.custom_name;
+      }
+    }
+  };
+  
+  // Cancel on Escape
+  const cancelEdit = () => {
+    nameDiv.style.display = '';
+    input.remove();
+  };
+  
+  input.addEventListener('blur', saveName);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveName();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      cancelEdit();
+    }
+  });
 };
 
 function getCategoryIcon(node) {

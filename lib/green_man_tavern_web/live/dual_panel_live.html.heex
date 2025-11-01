@@ -440,7 +440,21 @@
                   <!-- MY SYSTEMS Section -->
                   <div class="library-section">
                     <div class="library-section-title">MY SYSTEMS</div>
-                    <div class="library-placeholder">(No composite systems yet)</div>
+                    <%= if length(assigns[:composite_systems] || []) > 0 do %>
+                      <%= for composite <- assigns[:composite_systems] do %>
+                        <div 
+                          class="library-item draggable-project-item" 
+                          draggable="true" 
+                          data-composite-id={composite.id}
+                          data-composite-name={composite.name}
+                        >
+                          <span class="library-icon">🔧</span>
+                          <span class="library-name"><%= composite.name %></span>
+                        </div>
+                      <% end %>
+                    <% else %>
+                      <div class="library-placeholder">(No composite systems yet)</div>
+                    <% end %>
                   </div>
 
                   <!-- Projects by Category -->
@@ -535,6 +549,64 @@
                     "
                   >
                     Show All
+                  </button>
+
+                  <button 
+                    type="button"
+                    id="connect-btn"
+                    class="toolbar-btn"
+                    style="
+                      padding: 4px 12px;
+                      background: #FFF;
+                      border: 2px solid #000;
+                      border-radius: 0;
+                      font-size: 11px;
+                      font-family: 'Geneva', 'Chicago', sans-serif;
+                      cursor: pointer;
+                      box-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+                      opacity: 0.5;
+                    "
+                    disabled
+                  >
+                    Connect
+                  </button>
+
+                  <button 
+                    type="button"
+                    id="save-as-system-btn"
+                    class="toolbar-btn"
+                    style="
+                      padding: 4px 12px;
+                      background: #FFF;
+                      border: 2px solid #000;
+                      border-radius: 0;
+                      font-size: 11px;
+                      font-family: 'Geneva', 'Chicago', sans-serif;
+                      cursor: pointer;
+                      box-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+                      opacity: 0.5;
+                    "
+                    disabled
+                  >
+                    Save as System
+                  </button>
+
+                  <button 
+                    type="button"
+                    id="suggestions-btn"
+                    class="toolbar-btn"
+                    style="
+                      padding: 4px 12px;
+                      background: #FFF;
+                      border: 2px solid #000;
+                      border-radius: 0;
+                      font-size: 11px;
+                      font-family: 'Geneva', 'Chicago', sans-serif;
+                      cursor: pointer;
+                      box-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+                    "
+                  >
+                    Suggestions
                   </button>
 
                   <button 

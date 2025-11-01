@@ -10,6 +10,7 @@ defmodule GreenManTavernWeb.DualPanelLive do
   alias GreenManTavern.PlantingGuide
   alias GreenManTavern.Journal
   alias GreenManTavern.Quests
+  alias GreenManTavern.Diagrams.Suggestions
 
   @pubsub GreenManTavern.PubSub
   @topic "navigation"
@@ -53,12 +54,16 @@ defmodule GreenManTavernWeb.DualPanelLive do
 
     user_id = if current_user, do: current_user.id, else: nil
 
+    # Load composite systems for the user
+    composite_systems = if user_id, do: Diagrams.list_composite_systems(user_id), else: []
+
     socket =
       socket
       |> assign(:projects, projects)
       |> assign(:diagram, diagram)
       |> assign(:nodes, nodes)
       |> assign(:edges, edges)
+      |> assign(:composite_systems, composite_systems)
       |> assign(:journal_entries, if(user_id, do: Journal.list_entries(user_id, limit: 50), else: []))
       |> assign(:user_quests, if(user_id, do: Quests.list_user_quests(user_id, "all"), else: []))
       |> assign(:journal_search_term, "")
@@ -437,6 +442,40 @@ defmodule GreenManTavernWeb.DualPanelLive do
           end
       end
 
+    # Push event to client to update edges
+    updated_socket =
+      push_event(updated_socket, "edge_added_success", %{edges: updated_edges})
+
+    {:noreply, updated_socket}
+  end
+
+  # Delete edges
+  @impl true
+  def handle_event("edges_deleted", %{"edge_ids" => edge_ids}, socket) do
+    edges = socket.assigns.edges || %{}
+    diagram = socket.assigns.diagram
+
+    # Remove edges from map
+    updated_edges =
+      edge_ids
+      |> Enum.reduce(edges, fn edge_id, acc ->
+        Map.delete(acc, edge_id)
+      end)
+
+    # Persist to diagram
+    updated_socket =
+      case diagram do
+        nil -> assign(socket, :edges, updated_edges)
+        d ->
+          case Diagrams.update_diagram(d, %{edges: updated_edges}) do
+            {:ok, d2} -> socket |> assign(:diagram, d2) |> assign(:edges, updated_edges)
+            _ -> assign(socket, :edges, updated_edges)
+          end
+      end
+
+    # Push event to client to update edges
+    updated_socket = push_event(updated_socket, "edges_deleted_success", %{edges: updated_edges})
+
     {:noreply, updated_socket}
   end
 
@@ -444,6 +483,154 @@ defmodule GreenManTavernWeb.DualPanelLive do
   @impl true
   def handle_event("node_selected", _params, socket) do
     {:noreply, socket}
+  end
+
+  # Node renamed - update custom_name in node data
+  @impl true
+  def handle_event("node_renamed", %{"node_id" => node_id, "custom_name" => custom_name}, socket) do
+    nodes = socket.assigns.nodes || %{}
+    diagram = socket.assigns.diagram
+
+    updated_nodes =
+      case Map.fetch(nodes, node_id) do
+        :error ->
+          nodes
+
+        {:ok, node_data} ->
+          # Update custom_name (or remove it if nil)
+          updated_node_data =
+            if custom_name in [nil, ""] do
+              Map.delete(node_data, "custom_name")
+            else
+              Map.put(node_data, "custom_name", custom_name)
+            end
+
+          Map.put(nodes, node_id, updated_node_data)
+      end
+
+    # Persist to diagram
+    updated_socket =
+      case diagram do
+        nil -> assign(socket, :nodes, updated_nodes)
+        d ->
+          case Diagrams.update_diagram(d, %{nodes: updated_nodes}) do
+            {:ok, d2} -> socket |> assign(:diagram, d2) |> assign(:nodes, updated_nodes)
+            _ -> assign(socket, :nodes, updated_nodes)
+          end
+      end
+
+    {:noreply, updated_socket}
+  end
+
+  # Save composite system from selected nodes
+  @impl true
+  def handle_event("save_composite_system", %{"name" => name, "description" => description, "icon_name" => icon_name, "node_ids" => node_ids}, socket) do
+    user_id = socket.assigns.current_user && socket.assigns.current_user.id
+    diagram = socket.assigns.diagram
+    nodes = socket.assigns.nodes || %{}
+    edges = socket.assigns.edges || %{}
+    projects = socket.assigns.projects || []
+
+    if not user_id do
+      {:noreply, put_flash(socket, :error, "You must be logged in to save systems")}
+    else
+      # Convert node_ids from list to array if needed
+      internal_node_ids = if is_list(node_ids), do: node_ids, else: [node_ids]
+
+      # Get edges between selected nodes
+      internal_edge_ids =
+        edges
+        |> Enum.filter(fn {_edge_id, edge_data} ->
+          source_id = edge_data["source_id"]
+          target_id = edge_data["target_id"]
+          source_id in internal_node_ids and target_id in internal_node_ids
+        end)
+        |> Enum.map(fn {edge_id, _} -> edge_id end)
+
+      # Infer external inputs/outputs
+      {external_inputs, external_outputs} =
+        Diagrams.infer_external_io(internal_node_ids, nodes, edges, projects)
+
+      # Create composite system
+      attrs = %{
+        user_id: user_id,
+        name: name,
+        description: description || "",
+        icon_name: icon_name || nil,
+        internal_node_ids: internal_node_ids,
+        internal_edge_ids: internal_edge_ids,
+        external_inputs: external_inputs,
+        external_outputs: external_outputs,
+        parent_diagram_id: diagram && diagram.id
+      }
+
+      case Diagrams.create_composite_system(attrs) do
+        {:ok, _composite_system} ->
+          # Reload composite systems
+          updated_composite_systems = Diagrams.list_composite_systems(user_id)
+
+          updated_socket =
+            socket
+            |> put_flash(:info, "System saved successfully!")
+            |> assign(:composite_systems, updated_composite_systems)
+
+          {:noreply, updated_socket}
+
+        {:error, changeset} ->
+          error_msg = "Failed to save system: #{inspect(changeset.errors)}"
+          {:noreply, put_flash(socket, :error, error_msg)}
+      end
+    end
+  end
+
+  # Get suggestions for current diagram
+  @impl true
+  def handle_event("get_suggestions", _params, socket) do
+    nodes = socket.assigns.nodes || %{}
+    edges = socket.assigns.edges || %{}
+    projects = socket.assigns.projects || []
+
+    suggestions = Suggestions.generate_suggestions(nodes, edges, projects)
+
+    {:noreply, push_event(socket, "suggestions_loaded", %{suggestions: suggestions})}
+  end
+
+  # Apply a suggestion (e.g., create a connection)
+  @impl true
+  def handle_event("apply_suggestion", %{"type" => "connection", "action" => action}, socket) do
+    source_id = action["source_id"]
+    target_id = action["target_id"]
+
+    # Reuse edge_added handler logic
+    edge_id = "edge_" <> Base.encode16(:crypto.strong_rand_bytes(6), case: :lower)
+    diagram = socket.assigns.diagram
+    edges = socket.assigns.edges || %{}
+
+    new_edge = %{
+      "source_id" => source_id,
+      "target_id" => target_id
+    }
+
+    updated_edges = Map.put(edges, edge_id, new_edge)
+
+    updated_socket =
+      case diagram do
+        nil -> assign(socket, :edges, updated_edges)
+        d ->
+          case Diagrams.update_diagram(d, %{edges: updated_edges}) do
+            {:ok, d2} -> socket |> assign(:diagram, d2) |> assign(:edges, updated_edges)
+            _ -> socket
+          end
+      end
+
+    updated_socket = push_event(updated_socket, "edge_added_success", %{edges: updated_edges})
+    updated_socket = put_flash(updated_socket, :info, "Suggestion applied: connection created")
+
+    {:noreply, updated_socket}
+  end
+
+  def handle_event("apply_suggestion", _params, socket) do
+    {:noreply, put_flash(socket, :info, "Suggestion type not yet implemented")}
   end
 
   # Chat event handlers
