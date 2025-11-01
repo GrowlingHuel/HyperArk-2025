@@ -244,11 +244,7 @@ const XyflowEditorHook = {
     const initialHeight = viewport.clientHeight || 600;
     this.canvas.style.width = `${initialWidth}px`;
     this.canvas.style.height = `${initialHeight}px`;
-    this.canvas.style.background = '#FFF';
-    this.canvas.style.backgroundImage = 'radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #CCCCCC 1px, transparent 1px)';
-    this.canvas.style.backgroundSize = '20px 20px';
-    this.canvas.style.backgroundPosition = '10px 10px, 0px 0px, 0px 0px';
-    this.canvas.style.backgroundRepeat = 'repeat';
+    this.canvas.style.background = 'transparent'; // Background is on .canvas-scroll-area
     
     // Create a nodes container that can be transformed for negative positions
     // This container should be transparent so the canvas background shows through
@@ -1000,12 +996,8 @@ const XyflowEditorHook = {
       this.container.style.setProperty('max-height', 'none', 'important');
       
       // Also apply background to container to ensure it's visible everywhere
-      // The container background serves as a fallback
-      this.container.style.setProperty('background', '#FFF', 'important');
-      this.container.style.setProperty('background-image', 'radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #CCCCCC 1px, transparent 1px)', 'important');
-      this.container.style.setProperty('background-size', '20px 20px', 'important');
-      this.container.style.setProperty('background-position', '10px 10px, 0px 0px, 0px 0px', 'important');
-      this.container.style.setProperty('background-repeat', 'repeat', 'important');
+      // Background is handled by .canvas-scroll-area CSS, container should be transparent
+      this.container.style.setProperty('background', 'transparent', 'important');
       
       console.log('Updated container styles:', {
         setWidth: `${canvasWidth}px`,
@@ -1034,12 +1026,7 @@ const XyflowEditorHook = {
     // Ensure background is always visible and covers the full canvas
     // Re-apply background styles to ensure they persist after size changes
     // Force background to cover entire area with explicit attachment
-    this.canvas.style.background = '#FFF';
-    this.canvas.style.backgroundImage = 'radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #CCCCCC 1px, transparent 1px)';
-    this.canvas.style.backgroundSize = '20px 20px';
-    this.canvas.style.backgroundPosition = '10px 10px, 0px 0px, 0px 0px';
-    this.canvas.style.backgroundRepeat = 'repeat';
-    this.canvas.style.backgroundAttachment = 'scroll'; // Ensure background scrolls with content
+    this.canvas.style.background = 'transparent'; // Background is on .canvas-scroll-area
     
     // Update nodesContainer size to match canvas - it must cover the full canvas area
     // This ensures the background is always visible everywhere
