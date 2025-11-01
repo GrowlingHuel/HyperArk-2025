@@ -506,11 +506,14 @@ defmodule GreenManTavernWeb.DualPanelLive do
         message_type: "user",
         message_content: message
       }) do
-        {:ok, _conv} ->
-          Logger.debug("[DualPanel] Saved user message to conversation_history")
+        {:ok, saved_conv} ->
+          Logger.info("[DualPanel] ✅ Saved user message to conversation_history (ID: #{saved_conv.id})")
         {:error, changeset} ->
-          Logger.error("[DualPanel] Failed to save user message: #{inspect(changeset.errors)}")
+          Logger.error("[DualPanel] ❌ FAILED to save user message: #{inspect(changeset.errors)}")
+          Logger.error("[DualPanel] Message length: #{String.length(message)} chars, user_id: #{inspect(user_id)}, character_id: #{inspect(character && character.id)}")
       end
+    else
+      Logger.warn("[DualPanel] ⚠️ Cannot save user message: user_id=#{inspect(user_id)}, character=#{inspect(character && character.id)}")
     end
 
     # Extract and persist facts before calling Claude
@@ -595,11 +598,16 @@ defmodule GreenManTavernWeb.DualPanelLive do
                 message_type: "character",
                 message_content: response
               }) do
-                {:ok, _conv} ->
-                  Logger.debug("[DualPanel] Saved AI response to conversation_history")
+                {:ok, saved_conv} ->
+                  Logger.info("[DualPanel] ✅ Saved AI response to conversation_history (ID: #{saved_conv.id}, Length: #{String.length(response)} chars)")
                 {:error, changeset} ->
-                  Logger.error("[DualPanel] Failed to save AI response: #{inspect(changeset.errors)}")
+                  Logger.error("[DualPanel] ❌ FAILED to save AI response: #{inspect(changeset.errors)}")
+                  Logger.error("[DualPanel] Response length: #{String.length(response)} chars, user_id: #{inspect(user_id)}, character_id: #{inspect(character && character.id)}")
+                  # Try to notify user if save fails (though in async context we can't update socket)
+                  Logger.warn("[DualPanel] Character response may not persist after logout/login!")
               end
+            else
+              Logger.warn("[DualPanel] ⚠️ Cannot save character response: user_id=#{inspect(user_id)}, character=#{inspect(character && character.id)}")
             end
 
             # Update trust level based on interaction
