@@ -934,6 +934,16 @@ const XyflowEditorHook = {
       });
     }
 
+    // Deselect All button
+    const deselectAllBtn = document.getElementById('deselect-all-btn');
+    if (deselectAllBtn) {
+      deselectAllBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.clearSelection();
+      });
+    }
+
     // Clear All button
     const clearAllBtn = document.getElementById('clear-all-btn');
     if (clearAllBtn) {
