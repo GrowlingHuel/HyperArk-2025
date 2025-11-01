@@ -15,7 +15,7 @@ defmodule GreenManTavernWeb.BannerMenuComponent do
       <div class="banner-menu" style="height: 35px !important; background: #CCCCCC !important; border: 1px solid #000000 !important; display: flex !important; align-items: center !important; justify-content: flex-start; gap: 10px !important; padding: 0 12px !important; margin: 0 !important; line-height: 1 !important;">
         <!-- Logo/Brand -->
         <div class="banner-left" style="margin-right: 10px !important; display: flex !important; align-items: center !important; padding: 0 !important; line-height: 1 !important; height: auto !important;">
-          <span class="banner-logo" style="display: inline-block !important; line-height: 1 !important; margin: 0 !important; padding: 0 !important;">🍃 HyperArk</span>
+          <span class="banner-logo" style="display: inline-block !important; line-height: 1 !important; margin: 0 !important; padding: 0 !important;"><span style="filter: grayscale(100%) !important; display: inline-block !important;">🍃</span> HyperArk</span>
         </div>
 
         <!-- Navigation buttons - all in one container -->
@@ -47,7 +47,7 @@ defmodule GreenManTavernWeb.BannerMenuComponent do
                 href="#"
                 phx-click="select_character"
                 phx-value-character_slug={to_kebab_case(character.name)}
-                style="display: block; padding: 8px 12px; font-family: Monaco, 'Courier New', monospace; font-size: 11px; color: #000; text-decoration: none; border-bottom: 1px solid #CCC; background: #FFF; cursor: pointer;"
+                style="display: block; padding: 8px 12px; font-family: Geneva, Helvetica, Arial, sans-serif !important; font-size: 11px; color: #000; text-decoration: none; border-bottom: 1px solid #CCC; background: #FFF; cursor: pointer;"
                 onmouseover="this.style.background='#EEE'"
                 onmouseout="this.style.background='#FFF'"
               >

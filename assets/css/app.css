@@ -139,6 +139,8 @@ html {
   overflow: hidden !important;
   width: 100%;
   position: relative;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 body {
@@ -146,7 +148,7 @@ body {
   font-size: 12px; /* BACK to readable size */
   line-height: 1.4;
   color: #000;
-  background: #CCCCCC; /* Medium grey */
+  background: #CCCCCC !important; /* Match banner grey */
   -webkit-font-smoothing: antialiased; /* ENABLE anti-aliasing for Geneva */
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
@@ -178,11 +180,20 @@ p { font-size: 12px; }
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 /* Make LiveView wrapper divs transparent for layout */
-[data-phx-session], [data-phx-teleported-src] { display: contents }
+[data-phx-session], [data-phx-teleported-src] { 
+  display: contents !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
 
 /* This file is for your main application CSS */
 /* Pixel-perfect, crisp edges */
 * { box-sizing: border-box; }
+/* Ensure no unwanted margin on first flex child */
+.dual-panel-container > *:first-child {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
 .no-antialias { -webkit-font-smoothing: none; shape-rendering: crispEdges; image-rendering: pixelated; }
 .sharp-border { border: 1px solid #000; image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; }
 /* App Layout - New Structure */
