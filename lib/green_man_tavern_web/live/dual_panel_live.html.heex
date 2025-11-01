@@ -421,6 +421,14 @@
               .draggable-project-item:hover { background: #EEE; border-color: #000; }
               .library-icon { margin-right: 6px; font-size: 14px; filter: grayscale(100%) contrast(1000%) !important; }
               .library-name { color: #000; font-family: 'Geneva', 'Helvetica', sans-serif; }
+              /* Greyscale checkbox styling - only change color, keep everything else the same */
+              .node-select-checkbox {
+                accent-color: #000 !important;
+                filter: grayscale(100%) !important;
+              }
+              .node-select-checkbox:checked {
+                filter: grayscale(100%) !important;
+              }
             </style>
             
             <div class="living-web-content">

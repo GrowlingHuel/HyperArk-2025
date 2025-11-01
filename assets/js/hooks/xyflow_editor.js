@@ -336,7 +336,7 @@ const XyflowEditorHook = {
     nodeEl.style.fontSize = '11px';
     nodeEl.style.color = '#000';
 
-    // Selection checkbox (top-right)
+    // Selection checkbox (top-right) - greyscale styling
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.className = 'node-select-checkbox';
@@ -348,6 +348,9 @@ const XyflowEditorHook = {
     checkbox.style.border = '1px solid #000';
     checkbox.style.background = '#FFF';
     checkbox.style.cursor = 'pointer';
+    // Only add greyscale filter - keep everything else as default
+    checkbox.style.accentColor = '#000';
+    checkbox.style.filter = 'grayscale(100%)';
     checkbox.addEventListener('click', (e) => {
       e.stopPropagation();
       const id = nodeEl.dataset.nodeId;
@@ -1076,7 +1079,7 @@ const XyflowEditorHook = {
     nodeEl.dataset.category = category;
     nodeEl.id = nodeData.id;
 
-    // Selection checkbox (top-right)
+    // Selection checkbox (top-right) - greyscale styling
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.className = 'node-select-checkbox';
@@ -1088,6 +1091,9 @@ const XyflowEditorHook = {
     checkbox.style.border = '1px solid #000';
     checkbox.style.background = '#FFF';
     checkbox.style.cursor = 'pointer';
+    // Only add greyscale filter - keep everything else as default
+    checkbox.style.accentColor = '#000';
+    checkbox.style.filter = 'grayscale(100%)';
     checkbox.addEventListener('click', (e) => {
       e.stopPropagation();
       const id = nodeEl.dataset.nodeId;
