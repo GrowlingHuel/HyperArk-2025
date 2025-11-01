@@ -208,11 +208,11 @@
             <style>
               .living-web-content { flex: 1; display: flex; overflow: hidden; height: 100%; min-height: 0; }
               .living-web-library { width: 200px; background: #E8E8E8; border-right: 2px solid #000; overflow: hidden; display: flex; flex-direction: column; font-family: 'Chicago', 'Geneva', sans-serif; height: 100%; min-height: 0; }
-              .living-web-canvas { flex: 1; background: #F8F8F8; border: 2px solid #000; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; height: 100%; }
+              .living-web-canvas { flex: 1; background: #F8F8F8; border: 2px solid #000; min-height: 0; overflow: hidden; display: flex; flex-direction: column; height: 100%; }
+              .canvas-scroll-area { flex: 1; overflow: auto; min-height: 0; position: relative; }
               #xyflow-container { 
                 width: 100%; 
                 height: 100%; 
-                min-height: 500px; 
                 position: relative; 
                 background: #FFF; 
                 background-image: 
@@ -221,7 +221,6 @@
                   radial-gradient(circle, #CCCCCC 1px, transparent 1px);
                 background-size: 20px 20px;
                 background-position: 10px 10px, 0px 0px, 0px 0px;
-                overflow: hidden; 
               }
               .flow-canvas { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; }
               .library-header { font-size: 11px; font-weight: bold; color: #000; text-transform: uppercase; letter-spacing: 1px; padding: 8px 10px; border-bottom: 1px solid #000; height: 40px; display: flex; align-items: center; flex-shrink: 0; position: sticky; top: 0; background: #E8E8E8; z-index: 10; }
@@ -369,16 +368,18 @@
                     0 selected
                   </span>
                 </div>
-                <div
-                  id="xyflow-container"
-                  phx-hook="XyflowEditor"
-                  data-nodes={Jason.encode!(filter_visible_nodes(@nodes))}
-                  data-edges={Jason.encode!(@edges)}
-                  data-projects={Jason.encode!(projects_for_json(@projects))}
-                  class="xyflow-editor"
-                  style="width: 100%; flex: 1; min-height: 460px; position: relative; background: #FFF; background-image: radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #CCCCCC 1px, transparent 1px); background-size: 20px 20px; background-position: 10px 10px, 0px 0px, 0px 0px;"
-                >
-                  <!-- XyFlow editor will render here -->
+                <div class="canvas-scroll-area">
+                  <div
+                    id="xyflow-container"
+                    phx-hook="XyflowEditor"
+                    data-nodes={Jason.encode!(filter_visible_nodes(@nodes))}
+                    data-edges={Jason.encode!(@edges)}
+                    data-projects={Jason.encode!(projects_for_json(@projects))}
+                    class="xyflow-editor"
+                    style="width: 100%; height: 100%; position: relative; background: #FFF; background-image: radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #CCCCCC 1px, transparent 1px); background-size: 20px 20px; background-position: 10px 10px, 0px 0px, 0px 0px;"
+                  >
+                    <!-- XyFlow editor will render here -->
+                  </div>
                 </div>
               </div>
             </div>

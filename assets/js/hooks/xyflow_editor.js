@@ -104,6 +104,8 @@ const XyflowEditorHook = {
       if (this.updateSelectionCount) {
         this.updateSelectionCount();
       }
+      // Update canvas bounds after nodes are deleted
+      this.updateCanvasBounds();
       console.log(`Deleted ${node_ids.length} nodes`);
     });
 
@@ -122,6 +124,8 @@ const XyflowEditorHook = {
       if (this.updateSelectionCount) {
         this.updateSelectionCount();
       }
+      // Update canvas bounds after nodes are hidden
+      this.updateCanvasBounds();
       console.log(`Hidden ${node_ids.length} nodes`);
     });
 
@@ -140,6 +144,8 @@ const XyflowEditorHook = {
       if (this.updateSelectionCount) {
         this.updateSelectionCount();
       }
+      // Update canvas bounds after canvas is cleared
+      this.updateCanvasBounds();
       console.log('Canvas cleared');
     });
   },
@@ -241,6 +247,9 @@ const XyflowEditorHook = {
     this.nodes.forEach(node => {
       this.renderNode(node);
     });
+
+    // Update canvas size based on node bounds
+    this.updateCanvasBounds();
 
     // Ensure selection count reflects current state after re-render
     if (this.updateSelectionCount) {
@@ -402,6 +411,9 @@ const XyflowEditorHook = {
         position_x: x,
         position_y: y
       });
+
+      // Update canvas bounds after node is moved
+      this.updateCanvasBounds();
     });
   },
 
@@ -704,6 +716,140 @@ const XyflowEditorHook = {
       x: nodeData.position.x,
       y: nodeData.position.y
     });
+
+    // Update canvas bounds after new node is added
+    this.updateCanvasBounds();
+  },
+
+  updateCanvasBounds() {
+    const scrollArea = this.container.closest('.canvas-scroll-area');
+    
+    if (!this.canvas || !this.nodes || this.nodes.length === 0) {
+      // If no nodes, set canvas to viewport size (no scrollbars)
+      if (scrollArea) {
+        scrollArea.style.overflowX = 'hidden';
+        scrollArea.style.overflowY = 'hidden';
+      }
+      // Reset canvas to viewport size
+      if (this.canvas) {
+        const viewport = scrollArea || this.container;
+        const viewportWidth = viewport.clientWidth || 800;
+        const viewportHeight = viewport.clientHeight || 600;
+        this.canvas.style.width = `${viewportWidth}px`;
+        this.canvas.style.height = `${viewportHeight}px`;
+        this.canvas.style.minWidth = `${viewportWidth}px`;
+        this.canvas.style.minHeight = `${viewportHeight}px`;
+      }
+      return;
+    }
+
+    // Get all node elements (exclude temporary nodes)
+    const nodeElements = this.canvas.querySelectorAll('.flow-node:not(.temp-node)');
+    if (nodeElements.length === 0) {
+      if (scrollArea) {
+        scrollArea.style.overflowX = 'hidden';
+        scrollArea.style.overflowY = 'hidden';
+      }
+      // Reset canvas to viewport size
+      if (this.canvas) {
+        const viewport = scrollArea || this.container;
+        const viewportWidth = viewport.clientWidth || 800;
+        const viewportHeight = viewport.clientHeight || 600;
+        this.canvas.style.width = `${viewportWidth}px`;
+        this.canvas.style.height = `${viewportHeight}px`;
+        this.canvas.style.minWidth = `${viewportWidth}px`;
+        this.canvas.style.minHeight = `${viewportHeight}px`;
+      }
+      return;
+    }
+
+    // Calculate bounds from all nodes
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    
+    nodeElements.forEach(nodeEl => {
+      const x = parseInt(nodeEl.style.left) || 0;
+      const y = parseInt(nodeEl.style.top) || 0;
+      const rect = nodeEl.getBoundingClientRect();
+      const width = rect.width || 140; // Default node width
+      const height = rect.height || 80; // Default node height
+      
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x + width);
+      maxY = Math.max(maxY, y + height);
+    });
+
+    // Get the scroll area container (viewport)
+    const viewport = scrollArea || this.container;
+    
+    // Get viewport dimensions (visible area)
+    const viewportWidth = viewport.clientWidth || 800;
+    const viewportHeight = viewport.clientHeight || 600;
+
+    // Small margin (20px) - scrollbars appear when nodes are this close to viewport edge
+    const edgeMargin = 20;
+    
+    // Check if any nodes extend close to or beyond the visible viewport edges
+    // Node positions are in canvas coordinates (absolute positioning within canvas)
+    let needsHorizontalScroll = false;
+    let needsVerticalScroll = false;
+    
+    nodeElements.forEach(nodeEl => {
+      const x = parseInt(nodeEl.style.left) || 0;
+      const y = parseInt(nodeEl.style.top) || 0;
+      const rect = nodeEl.getBoundingClientRect();
+      const width = rect.width || 140;
+      const height = rect.height || 80;
+      
+      // Node edges in canvas coordinates
+      const nodeRightEdge = x + width;
+      const nodeBottomEdge = y + height;
+      
+      // Check if node extends beyond right edge of viewport (with small margin)
+      if (nodeRightEdge > viewportWidth - edgeMargin) {
+        needsHorizontalScroll = true;
+      }
+      // Check if node extends beyond left edge (negative position or close to 0)
+      if (x < edgeMargin) {
+        needsHorizontalScroll = true;
+      }
+      // Check if node extends beyond bottom edge of viewport (with small margin)
+      if (nodeBottomEdge > viewportHeight - edgeMargin) {
+        needsVerticalScroll = true;
+      }
+      // Check if node extends beyond top edge (negative position or close to 0)
+      if (y < edgeMargin) {
+        needsVerticalScroll = true;
+      }
+    });
+
+    // Calculate canvas dimensions based on node bounds
+    // Only add minimal padding (50px) for canvas size, but check scrollbar need separately
+    const canvasPadding = 50;
+    
+    const contentMinX = Math.min(0, minX - canvasPadding);
+    const contentMinY = Math.min(0, minY - canvasPadding);
+    const contentMaxX = maxX + canvasPadding;
+    const contentMaxY = maxY + canvasPadding;
+    
+    const contentWidth = contentMaxX - contentMinX;
+    const contentHeight = contentMaxY - contentMinY;
+
+    // Canvas should be at least viewport size, but larger if nodes extend beyond
+    const canvasWidth = Math.max(viewportWidth, contentWidth);
+    const canvasHeight = Math.max(viewportHeight, contentHeight);
+
+    // Set canvas size
+    this.canvas.style.width = `${canvasWidth}px`;
+    this.canvas.style.height = `${canvasHeight}px`;
+    this.canvas.style.minWidth = `${canvasWidth}px`;
+    this.canvas.style.minHeight = `${canvasHeight}px`;
+
+    if (scrollArea) {
+      // Set overflow based on whether scrollbars are needed
+      scrollArea.style.overflowX = needsHorizontalScroll ? 'auto' : 'hidden';
+      scrollArea.style.overflowY = needsVerticalScroll ? 'auto' : 'hidden';
+    }
   }
 };
 
