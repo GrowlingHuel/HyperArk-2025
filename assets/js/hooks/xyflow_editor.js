@@ -234,13 +234,34 @@ const XyflowEditorHook = {
     // Create a canvas wrapper
     this.canvas = document.createElement('div');
     this.canvas.className = 'flow-canvas';
+    // Use explicit positioning - don't rely on percentages that might constrain
     this.canvas.style.position = 'relative';
-    this.canvas.style.width = '100%';
-    this.canvas.style.height = '100%';
+    // Start with explicit dimensions instead of percentages
+    // These will be updated by updateCanvasBounds()
+    const scrollArea = this.container.closest('.canvas-scroll-area');
+    const viewport = scrollArea || this.container;
+    const initialWidth = viewport.clientWidth || 800;
+    const initialHeight = viewport.clientHeight || 600;
+    this.canvas.style.width = `${initialWidth}px`;
+    this.canvas.style.height = `${initialHeight}px`;
     this.canvas.style.background = '#FFF';
     this.canvas.style.backgroundImage = 'radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #CCCCCC 1px, transparent 1px)';
     this.canvas.style.backgroundSize = '20px 20px';
     this.canvas.style.backgroundPosition = '10px 10px, 0px 0px, 0px 0px';
+    this.canvas.style.backgroundRepeat = 'repeat';
+    
+    // Create a nodes container that can be transformed for negative positions
+    // This container should be transparent so the canvas background shows through
+    this.nodesContainer = document.createElement('div');
+    this.nodesContainer.style.position = 'absolute';
+    this.nodesContainer.style.top = '0';
+    this.nodesContainer.style.left = '0';
+    this.nodesContainer.style.width = '100%';
+    this.nodesContainer.style.height = '100%';
+    this.nodesContainer.style.background = 'transparent';
+    this.nodesContainer.style.pointerEvents = 'none'; // Allow clicks to pass through to nodes
+    this.canvas.appendChild(this.nodesContainer);
+    
     this.container.appendChild(this.canvas);
 
     // Render each node
@@ -346,7 +367,14 @@ const XyflowEditorHook = {
     // Make node draggable
     this.makeDraggable(nodeEl);
 
-    this.canvas.appendChild(nodeEl);
+    // Append to nodes container instead of canvas directly
+    // Nodes need pointer events enabled to be draggable (container has pointer-events: none)
+    nodeEl.style.pointerEvents = 'auto';
+    if (this.nodesContainer) {
+      this.nodesContainer.appendChild(nodeEl);
+    } else {
+      this.canvas.appendChild(nodeEl);
+    }
     // Restore selection state for this node
     this.syncCheckboxState(nodeEl);
     return nodeEl;
@@ -554,7 +582,14 @@ const XyflowEditorHook = {
     `;
     nodeEl.id = id;
 
-    this.canvas.appendChild(nodeEl);
+    // Append to nodes container if it exists, otherwise canvas
+    // Nodes need pointer events enabled to be draggable (container has pointer-events: none)
+    nodeEl.style.pointerEvents = 'auto';
+    if (this.nodesContainer) {
+      this.nodesContainer.appendChild(nodeEl);
+    } else {
+      this.canvas.appendChild(nodeEl);
+    }
     return nodeEl;
   },
 
@@ -703,7 +738,14 @@ const XyflowEditorHook = {
     nodeEl.appendChild(nameDiv);
 
     this.makeDraggable(nodeEl);
-    this.canvas.appendChild(nodeEl);
+    // Append to nodes container if it exists, otherwise canvas
+    // Nodes need pointer events enabled to be draggable (container has pointer-events: none)
+    nodeEl.style.pointerEvents = 'auto';
+    if (this.nodesContainer) {
+      this.nodesContainer.appendChild(nodeEl);
+    } else {
+      this.canvas.appendChild(nodeEl);
+    }
     // Restore selection state for this node
     this.syncCheckboxState(nodeEl);
 
@@ -724,6 +766,16 @@ const XyflowEditorHook = {
   updateCanvasBounds() {
     const scrollArea = this.container.closest('.canvas-scroll-area');
     
+    // Debug: Log container hierarchy
+    console.log('Container hierarchy:', {
+      container: this.container,
+      containerId: this.container?.id,
+      containerHeight: this.container?.style?.height,
+      scrollArea: scrollArea,
+      canvas: this.canvas,
+      canvasHeight: this.canvas?.style?.height
+    });
+    
     if (!this.canvas || !this.nodes || this.nodes.length === 0) {
       // If no nodes, set canvas to viewport size (no scrollbars)
       if (scrollArea) {
@@ -735,10 +787,27 @@ const XyflowEditorHook = {
         const viewport = scrollArea || this.container;
         const viewportWidth = viewport.clientWidth || 800;
         const viewportHeight = viewport.clientHeight || 600;
+        
+        // Also reset parent container to match
+        if (this.container) {
+          this.container.style.setProperty('width', `${viewportWidth}px`, 'important');
+          this.container.style.setProperty('height', `${viewportHeight}px`, 'important');
+          this.container.style.setProperty('min-width', `${viewportWidth}px`, 'important');
+          this.container.style.setProperty('min-height', `${viewportHeight}px`, 'important');
+        }
+        
         this.canvas.style.width = `${viewportWidth}px`;
         this.canvas.style.height = `${viewportHeight}px`;
         this.canvas.style.minWidth = `${viewportWidth}px`;
         this.canvas.style.minHeight = `${viewportHeight}px`;
+        
+        // Update nodesContainer to match canvas size
+        if (this.nodesContainer) {
+          this.nodesContainer.style.width = `${viewportWidth}px`;
+          this.nodesContainer.style.height = `${viewportHeight}px`;
+          this.nodesContainer.style.minWidth = `${viewportWidth}px`;
+          this.nodesContainer.style.minHeight = `${viewportHeight}px`;
+        }
       }
       return;
     }
@@ -755,10 +824,27 @@ const XyflowEditorHook = {
         const viewport = scrollArea || this.container;
         const viewportWidth = viewport.clientWidth || 800;
         const viewportHeight = viewport.clientHeight || 600;
+        
+        // Also reset parent container to match
+        if (this.container) {
+          this.container.style.setProperty('width', `${viewportWidth}px`, 'important');
+          this.container.style.setProperty('height', `${viewportHeight}px`, 'important');
+          this.container.style.setProperty('min-width', `${viewportWidth}px`, 'important');
+          this.container.style.setProperty('min-height', `${viewportHeight}px`, 'important');
+        }
+        
         this.canvas.style.width = `${viewportWidth}px`;
         this.canvas.style.height = `${viewportHeight}px`;
         this.canvas.style.minWidth = `${viewportWidth}px`;
         this.canvas.style.minHeight = `${viewportHeight}px`;
+        
+        // Update nodesContainer to match canvas size
+        if (this.nodesContainer) {
+          this.nodesContainer.style.width = `${viewportWidth}px`;
+          this.nodesContainer.style.height = `${viewportHeight}px`;
+          this.nodesContainer.style.minWidth = `${viewportWidth}px`;
+          this.nodesContainer.style.minHeight = `${viewportHeight}px`;
+        }
       }
       return;
     }
@@ -789,8 +875,17 @@ const XyflowEditorHook = {
     // Small margin (20px) - scrollbars appear when nodes are this close to viewport edge
     const edgeMargin = 20;
     
+    // Calculate canvas dimensions based on node bounds
+    // Handle negative positions by transforming the nodes container
+    const canvasPadding = 50;
+    
+    // If we have negative positions, calculate offset to shift nodes right/down
+    // This makes negative-positioned nodes accessible via scroll
+    const offsetX = minX < 0 ? -minX + canvasPadding : 0;
+    const offsetY = minY < 0 ? -minY + canvasPadding : 0;
+    
     // Check if any nodes extend close to or beyond the visible viewport edges
-    // Node positions are in canvas coordinates (absolute positioning within canvas)
+    // Account for transform offset when checking positions
     let needsHorizontalScroll = false;
     let needsVerticalScroll = false;
     
@@ -801,36 +896,52 @@ const XyflowEditorHook = {
       const width = rect.width || 140;
       const height = rect.height || 80;
       
-      // Node edges in canvas coordinates
-      const nodeRightEdge = x + width;
-      const nodeBottomEdge = y + height;
+      // Account for transform offset - nodes at negative positions are shifted right/down
+      const adjustedX = x + offsetX;
+      const adjustedY = y + offsetY;
+      
+      // Node edges in adjusted canvas coordinates
+      const nodeRightEdge = adjustedX + width;
+      const nodeBottomEdge = adjustedY + height;
       
       // Check if node extends beyond right edge of viewport (with small margin)
       if (nodeRightEdge > viewportWidth - edgeMargin) {
         needsHorizontalScroll = true;
       }
-      // Check if node extends beyond left edge (negative position or close to 0)
-      if (x < edgeMargin) {
+      // Check if node extends beyond left edge (after offset adjustment)
+      if (adjustedX < edgeMargin) {
         needsHorizontalScroll = true;
       }
       // Check if node extends beyond bottom edge of viewport (with small margin)
       if (nodeBottomEdge > viewportHeight - edgeMargin) {
         needsVerticalScroll = true;
       }
-      // Check if node extends beyond top edge (negative position or close to 0)
-      if (y < edgeMargin) {
+      // Check if node extends beyond top edge (after offset adjustment)
+      if (adjustedY < edgeMargin) {
         needsVerticalScroll = true;
       }
     });
-
-    // Calculate canvas dimensions based on node bounds
-    // Only add minimal padding (50px) for canvas size, but check scrollbar need separately
-    const canvasPadding = 50;
     
-    const contentMinX = Math.min(0, minX - canvasPadding);
-    const contentMinY = Math.min(0, minY - canvasPadding);
-    const contentMaxX = maxX + canvasPadding;
-    const contentMaxY = maxY + canvasPadding;
+    // Transform the nodes container to shift nodes if needed
+    if (this.nodesContainer) {
+      if (offsetX > 0 || offsetY > 0) {
+        this.nodesContainer.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+      } else {
+        this.nodesContainer.style.transform = '';
+      }
+    }
+    
+    // Calculate canvas dimensions including offset space for negative positions
+    // The canvas needs to be large enough to contain all nodes including the offset
+    const adjustedMinX = offsetX > 0 ? 0 : minX;
+    const adjustedMinY = offsetY > 0 ? 0 : minY;
+    const adjustedMaxX = maxX + offsetX;
+    const adjustedMaxY = maxY + offsetY;
+    
+    const contentMinX = Math.min(0, adjustedMinX - canvasPadding);
+    const contentMinY = Math.min(0, adjustedMinY - canvasPadding);
+    const contentMaxX = adjustedMaxX + canvasPadding;
+    const contentMaxY = adjustedMaxY + canvasPadding;
     
     const contentWidth = contentMaxX - contentMinX;
     const contentHeight = contentMaxY - contentMinY;
@@ -839,16 +950,116 @@ const XyflowEditorHook = {
     const canvasWidth = Math.max(viewportWidth, contentWidth);
     const canvasHeight = Math.max(viewportHeight, contentHeight);
 
-    // Set canvas size
-    this.canvas.style.width = `${canvasWidth}px`;
-    this.canvas.style.height = `${canvasHeight}px`;
-    this.canvas.style.minWidth = `${canvasWidth}px`;
-    this.canvas.style.minHeight = `${canvasHeight}px`;
+    // Debug logging - check actual DOM dimensions
+    const actualContainerHeight = this.container ? this.container.offsetHeight : 0;
+    const actualCanvasHeight = this.canvas ? this.canvas.offsetHeight : 0;
+    const computedContainerHeight = this.container ? window.getComputedStyle(this.container).height : '0';
+    const computedCanvasHeight = this.canvas ? window.getComputedStyle(this.canvas).height : '0';
+    
+    console.log('Canvas bounds calculation:', {
+      viewportWidth,
+      viewportHeight,
+      contentWidth,
+      contentHeight,
+      canvasWidth,
+      canvasHeight,
+      maxY,
+      adjustedMaxY,
+      contentMaxY,
+      minY,
+      nodesCount: nodeElements.length,
+      actualContainerHeight,
+      actualCanvasHeight,
+      computedContainerHeight,
+      computedCanvasHeight
+    });
+
+    // Also update the parent container (#xyflow-container) to match canvas size
+    // This is critical - the container must expand to allow canvas to grow
+    // The container currently has height: 100% which constrains it - we need to override that
+    if (this.container) {
+      // Remove ALL constraints first
+      this.container.style.setProperty('position', 'relative', 'important');
+      this.container.style.setProperty('right', 'auto', 'important');
+      this.container.style.setProperty('bottom', 'auto', 'important');
+      
+      // Set explicit dimensions that override the 100% constraint
+      this.container.style.setProperty('width', `${canvasWidth}px`, 'important');
+      this.container.style.setProperty('height', `${canvasHeight}px`, 'important');
+      this.container.style.setProperty('min-width', `${canvasWidth}px`, 'important');
+      this.container.style.setProperty('min-height', `${canvasHeight}px`, 'important');
+      this.container.style.setProperty('max-width', 'none', 'important');
+      this.container.style.setProperty('max-height', 'none', 'important');
+      
+      // Also apply background to container to ensure it's visible everywhere
+      // The container background serves as a fallback
+      this.container.style.setProperty('background', '#FFF', 'important');
+      this.container.style.setProperty('background-image', 'radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #CCCCCC 1px, transparent 1px)', 'important');
+      this.container.style.setProperty('background-size', '20px 20px', 'important');
+      this.container.style.setProperty('background-position', '10px 10px, 0px 0px, 0px 0px', 'important');
+      this.container.style.setProperty('background-repeat', 'repeat', 'important');
+      
+      console.log('Updated container styles:', {
+        setWidth: `${canvasWidth}px`,
+        setHeight: `${canvasHeight}px`,
+        computedWidth: window.getComputedStyle(this.container).width,
+        computedHeight: window.getComputedStyle(this.container).height,
+        offsetWidth: this.container.offsetWidth,
+        offsetHeight: this.container.offsetHeight
+      });
+    }
+    
+    // Set canvas size - use explicit pixel values with !important to override CSS
+    // This ensures the canvas expands beyond the viewport when needed
+    // We need to use setProperty with important flag to override CSS rules
+    this.canvas.style.setProperty('width', `${canvasWidth}px`, 'important');
+    this.canvas.style.setProperty('height', `${canvasHeight}px`, 'important');
+    this.canvas.style.setProperty('min-width', `${canvasWidth}px`, 'important');
+    this.canvas.style.setProperty('min-height', `${canvasHeight}px`, 'important');
+    // Remove any max-height constraints that might prevent expansion
+    this.canvas.style.setProperty('max-width', 'none', 'important');
+    this.canvas.style.setProperty('max-height', 'none', 'important');
+    // Override position constraints that might limit expansion
+    this.canvas.style.setProperty('bottom', 'auto', 'important');
+    this.canvas.style.setProperty('right', 'auto', 'important');
+    
+    // Ensure background is always visible and covers the full canvas
+    // Re-apply background styles to ensure they persist after size changes
+    // Force background to cover entire area with explicit attachment
+    this.canvas.style.background = '#FFF';
+    this.canvas.style.backgroundImage = 'radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #CCCCCC 1px, transparent 1px)';
+    this.canvas.style.backgroundSize = '20px 20px';
+    this.canvas.style.backgroundPosition = '10px 10px, 0px 0px, 0px 0px';
+    this.canvas.style.backgroundRepeat = 'repeat';
+    this.canvas.style.backgroundAttachment = 'scroll'; // Ensure background scrolls with content
+    
+    // Update nodesContainer size to match canvas - it must cover the full canvas area
+    // This ensures the background is always visible everywhere
+    if (this.nodesContainer) {
+      this.nodesContainer.style.width = `${canvasWidth}px`;
+      this.nodesContainer.style.height = `${canvasHeight}px`;
+      this.nodesContainer.style.minWidth = `${canvasWidth}px`;
+      this.nodesContainer.style.minHeight = `${canvasHeight}px`;
+    }
 
     if (scrollArea) {
       // Set overflow based on whether scrollbars are needed
       scrollArea.style.overflowX = needsHorizontalScroll ? 'auto' : 'hidden';
       scrollArea.style.overflowY = needsVerticalScroll ? 'auto' : 'hidden';
+      
+      // Also ensure scrollArea doesn't constrain the container
+      // The scrollArea should allow its content (container) to expand
+      scrollArea.style.setProperty('min-height', '0', 'important');
+      scrollArea.style.setProperty('max-height', 'none', 'important');
+    }
+    
+    // Force a reflow to ensure styles are applied
+    // Sometimes the browser needs a nudge to recalculate
+    if (this.container) {
+      void this.container.offsetHeight; // Trigger reflow
+    }
+    if (this.canvas) {
+      void this.canvas.offsetHeight; // Trigger reflow
     }
   }
 };
