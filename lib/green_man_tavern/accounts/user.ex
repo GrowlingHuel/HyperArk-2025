@@ -18,6 +18,7 @@ defmodule GreenManTavern.Accounts.User do
     has_many :user_systems, GreenManTavern.Systems.UserSystem
     has_many :user_quests, GreenManTavern.Quests.UserQuest
     has_many :user_achievements, GreenManTavern.Achievements.UserAchievement
+    has_many :journal_entries, GreenManTavern.Journal.Entry
     has_many :user_projects, GreenManTavern.Projects.UserProject
     has_many :conversations, GreenManTavern.Conversations.ConversationHistory
   end

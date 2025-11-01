@@ -8,6 +8,8 @@ defmodule GreenManTavernWeb.DualPanelLive do
   alias GreenManTavern.{Systems, Diagrams, Conversations, Accounts}
   alias GreenManTavern.AI.{OpenAIClient, CharacterContext}
   alias GreenManTavern.PlantingGuide
+  alias GreenManTavern.Journal
+  alias GreenManTavern.Quests
 
   @pubsub GreenManTavern.PubSub
   @topic "navigation"
@@ -48,16 +50,19 @@ defmodule GreenManTavernWeb.DualPanelLive do
     edges = if diagram && is_map(diagram.edges), do: diagram.edges, else: %{}
     nodes = enrich_nodes_with_project_data(raw_nodes, projects)
 
+    user_id = if current_user, do: current_user.id, else: nil
+
     socket =
       socket
       |> assign(:projects, projects)
       |> assign(:diagram, diagram)
       |> assign(:nodes, nodes)
       |> assign(:edges, edges)
-      |> assign(:journal_entries, dummy_journal_entries())
-      |> assign(:user_quests, dummy_quests())
+      |> assign(:journal_entries, if(user_id, do: Journal.list_entries(user_id, limit: 50), else: []))
+      |> assign(:user_quests, if(user_id, do: Quests.list_user_quests(user_id, "all"), else: []))
       |> assign(:journal_search_term, "")
       |> assign(:quest_filter, "all")
+      |> assign(:quest_search_term, "")
 
     {:ok, socket}
   end
@@ -778,28 +783,46 @@ defmodule GreenManTavernWeb.DualPanelLive do
   end
   defp projects_for_json(_), do: []
 
-  defp dummy_journal_entries do
-    [
-      %{
-        entry_date: "3rd of Last Seed",
-        day_number: 42,
-        title: "Met The Grandmother",
-        body: "Today I spoke with The Grandmother about composting. She shared ancient wisdom about turning kitchen scraps into black gold."
-      },
-      %{
-        entry_date: "5th of Last Seed",
-        day_number: 44,
-        title: "First Compost Bin",
-        body: "Built my first compost bin using The Grandmother's design. Used old pallets and chicken wire."
-      }
-    ]
+  @impl true
+  def handle_event("search_journal", %{"value" => term}, socket) do
+    user_id = socket.assigns.current_user.id
+
+    entries = if term == "" do
+      Journal.list_entries(user_id)
+    else
+      Journal.search_entries(user_id, term)
+    end
+
+    {:noreply,
+     socket
+     |> assign(:journal_entries, entries)
+     |> assign(:journal_search_term, term)}
   end
 
-  defp dummy_quests do
-    [
-      %{title: "Learn About Companion Planting", status: "active"},
-      %{title: "Build a Raised Bed", status: "available"},
-      %{title: "Start Traditional Composting", status: "completed"}
-    ]
+  @impl true
+  def handle_event("filter_quests", %{"filter" => filter}, socket) do
+    user_id = socket.assigns.current_user.id
+    quests = Quests.list_user_quests(user_id, filter)
+
+    {:noreply,
+     socket
+     |> assign(:user_quests, quests)
+     |> assign(:quest_filter, filter)}
+  end
+
+  @impl true
+  def handle_event("search_quests", %{"value" => term}, socket) do
+    user_id = socket.assigns.current_user.id
+
+    quests = if term == "" do
+      Quests.list_user_quests(user_id, socket.assigns.quest_filter)
+    else
+      Quests.search_user_quests(user_id, term)
+    end
+
+    {:noreply,
+     socket
+     |> assign(:user_quests, quests)
+     |> assign(:quest_search_term, term)}
   end
 end

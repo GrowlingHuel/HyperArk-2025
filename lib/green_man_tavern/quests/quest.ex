@@ -11,10 +11,17 @@ defmodule GreenManTavern.Quests.Quest do
     field :required_systems, {:array, :integer}
     field :instructions, {:array, :string}
     field :success_criteria, :map
+    # Support both formats - map for new format, array for existing
+    field :steps, :map
 
     belongs_to :character, GreenManTavern.Characters.Character
     has_many :user_quests, GreenManTavern.Quests.UserQuest
+
+    timestamps()
   end
+
+  @difficulties ["easy", "medium", "hard"]
+  @quest_types ["tutorial", "implementation", "maintenance", "learning", "community", "challenge", "system_opportunity"]
 
   @doc false
   def changeset(quest, attrs) do
@@ -28,18 +35,12 @@ defmodule GreenManTavern.Quests.Quest do
       :xp_reward,
       :required_systems,
       :instructions,
-      :success_criteria
+      :success_criteria,
+      :steps
     ])
-    |> validate_required([:title])
-    |> validate_inclusion(:quest_type, [
-      "tutorial",
-      "implementation",
-      "maintenance",
-      "learning",
-      "community",
-      "challenge"
-    ])
-    |> validate_inclusion(:difficulty, ["easy", "medium", "hard"])
+    |> validate_required([:title, :description, :difficulty, :quest_type])
+    |> validate_inclusion(:quest_type, @quest_types)
+    |> validate_inclusion(:difficulty, @difficulties)
     |> validate_number(:xp_reward, greater_than_or_equal_to: 0)
   end
 end
