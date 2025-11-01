@@ -1,0 +1,192 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="none">
+  <!-- White background -->
+  <rect width="1200" height="800" fill="#FFFFFF"/>
+  
+  <!-- Black border around entire notebook -->
+  <rect x="2" y="2" width="1196" height="796" fill="none" stroke="#000000" stroke-width="3"/>
+  
+  <!-- Left page (white) -->
+  <rect x="5" y="5" width="585" height="790" fill="#FFFFFF" rx="0"/>
+  
+  <!-- Right page (white) -->
+  <rect x="610" y="5" width="585" height="790" fill="#FFFFFF" rx="0"/>
+  
+  <!-- Spiral binding area (center spine) - light grey to show depth -->
+  <rect x="590" y="5" width="20" height="790" fill="#F5F5F5"/>
+  
+  <!-- Spiral binding holes - pairs that connect horizontally -->
+  <!-- Row 1 -->
+  <circle cx="595" cy="40" r="3" fill="#000000"/>
+  <circle cx="605" cy="40" r="3" fill="#000000"/>
+  <!-- Row 2 -->
+  <circle cx="595" cy="80" r="3" fill="#000000"/>
+  <circle cx="605" cy="80" r="3" fill="#000000"/>
+  <!-- Row 3 -->
+  <circle cx="595" cy="120" r="3" fill="#000000"/>
+  <circle cx="605" cy="120" r="3" fill="#000000"/>
+  <!-- Row 4 -->
+  <circle cx="595" cy="160" r="3" fill="#000000"/>
+  <circle cx="605" cy="160" r="3" fill="#000000"/>
+  <!-- Row 5 -->
+  <circle cx="595" cy="200" r="3" fill="#000000"/>
+  <circle cx="605" cy="200" r="3" fill="#000000"/>
+  <!-- Row 6 -->
+  <circle cx="595" cy="240" r="3" fill="#000000"/>
+  <circle cx="605" cy="240" r="3" fill="#000000"/>
+  <!-- Row 7 -->
+  <circle cx="595" cy="280" r="3" fill="#000000"/>
+  <circle cx="605" cy="280" r="3" fill="#000000"/>
+  <!-- Row 8 -->
+  <circle cx="595" cy="320" r="3" fill="#000000"/>
+  <circle cx="605" cy="320" r="3" fill="#000000"/>
+  <!-- Row 9 -->
+  <circle cx="595" cy="360" r="3" fill="#000000"/>
+  <circle cx="605" cy="360" r="3" fill="#000000"/>
+  <!-- Row 10 -->
+  <circle cx="595" cy="400" r="3" fill="#000000"/>
+  <circle cx="605" cy="400" r="3" fill="#000000"/>
+  <!-- Row 11 -->
+  <circle cx="595" cy="440" r="3" fill="#000000"/>
+  <circle cx="605" cy="440" r="3" fill="#000000"/>
+  <!-- Row 12 -->
+  <circle cx="595" cy="480" r="3" fill="#000000"/>
+  <circle cx="605" cy="480" r="3" fill="#000000"/>
+  <!-- Row 13 -->
+  <circle cx="595" cy="520" r="3" fill="#000000"/>
+  <circle cx="605" cy="520" r="3" fill="#000000"/>
+  <!-- Row 14 -->
+  <circle cx="595" cy="560" r="3" fill="#000000"/>
+  <circle cx="605" cy="560" r="3" fill="#000000"/>
+  <!-- Row 15 -->
+  <circle cx="595" cy="600" r="3" fill="#000000"/>
+  <circle cx="605" cy="600" r="3" fill="#000000"/>
+  <!-- Row 16 -->
+  <circle cx="595" cy="640" r="3" fill="#000000"/>
+  <circle cx="605" cy="640" r="3" fill="#000000"/>
+  <!-- Row 17 -->
+  <circle cx="595" cy="680" r="3" fill="#000000"/>
+  <circle cx="605" cy="680" r="3" fill="#000000"/>
+  <!-- Row 18 -->
+  <circle cx="595" cy="720" r="3" fill="#000000"/>
+  <circle cx="605" cy="720" r="3" fill="#000000"/>
+  <!-- Row 19 -->
+  <circle cx="595" cy="760" r="3" fill="#000000"/>
+  <circle cx="605" cy="760" r="3" fill="#000000"/>
+  
+  <!-- Spiral wires - horizontal pairs connecting the holes -->
+  <!-- Wire connecting row 1 -->
+  <path d="M 585 40 Q 590 40 595 40 L 605 40 Q 610 40 615 40" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 2 -->
+  <path d="M 585 80 Q 590 80 595 80 L 605 80 Q 610 80 615 80" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 3 -->
+  <path d="M 585 120 Q 590 120 595 120 L 605 120 Q 610 120 615 120" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 4 -->
+  <path d="M 585 160 Q 590 160 595 160 L 605 160 Q 610 160 615 160" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 5 -->
+  <path d="M 585 200 Q 590 200 595 200 L 605 200 Q 610 200 615 200" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 6 -->
+  <path d="M 585 240 Q 590 240 595 240 L 605 240 Q 610 240 615 240" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 7 -->
+  <path d="M 585 280 Q 590 280 595 280 L 605 280 Q 610 280 615 280" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 8 -->
+  <path d="M 585 320 Q 590 320 595 320 L 605 320 Q 610 320 615 320" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 9 -->
+  <path d="M 585 360 Q 590 360 595 360 L 605 360 Q 610 360 615 360" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 10 -->
+  <path d="M 585 400 Q 590 400 595 400 L 605 400 Q 610 400 615 400" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 11 -->
+  <path d="M 585 440 Q 590 440 595 440 L 605 440 Q 610 440 615 440" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 12 -->
+  <path d="M 585 480 Q 590 480 595 480 L 605 480 Q 610 480 615 480" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 13 -->
+  <path d="M 585 520 Q 590 520 595 520 L 605 520 Q 610 520 615 520" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 14 -->
+  <path d="M 585 560 Q 590 560 595 560 L 605 560 Q 610 560 615 560" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 15 -->
+  <path d="M 585 600 Q 590 600 595 600 L 605 600 Q 610 600 615 600" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 16 -->
+  <path d="M 585 640 Q 590 640 595 640 L 605 640 Q 610 640 615 640" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 17 -->
+  <path d="M 585 680 Q 590 680 595 680 L 605 680 Q 610 680 615 680" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 18 -->
+  <path d="M 585 720 Q 590 720 595 720 L 605 720 Q 610 720 615 720" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  <!-- Wire connecting row 19 -->
+  <path d="M 585 760 Q 590 760 595 760 L 605 760 Q 610 760 615 760" 
+        stroke="#000000" stroke-width="1.5" fill="none"/>
+  
+  <!-- Subtle vertical margin line on left page -->
+  <line x1="50" y1="10" x2="50" y2="790" stroke="#E0E0E0" stroke-width="0.5" opacity="0.6"/>
+  
+  <!-- Subtle vertical margin line on right page -->
+  <line x1="1150" y1="10" x2="1150" y2="790" stroke="#E0E0E0" stroke-width="0.5" opacity="0.6"/>
+  
+  <!-- Subtle horizontal notebook lines on left page -->
+  <line x1="15" y1="50" x2="585" y2="50" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="85" x2="585" y2="85" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="120" x2="585" y2="120" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="155" x2="585" y2="155" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="190" x2="585" y2="190" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="225" x2="585" y2="225" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="260" x2="585" y2="260" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="295" x2="585" y2="295" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="330" x2="585" y2="330" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="365" x2="585" y2="365" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="400" x2="585" y2="400" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="435" x2="585" y2="435" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="470" x2="585" y2="470" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="505" x2="585" y2="505" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="540" x2="585" y2="540" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="575" x2="585" y2="575" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="610" x2="585" y2="610" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="645" x2="585" y2="645" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="680" x2="585" y2="680" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="715" x2="585" y2="715" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="15" y1="750" x2="585" y2="750" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  
+  <!-- Subtle horizontal notebook lines on right page -->
+  <line x1="620" y1="50" x2="1190" y2="50" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="85" x2="1190" y2="85" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="120" x2="1190" y2="120" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="155" x2="1190" y2="155" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="190" x2="1190" y2="190" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="225" x2="1190" y2="225" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="260" x2="1190" y2="260" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="295" x2="1190" y2="295" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="330" x2="1190" y2="330" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="365" x2="1190" y2="365" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="400" x2="1190" y2="400" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="435" x2="1190" y2="435" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="470" x2="1190" y2="470" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="505" x2="1190" y2="505" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="540" x2="1190" y2="540" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="575" x2="1190" y2="575" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="610" x2="1190" y2="610" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="645" x2="1190" y2="645" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="680" x2="1190" y2="680" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="715" x2="1190" y2="715" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  <line x1="620" y1="750" x2="1190" y2="750" stroke="#F0F0F0" stroke-width="0.5" opacity="0.7"/>
+  
+  <!-- Page borders (subtle grey lines) -->
+  <line x1="5" y1="5" x2="5" y2="795" stroke="#E0E0E0" stroke-width="1"/>
+  <line x1="590" y1="5" x2="590" y2="795" stroke="#CCCCCC" stroke-width="1"/>
+  <line x1="610" y1="5" x2="610" y2="795" stroke="#CCCCCC" stroke-width="1"/>
+  <line x1="1195" y1="5" x2="1195" y2="795" stroke="#E0E0E0" stroke-width="1"/>
+</svg>

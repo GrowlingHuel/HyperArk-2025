@@ -49,7 +49,8 @@
     height: 100%;
   }
   .panel-content.journal-container {
-    padding: 0;
+    padding: 0 !important;
+    margin: 0 !important;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -492,12 +493,14 @@
             display: flex;
             width: 100%;
             height: 100%;
-            background-color: #000000;
-            background-image: url('/images/open-book-bg.jpg');
-            background-size: 100% 105%;
+            margin: 0;
+            padding: 0;
+            background-color: #FFFFFF;
+            background-image: url('/images/open-book-bg.svg');
+            background-size: contain;
+            background-size: 100% 100%;
             background-position: center center;
             background-repeat: no-repeat;
-            padding: 8% 10%;
             box-sizing: border-box;
           ">
             <!-- LEFT PAGE: Journal -->
