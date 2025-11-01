@@ -11,13 +11,17 @@
     width: 50%;
     background: #FFF;
     border: 1px solid #000;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
   .dual-right-panel {
     width: 50%;
     background: #FFF;
     border: 1px solid #000;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
   .panel-header {
     height: 20px;
@@ -29,9 +33,13 @@
     font-family: Monaco, monospace;
     font-size: 11px;
     font-weight: bold;
+    flex-shrink: 0;
+    z-index: 10;
   }
   .panel-content {
     padding: 12px;
+    flex: 1;
+    overflow-y: auto;
   }
 </style>
 
@@ -265,6 +273,9 @@
                   gap: 10px;
                   font-family: 'Geneva', 'Chicago', sans-serif;
                   font-size: 11px;
+                  position: sticky;
+                  top: 0;
+                  z-index: 10;
                 ">
                   <button 
                     type="button"
