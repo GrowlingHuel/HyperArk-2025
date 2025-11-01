@@ -326,12 +326,16 @@ const XyflowEditorHook = {
         this.selectedNodes.add(id);
         nodeEl.classList.add('selected');
         nodeEl.style.zIndex = '10';
-        nodeEl.style.border = '3px solid #0066FF';
+        nodeEl.style.border = '5px solid #000';
+        nodeEl.style.background = '#FFF';
+        nodeEl.style.boxShadow = '4px 4px 0 #000';
       } else {
         this.selectedNodes.delete(id);
         nodeEl.classList.remove('selected');
         nodeEl.style.zIndex = '';
         nodeEl.style.border = '2px solid #000';
+        nodeEl.style.background = getCategoryBackground(nodeEl.dataset.category);
+        nodeEl.style.boxShadow = '2px 2px 0 rgba(0,0,0,0.3)';
       }
       // Update selection counter in toolbar
       if (this.updateSelectionCount) {
@@ -696,12 +700,16 @@ const XyflowEditorHook = {
         this.selectedNodes.add(id);
         nodeEl.classList.add('selected');
         nodeEl.style.zIndex = '10';
-        nodeEl.style.border = '3px solid #0066FF';
+        nodeEl.style.border = '5px solid #000';
+        nodeEl.style.background = '#FFF';
+        nodeEl.style.boxShadow = '4px 4px 0 #000';
       } else {
         this.selectedNodes.delete(id);
         nodeEl.classList.remove('selected');
         nodeEl.style.zIndex = '';
         nodeEl.style.border = '2px solid #000';
+        nodeEl.style.background = getCategoryBackground(nodeEl.dataset.category);
+        nodeEl.style.boxShadow = '2px 2px 0 rgba(0,0,0,0.3)';
       }
       // Update selection counter in toolbar
       if (this.updateSelectionCount) {
@@ -1075,12 +1083,16 @@ XyflowEditorHook.syncCheckboxState = function(nodeEl) {
     checkbox.checked = true;
     nodeEl.classList.add('selected');
     nodeEl.style.zIndex = '10';
-    nodeEl.style.border = '3px solid #0066FF';
+    nodeEl.style.border = '5px solid #000';
+    nodeEl.style.background = '#FFF';
+    nodeEl.style.boxShadow = '4px 4px 0 #000';
   } else {
     checkbox.checked = false;
     nodeEl.classList.remove('selected');
     nodeEl.style.zIndex = '';
     nodeEl.style.border = '2px solid #000';
+    nodeEl.style.background = getCategoryBackground(nodeEl.dataset.category);
+    nodeEl.style.boxShadow = '2px 2px 0 rgba(0,0,0,0.3)';
   }
 };
 

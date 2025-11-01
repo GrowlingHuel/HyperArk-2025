@@ -134,6 +134,13 @@
   --font-system: Geneva, "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+html {
+  height: 100%;
+  overflow: hidden !important;
+  width: 100%;
+  position: relative;
+}
+
 body {
   font-family: var(--font-system);
   font-size: 12px; /* BACK to readable size */
@@ -144,6 +151,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
+  height: 100vh;
+  overflow: hidden !important;
+  box-sizing: border-box;
+  position: relative;
+  width: 100%;
 }
 
 /* Reset default text sizes */
@@ -183,7 +195,7 @@ p { font-size: 12px; }
 }
 
 .banner {
-  height: 70px !important;
+  height: 35px !important;
   flex-shrink: 0;
   background: #CCC;
   border-bottom: 2px solid #000;
@@ -192,6 +204,12 @@ p { font-size: 12px; }
   justify-content: space-between;
   padding: 0 16px;
   overflow: visible;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1000;
 }
 
 /* Override global * reset for banner-menu children */
