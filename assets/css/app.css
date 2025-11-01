@@ -994,7 +994,17 @@ p { font-size: 12px; }
 
 .node-icon {
   margin-bottom: 4px;
-  filter: grayscale(100%);
+  filter: grayscale(100%) contrast(1000%) brightness(1.2);
+  color: #FFF;
+  text-shadow: 
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    0 -1px 0 #000,
+    -1px 0 0 #000,
+    1px 0 0 #000,
+    0 1px 0 #000;
 }
 
 .node-name {
@@ -1497,7 +1507,7 @@ p { font-size: 12px; }
 .library-icon {
   margin-right: 6px;
   font-size: 14px;
-  filter: grayscale(100%);
+  filter: grayscale(100%) contrast(1000%);
 }
 
 .library-name {

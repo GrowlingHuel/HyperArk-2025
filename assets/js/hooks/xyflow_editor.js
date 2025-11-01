@@ -231,7 +231,7 @@ const XyflowEditorHook = {
     this.canvas.style.position = 'relative';
     this.canvas.style.width = '100%';
     this.canvas.style.height = '100%';
-    this.canvas.style.background = '#E8E8E8';
+    this.canvas.style.background = '#FFF';
     this.canvas.style.backgroundImage = 'radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #CCCCCC 1px, transparent 1px)';
     this.canvas.style.backgroundSize = '20px 20px';
     this.canvas.style.backgroundPosition = '10px 10px, 0px 0px, 0px 0px';
@@ -318,7 +318,9 @@ const XyflowEditorHook = {
     iconDiv.style.lineHeight = '1';
     iconDiv.style.marginBottom = '8px';
     iconDiv.style.display = 'block';
-    iconDiv.style.filter = 'grayscale(100%)';
+    iconDiv.style.filter = 'grayscale(100%) contrast(1000%) brightness(1.2)';
+    iconDiv.style.color = '#FFF';
+    iconDiv.style.textShadow = '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 -1px 0 #000, -1px 0 0 #000, 1px 0 0 #000, 0 1px 0 #000';
     nodeEl.appendChild(iconDiv);
 
     // Name
@@ -669,7 +671,9 @@ const XyflowEditorHook = {
     iconDiv.style.lineHeight = '1';
     iconDiv.style.marginBottom = '8px';
     iconDiv.style.display = 'block';
-    iconDiv.style.filter = 'grayscale(100%)';
+    iconDiv.style.filter = 'grayscale(100%) contrast(1000%) brightness(1.2)';
+    iconDiv.style.color = '#FFF';
+    iconDiv.style.textShadow = '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 -1px 0 #000, -1px 0 0 #000, 1px 0 0 #000, 0 1px 0 #000';
     nodeEl.appendChild(iconDiv);
 
     // Name
