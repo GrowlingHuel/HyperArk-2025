@@ -231,7 +231,10 @@ const XyflowEditorHook = {
     this.canvas.style.position = 'relative';
     this.canvas.style.width = '100%';
     this.canvas.style.height = '100%';
-    this.canvas.style.background = '#F8F8F8';
+    this.canvas.style.background = '#E8E8E8';
+    this.canvas.style.backgroundImage = 'radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #CCCCCC 1px, transparent 1px)';
+    this.canvas.style.backgroundSize = '20px 20px';
+    this.canvas.style.backgroundPosition = '10px 10px, 0px 0px, 0px 0px';
     this.container.appendChild(this.canvas);
 
     // Render each node
@@ -315,6 +318,7 @@ const XyflowEditorHook = {
     iconDiv.style.lineHeight = '1';
     iconDiv.style.marginBottom = '8px';
     iconDiv.style.display = 'block';
+    iconDiv.style.filter = 'grayscale(100%)';
     nodeEl.appendChild(iconDiv);
 
     // Name
@@ -665,6 +669,7 @@ const XyflowEditorHook = {
     iconDiv.style.lineHeight = '1';
     iconDiv.style.marginBottom = '8px';
     iconDiv.style.display = 'block';
+    iconDiv.style.filter = 'grayscale(100%)';
     nodeEl.appendChild(iconDiv);
 
     // Name
@@ -746,13 +751,13 @@ export default XyflowEditorHook;
 // Helpers appended to hook
 function getCategoryBackground(category) {
   switch ((category || '').toLowerCase()) {
-    case 'food': return '#E8E8E8';
-    case 'water': return '#D0D0D0';
-    case 'waste': return '#BABABA';
-    case 'energy': return '#F0F0F0';
-    case 'processing': return '#C8C8C8';
-    case 'storage': return '#DCDCDC';
-    default: return '#E8E8E8';
+    case 'food': return '#FAFAFA';
+    case 'water': return '#FBFBFB';
+    case 'waste': return '#F9F9F9';
+    case 'energy': return '#FCFCFC';
+    case 'processing': return '#FAFAFA';
+    case 'storage': return '#FBFBFB';
+    default: return '#FAFAFA';
   }
 }
 

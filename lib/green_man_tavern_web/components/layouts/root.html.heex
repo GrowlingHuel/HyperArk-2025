@@ -65,6 +65,18 @@
             pushEvent('select_character', { character_slug: characterName });
           }
         };
+
+        // Reset characters dropdown when Tavern is clicked
+        document.addEventListener("click", function(event) {
+          // Check if the clicked element is the Tavern link or inside it
+          const tavernLink = event.target.closest('a[phx-value-page="hyperark"]');
+          if (tavernLink || (event.target.textContent && event.target.textContent.trim() === "Tavern")) {
+            const characterSelect = document.getElementById("character-select");
+            if (characterSelect) {
+              characterSelect.value = "";
+            }
+          }
+        });
           // Replace the existing chat JavaScript with this updated version
         // This handles BOTH user messages and character responses
 
