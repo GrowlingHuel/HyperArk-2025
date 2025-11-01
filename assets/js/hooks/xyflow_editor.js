@@ -56,6 +56,7 @@ const XyflowEditorHook = {
     this.edges = [];
     this.selectedNode = null;
     this.selectedNodes = new Set();
+    this.isDraggingNode = false; // Flag to prevent bounds updates during drag
     
     // Load initial nodes, edges, and projects from data attributes
     this.loadInitialData();
@@ -383,6 +384,8 @@ const XyflowEditorHook = {
   makeDraggable(element) {
     let isDragging = false;
     let startX, startY, initialX, initialY;
+    let dragScrollLeft = 0;
+    let dragScrollTop = 0;
 
     element.addEventListener('mousedown', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
@@ -396,6 +399,16 @@ const XyflowEditorHook = {
       const rect = element.getBoundingClientRect();
       initialX = rect.left;
       initialY = rect.top;
+      
+      // Save scroll position at start of drag
+      const scrollArea = this.container.closest('.canvas-scroll-area');
+      if (scrollArea) {
+        dragScrollLeft = scrollArea.scrollLeft;
+        dragScrollTop = scrollArea.scrollTop;
+      }
+      
+      // Set flag to prevent bounds updates during drag
+      this.isDraggingNode = true;
 
       e.preventDefault();
     });
@@ -440,8 +453,23 @@ const XyflowEditorHook = {
         position_y: y
       });
 
-      // Update canvas bounds after node is moved
-      this.updateCanvasBounds();
+      // Clear dragging flag
+      this.isDraggingNode = false;
+      
+      // Update canvas bounds after node is moved, but preserve scroll position
+      // Get current scroll position relative to the dragged node
+      const scrollArea = this.container.closest('.canvas-scroll-area');
+      const nodeScrollLeft = scrollArea ? scrollArea.scrollLeft : dragScrollLeft;
+      const nodeScrollTop = scrollArea ? scrollArea.scrollTop : dragScrollTop;
+      
+      // Store scroll position that should be maintained
+      this.pendingScrollLeft = nodeScrollLeft;
+      this.pendingScrollTop = nodeScrollTop;
+      
+      // Delay bounds update slightly to avoid interrupting user interaction
+      setTimeout(() => {
+        this.updateCanvasBounds();
+      }, 100);
     });
   },
 
@@ -770,6 +798,22 @@ const XyflowEditorHook = {
   updateCanvasBounds() {
     const scrollArea = this.container.closest('.canvas-scroll-area');
     
+    // Preserve scroll position to prevent viewport snapping
+    // Use pending scroll position if set (from recent drag), otherwise use current
+    let scrollLeft = this.pendingScrollLeft !== undefined ? this.pendingScrollLeft : (scrollArea ? scrollArea.scrollLeft : 0);
+    let scrollTop = this.pendingScrollTop !== undefined ? this.pendingScrollTop : (scrollArea ? scrollArea.scrollTop : 0);
+    
+    // Clear pending scroll positions after use
+    if (this.pendingScrollLeft !== undefined) {
+      this.pendingScrollLeft = undefined;
+      this.pendingScrollTop = undefined;
+    }
+    
+    // If currently dragging, don't update bounds (wait until drag completes)
+    if (this.isDraggingNode) {
+      return;
+    }
+    
     // Debug: Log container hierarchy
     console.log('Container hierarchy:', {
       container: this.container,
@@ -927,11 +971,14 @@ const XyflowEditorHook = {
     });
     
     // Transform the nodes container to shift nodes if needed
+    // Only update transform if it actually changed to prevent visual jumps
     if (this.nodesContainer) {
-      if (offsetX > 0 || offsetY > 0) {
-        this.nodesContainer.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-      } else {
-        this.nodesContainer.style.transform = '';
+      const currentTransform = this.nodesContainer.style.transform || '';
+      const newTransform = (offsetX > 0 || offsetY > 0) ? `translate(${offsetX}px, ${offsetY}px)` : '';
+      
+      // Only apply transform if it's different from current to prevent unnecessary reflows
+      if (currentTransform !== newTransform) {
+        this.nodesContainer.style.transform = newTransform;
       }
     }
     
@@ -1055,6 +1102,27 @@ const XyflowEditorHook = {
     }
     if (this.canvas) {
       void this.canvas.offsetHeight; // Trigger reflow
+    }
+    
+    // Restore scroll position to prevent viewport snapping
+    // This ensures the user's view remains stable when nodes are moved
+    // Use multiple restoration attempts to ensure it sticks
+    if (scrollArea) {
+      // Immediate restoration
+      scrollArea.scrollLeft = scrollLeft;
+      scrollArea.scrollTop = scrollTop;
+      
+      // Delayed restoration after layout
+      requestAnimationFrame(() => {
+        scrollArea.scrollLeft = scrollLeft;
+        scrollArea.scrollTop = scrollTop;
+        
+        // One more after next frame to ensure it persists
+        requestAnimationFrame(() => {
+          scrollArea.scrollLeft = scrollLeft;
+          scrollArea.scrollTop = scrollTop;
+        });
+      });
     }
   }
 };
