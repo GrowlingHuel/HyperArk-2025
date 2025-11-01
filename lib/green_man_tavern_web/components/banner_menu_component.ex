@@ -12,52 +12,81 @@ defmodule GreenManTavernWeb.BannerMenuComponent do
     assigns = assign(assigns, :characters, characters)
 
     ~H"""
-    <div class="banner-menu">
-      <!-- LEFT: Logo/Brand -->
-      <div class="banner-left">
-        <span class="banner-logo">🍃 HyperArk</span>
-      </div>
+      <div class="banner-menu" style="height: 50px !important; background: #CCCCCC !important; border: 1px solid #000000 !important; display: flex !important; align-items: center; justify-content: flex-start; gap: 10px !important;">
+        <!-- Logo/Brand -->
+        <div class="banner-left" style="margin-right: 10px !important;">
+          <span class="banner-logo">🍃 HyperArk</span>
+        </div>
 
-    <!-- RIGHT: Navigation buttons -->
-      <div class="banner-right">
-        <a href="#" phx-click="navigate" phx-value-page="hyperark" class="banner-menu-item">Tavern</a>
+        <!-- Navigation buttons - all in one container -->
+        <a href="#" phx-click="navigate" phx-value-page="hyperark" class="banner-menu-item-invisible" style="margin-right: 10px !important; color: #000000 !important; text-decoration: none !important;">
+          <span class="banner-icon-emoji" style="filter: grayscale(100%) !important;">🏰</span>
+          <span class="banner-text">Tavern</span>
+        </a>
 
-    <!-- Characters Selector -->
-        <div class="character-selector">
-          <select
-            id="character-select"
-            onchange="selectCharacterFromDropdown(this.value)"
-            class="banner-menu-item"
-            style="background: #CCC; border: 1px solid #000; padding: 4px 8px; font-size: 12px;"
+        <!-- Characters Dropdown -->
+        <div style="position: relative; display: inline-block; margin-right: 10px !important;">
+          <a
+            href="#"
+            id="characters-dropdown-btn"
+            onclick="toggleCharactersDropdown(); event.preventDefault(); event.stopPropagation();"
+            class="banner-menu-item-invisible"
+            style="margin-right: 10px !important; color: #000000 !important; text-decoration: none !important;"
           >
-            <option value="">Characters</option>
+            <span class="banner-icon-emoji" style="filter: grayscale(100%) !important;">🎭</span>
+            <span class="banner-text">Characters</span>
+            <span style="font-size: 8px; line-height: 1; display: inline-block;">▾</span>
+          </a>
+
+          <div
+            id="characters-dropdown-menu"
+            style="display: none; position: absolute; top: calc(100% + 2px) !important; left: 0; background: #FFF !important; border: 2px solid #000 !important; min-width: 200px; z-index: 1000; box-shadow: 2px 2px 4px rgba(0,0,0,0.3);"
+          >
             <%= for character <- @characters do %>
-              <option
-                value={to_kebab_case(character.name)}
-                selected={is_current_character?(character, @current_character)}
+              <a
+                href="#"
+                phx-click="select_character"
+                phx-value-character_slug={to_kebab_case(character.name)}
+                style="display: block; padding: 8px 12px; font-family: Monaco, 'Courier New', monospace; font-size: 11px; color: #000; text-decoration: none; border-bottom: 1px solid #CCC; background: #FFF; cursor: pointer;"
+                onmouseover="this.style.background='#EEE'"
+                onmouseout="this.style.background='#FFF'"
               >
                 {character.name}
-              </option>
+              </a>
             <% end %>
-          </select>
+          </div>
         </div>
 
-        <a href="#" phx-click="navigate" phx-value-page="living_web" class="banner-menu-item">Living Web</a>
-        <a href="#" phx-click="navigate" phx-value-page="planting_guide" class="banner-menu-item">Planting Guide</a>
-        <a href="#" phx-click="navigate" phx-value-page="journal" class="banner-menu-item">Journal</a>
+        <a href="#" phx-click="navigate" phx-value-page="living_web" class="banner-menu-item-invisible" style="margin-right: 10px !important; color: #000000 !important; text-decoration: none !important;">
+          <span class="banner-icon-emoji" style="filter: grayscale(100%) !important;">🌀</span>
+          <span class="banner-text">Living Web</span>
+        </a>
+        <a href="#" phx-click="navigate" phx-value-page="planting_guide" class="banner-menu-item-invisible" style="margin-right: 10px !important; color: #000000 !important; text-decoration: none !important;">
+          <span class="banner-icon-emoji" style="filter: grayscale(100%) !important;">🍀</span>
+          <span class="banner-text">Planting Guide</span>
+        </a>
+        <a href="#" phx-click="navigate" phx-value-page="journal" class="banner-menu-item-invisible" style="margin-right: 10px !important; color: #000000 !important; text-decoration: none !important;">
+          <span class="banner-icon-emoji" style="filter: grayscale(100%) !important;">✍️</span>
+          <span class="banner-text">Journal</span>
+        </a>
 
-    <!-- Authentication Section -->
-        <div class="banner-auth-section">
-          <%= if @current_user do %>
-            <!-- User is logged in -->
-            <span class="banner-user-info">Welcome, {@current_user.email}</span>
-            <.link href={~p"/logout"} method="delete" class="banner-menu-item">Logout</.link>
-          <% else %>
-            <!-- User is not logged in -->
-            <.link navigate={~p"/login"} class="banner-menu-item">Login</.link>
-            <.link navigate={~p"/register"} class="banner-menu-item">Register</.link>
-          <% end %>
-        </div>
+        <!-- RIGHT: Authentication Section -->
+        <div class="banner-auth-section" style="margin-left: auto !important;">
+        <%= if @current_user do %>
+          <!-- User is logged in -->
+          <span class="banner-user-info">Welcome, {@current_user.email}</span>
+          <.link href={~p"/logout"} method="delete" class="banner-menu-item-invisible" style="color: #000000 !important; text-decoration: none !important;">
+            <span class="banner-text">Logout</span>
+          </.link>
+        <% else %>
+          <!-- User is not logged in -->
+          <.link navigate={~p"/login"} class="banner-menu-item-invisible" style="color: #000000 !important; text-decoration: none !important;">
+            <span class="banner-text">Login</span>
+          </.link>
+          <.link navigate={~p"/register"} class="banner-menu-item-invisible" style="color: #000000 !important; text-decoration: none !important;">
+            <span class="banner-text">Register</span>
+          </.link>
+        <% end %>
       </div>
     </div>
     """

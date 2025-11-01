@@ -47,7 +47,42 @@
           }
         });
 
-        // Character selection function - pushes event to DualPanelLive
+        // Characters dropdown functions
+        window.toggleCharactersDropdown = function() {
+          const menu = document.getElementById('characters-dropdown-menu');
+          if (menu) {
+            const isVisible = menu.style.display === 'block';
+            menu.style.display = isVisible ? 'none' : 'block';
+          }
+        };
+        
+        window.closeCharactersDropdown = function() {
+          const menu = document.getElementById('characters-dropdown-menu');
+          if (menu) {
+            menu.style.display = 'none';
+          }
+        };
+        
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(event) {
+          const menu = document.getElementById('characters-dropdown-menu');
+          const btn = document.getElementById('characters-dropdown-btn');
+          if (menu && btn && !btn.contains(event.target) && !menu.contains(event.target)) {
+            menu.style.display = 'none';
+          }
+        });
+        
+        // Close dropdown after character selection event
+        document.addEventListener('phx:click', function(event) {
+          const target = event.target;
+          if (target && target.closest('#characters-dropdown-menu')) {
+            setTimeout(function() {
+              window.closeCharactersDropdown();
+            }, 100);
+          }
+        });
+
+        // Character selection function - pushes event to DualPanelLive (kept for compatibility)
         window.selectCharacterFromDropdown = function(characterName) {
           console.log("Character selected from dropdown:", characterName);
           
@@ -64,6 +99,9 @@
             
             pushEvent('select_character', { character_slug: characterName });
           }
+          
+          // Close dropdown after selection
+          window.closeCharactersDropdown();
         };
 
         // Reset characters dropdown when Tavern is clicked
@@ -71,10 +109,8 @@
           // Check if the clicked element is the Tavern link or inside it
           const tavernLink = event.target.closest('a[phx-value-page="hyperark"]');
           if (tavernLink || (event.target.textContent && event.target.textContent.trim() === "Tavern")) {
-            const characterSelect = document.getElementById("character-select");
-            if (characterSelect) {
-              characterSelect.value = "";
-            }
+            // Close dropdown if open
+            window.closeCharactersDropdown();
           }
         });
           // Replace the existing chat JavaScript with this updated version
@@ -130,7 +166,7 @@
   </head>
   <body>
     <!-- Banner menu at top -->
-    <div class="banner">
+    <div class="banner" style="height: 50px !important;">
       <.banner_menu
         current_character={assigns[:character]}
         current_user={assigns[:current_user]}

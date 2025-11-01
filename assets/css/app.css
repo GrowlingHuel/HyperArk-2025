@@ -183,14 +183,20 @@ p { font-size: 12px; }
 }
 
 .banner {
-  height: 40px;
+  height: 70px !important;
   flex-shrink: 0;
   background: #CCC;
   border-bottom: 2px solid #000;
   display: flex;
   align-items: center;
-  justify-content: space-between;  /* ADD THIS - pushes content to left and right */
+  justify-content: space-between;
   padding: 0 16px;
+  overflow: visible;
+}
+
+/* Override global * reset for banner-menu children */
+.banner .banner-menu > *:not(:first-child) {
+  margin-left: 20px !important;
 }
 
 .content-wrapper {
@@ -304,21 +310,44 @@ p { font-size: 12px; }
 
 /* Banner menu styling - updated for new structure */
 .banner-menu {
-  height: 40px;
-  width: 100%;  /* ADD THIS - take full width */
+  height: 70px !important;
+  width: 100%;
   background: #D9D9D9;
-  border-top: 1px solid #000;    /* ADD: top border */
-  border-left: 1px solid #000;   /* ADD: left border */
-  border-right: 1px solid #000;  /* ADD: right border */
-  border-bottom: 2px solid #000; /* KEEP: bottom border (thicker) */
-  display: flex;
+  border-top: 1px solid #000;
+  border-left: 1px solid #000;
+  border-right: 1px solid #000;
+  border-bottom: 2px solid #000;
+  display: flex !important;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   padding: 0 12px;
   flex-shrink: 0;
-  margin-bottom: 0; /* No extra margin */
+  margin-bottom: 0;
+  overflow: visible;
+  min-width: 0;
+  box-sizing: border-box;
+  gap: 20px !important;
 }
 
+/* CRITICAL: Override global * { margin: 0 } reset - use margin-right for spacing */
+.banner-menu.banner-menu > .banner-left {
+  margin: 0 20px 0 0 !important;
+}
+
+.banner-menu.banner-menu > .banner-menu-item-invisible {
+  margin: 0 20px 0 0 !important;
+}
+
+.banner-menu.banner-menu > .character-selector {
+  margin: 0 20px 0 0 !important;
+}
+
+/* Auth section gets pushed to the right, no right margin */
+.banner-menu.banner-menu > .banner-auth-section {
+  margin: 0 0 0 auto !important;
+}
+
+/* Old visible button style - keeping for backwards compatibility */
 .banner-menu-item {
   font-family: Geneva, Helvetica, Arial, sans-serif;
   font-size: 11px;
@@ -349,6 +378,106 @@ p { font-size: 12px; }
   transform: translate(0, 0); /* Don't shift, just invert borders */
 }
 
+/* New invisible button style - matches old HyperCard aesthetic */
+.banner-menu-item-invisible {
+  font-family: Geneva, Helvetica, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: normal;
+  color: #000;
+  padding: 5px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+  transition: opacity 0.1s;
+  flex-shrink: 0;
+  white-space: nowrap;
+  margin: 0 !important;
+}
+
+.banner-menu-item-invisible:hover {
+  opacity: 0.7;
+}
+
+.banner-menu-item-invisible:active {
+  opacity: 0.5;
+}
+
+.banner-icon {
+  font-size: 16px;
+  display: inline-block;
+  line-height: 1;
+  width: 16px;
+  height: 16px;
+  filter: grayscale(100%);
+  -webkit-filter: grayscale(100%);
+}
+
+/* For emoji icons, we'll wrap them in a span and apply filter */
+.banner-icon-emoji {
+  display: inline-block;
+  filter: grayscale(100%) contrast(200%);
+  -webkit-filter: grayscale(100%) contrast(200%);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.banner-text {
+  display: inline-block;
+}
+
+.character-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  max-width: 140px;
+  margin: 0 !important;
+}
+
+.character-selector .character-select {
+  font-family: Geneva, Helvetica, Arial, sans-serif;
+  font-size: 11px;
+  background: transparent;
+  border: none;
+  color: #000;
+  padding: 5px 8px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  display: inline-block;
+  width: auto;
+  min-width: 100px;
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.character-select-icon {
+  width: 16px;
+  height: 16px;
+  filter: grayscale(100%);
+  -webkit-filter: grayscale(100%);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.character-selector .character-select:hover {
+  opacity: 0.7;
+}
+
+.character-selector .character-select:focus {
+  outline: 1px dotted #000;
+  outline-offset: 1px;
+}
+
 .banner-logo {
   font-family: Chicago, "Arial Black", sans-serif;
   font-size: 14px;
@@ -360,7 +489,11 @@ p { font-size: 12px; }
 .banner-left {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
+  margin: 0 !important;
 }
+
+/* Removed .banner-nav-left - items are now direct children of .banner-menu */
 
 .banner-right {
   display: flex;
@@ -379,13 +512,18 @@ p { font-size: 12px; }
   display: flex;
   gap: 6px;
   align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
   margin-left: auto;
+  order: 999;
 }
 
 .banner-user-info {
   font-family: 'Geneva', 'Helvetica', 'Arial', sans-serif;
   font-size: 11px;
   color: #333;
+  white-space: nowrap;
+  flex-shrink: 0;
   padding: 5px 8px;
   background: #F0F0F0;
   border: 1px solid #999;
