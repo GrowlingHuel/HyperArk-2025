@@ -72,8 +72,8 @@ export default {
     const percentMatch = widthValue.match(/([\d.]+)%/)
     let finalPercent = percentMatch ? parseFloat(percentMatch[1]) : 50
     
-    // Enforce constraints: 15% minimum, 50% maximum for left panel
-    const minWidth = 15
+    // Enforce constraints: 25% minimum, 50% maximum for left panel
+    const minWidth = 25
     const maxWidth = 50
     finalPercent = Math.max(minWidth, Math.min(maxWidth, finalPercent))
     
@@ -124,9 +124,9 @@ export default {
     // Calculate new width
     let newWidth = this.startLeftWidth + deltaPercent
     
-    // Enforce constraints: 15% minimum, 50% maximum for left panel
+    // Enforce constraints: 25% minimum, 50% maximum for left panel
     // (Right panel can grow larger by making left panel smaller)
-    const minWidth = 15
+    const minWidth = 25
     const maxWidth = 50  // Left panel cannot exceed 50%
     
     newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth))
