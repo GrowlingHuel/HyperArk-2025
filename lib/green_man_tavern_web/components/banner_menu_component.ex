@@ -44,6 +44,7 @@ defmodule GreenManTavernWeb.BannerMenuComponent do
 
         <a href="#" phx-click="navigate" phx-value-page="living_web" class="banner-menu-item">Living Web</a>
         <a href="#" phx-click="navigate" phx-value-page="planting_guide" class="banner-menu-item">Planting Guide</a>
+        <a href="#" phx-click="navigate" phx-value-page="journal" class="banner-menu-item">Journal</a>
 
     <!-- Authentication Section -->
         <div class="banner-auth-section">

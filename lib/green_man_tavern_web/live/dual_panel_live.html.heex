@@ -48,6 +48,13 @@
     flex-direction: column;
     height: 100%;
   }
+  .panel-content.journal-container {
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
 </style>
 
 <div class="dual-panel-container">
@@ -193,11 +200,13 @@
           Living Web
         <% :planting_guide -> %>
           Planting Guide
+        <% :journal -> %>
+          Journal & Quests
         <% _ -> %>
           Content
       <% end %>
     </div>
-    <div class={["panel-content", if(@right_panel_action == :living_web, do: "living-web-container", else: "")]}>
+    <div class={["panel-content", if(@right_panel_action == :living_web, do: "living-web-container", else: ""), if(@right_panel_action == :journal, do: "journal-container", else: "")]}>
       <%= case @right_panel_action do %>
         <% :home -> %>
           <h2>Welcome to HyperArk</h2>
@@ -476,6 +485,89 @@
                 </div>
               </div>
             <% end %>
+          </div>
+
+        <% :journal -> %>
+          <div style="
+            display: flex;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            background-image: url('/images/open-book-bg.jpg');
+            background-size: contain;
+            background-position: center center;
+            background-repeat: no-repeat;
+            padding: 8% 10%;
+            box-sizing: border-box;
+          ">
+            <!-- LEFT PAGE: Journal -->
+            <div style="
+              flex: 1;
+              padding: 80px 50px 40px 40px;
+              overflow-y: auto;
+              font-family: Georgia, 'Times New Roman', serif;
+              font-size: 13px;
+              line-height: 1.8;
+              color: #2a2a2a;
+              background: transparent;
+            ">
+              <h1 style="font-family: Georgia, 'Times New Roman', serif; font-size: 18px; font-weight: bold; color: #3d2817; margin: 0 0 20px 0; text-align: center;">Journal</h1>
+              
+              <%= for entry <- @journal_entries do %>
+                <div style="margin-bottom: 20px;">
+                  <div style="font-size: 12px; font-weight: bold; color: #654321; margin-bottom: 4px; font-style: italic;">
+                    <%= entry.entry_date %> (Day <%= entry.day_number %>)
+                  </div>
+                  <div style="font-size: 13px; color: #2a2a2a; line-height: 1.7;">
+                    <%= entry.body %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+            
+            <!-- SPINE (transparent - book image provides this) -->
+            <div style="width: 80px; flex-shrink: 0; background: transparent;"></div>
+            
+            <!-- RIGHT PAGE: Quests -->
+            <div style="
+              flex: 1;
+              padding: 80px 40px 40px 50px;
+              overflow-y: auto;
+              font-family: Georgia, 'Times New Roman', serif;
+              font-size: 13px;
+              line-height: 1.8;
+              color: #2a2a2a;
+              background: transparent;
+            ">
+              <h1 style="font-family: Georgia, 'Times New Roman', serif; font-size: 18px; font-weight: bold; color: #3d2817; margin: 0 0 20px 0; text-align: center;">Quests</h1>
+              
+              <div style="margin-bottom: 20px;">
+                <h3 style="font-size: 14px; font-weight: bold; color: #3d2817; margin-bottom: 8px; border-bottom: 1px solid rgba(61, 40, 23, 0.2); padding-bottom: 3px;">Active Quests</h3>
+                <%= for quest <- Enum.filter(@user_quests, &(&1.status == "active")) do %>
+                  <div style="font-size: 13px; color: #2a2a2a; line-height: 1.8; margin-bottom: 4px; padding: 2px 0; cursor: pointer;">
+                    <%= quest.title %>
+                  </div>
+                <% end %>
+              </div>
+              
+              <div style="margin-bottom: 20px;">
+                <h3 style="font-size: 14px; font-weight: bold; color: #3d2817; margin-bottom: 8px; border-bottom: 1px solid rgba(61, 40, 23, 0.2); padding-bottom: 3px;">Available Quests</h3>
+                <%= for quest <- Enum.filter(@user_quests, &(&1.status == "available")) do %>
+                  <div style="font-size: 13px; color: #2a2a2a; line-height: 1.8; margin-bottom: 4px; padding: 2px 0; cursor: pointer;">
+                    <%= quest.title %>
+                  </div>
+                <% end %>
+              </div>
+              
+              <div style="margin-bottom: 20px;">
+                <h3 style="font-size: 14px; font-weight: bold; color: #3d2817; margin-bottom: 8px; border-bottom: 1px solid rgba(61, 40, 23, 0.2); padding-bottom: 3px;">Completed</h3>
+                <%= for quest <- Enum.filter(@user_quests, &(&1.status == "completed")) do %>
+                  <div style="font-size: 13px; color: #2a2a2a; line-height: 1.8; margin-bottom: 4px; padding: 2px 0; cursor: pointer;">
+                    <%= quest.title %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
           </div>
 
         <% _ -> %>

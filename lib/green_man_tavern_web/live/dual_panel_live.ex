@@ -54,6 +54,10 @@ defmodule GreenManTavernWeb.DualPanelLive do
       |> assign(:diagram, diagram)
       |> assign(:nodes, nodes)
       |> assign(:edges, edges)
+      |> assign(:journal_entries, dummy_journal_entries())
+      |> assign(:user_quests, dummy_quests())
+      |> assign(:journal_search_term, "")
+      |> assign(:quest_filter, "all")
 
     {:ok, socket}
   end
@@ -134,6 +138,10 @@ defmodule GreenManTavernWeb.DualPanelLive do
   # - Changes current page (:living_web | :database | :garden)
   # - Loads page-specific data into :page_data
   # - DOES NOT touch left window chat state
+  def handle_event("navigate", %{"page" => "journal"}, socket) do
+    {:noreply, assign(socket, right_panel_action: :journal)}
+  end
+
   def handle_event("navigate", %{"page" => page}, socket) do
     page_atom =
       case page do
@@ -585,6 +593,7 @@ defmodule GreenManTavernWeb.DualPanelLive do
 
   defp page_title(:home), do: "Green Man Tavern"
   defp page_title(:living_web), do: "Living Web"
+  defp page_title(:journal), do: "Journal & Quests"
   defp page_title(_), do: "Green Man Tavern"
 
   # Collision detection temporarily disabled
@@ -768,4 +777,29 @@ defmodule GreenManTavernWeb.DualPanelLive do
     end)
   end
   defp projects_for_json(_), do: []
+
+  defp dummy_journal_entries do
+    [
+      %{
+        entry_date: "3rd of Last Seed",
+        day_number: 42,
+        title: "Met The Grandmother",
+        body: "Today I spoke with The Grandmother about composting. She shared ancient wisdom about turning kitchen scraps into black gold."
+      },
+      %{
+        entry_date: "5th of Last Seed",
+        day_number: 44,
+        title: "First Compost Bin",
+        body: "Built my first compost bin using The Grandmother's design. Used old pallets and chicken wire."
+      }
+    ]
+  end
+
+  defp dummy_quests do
+    [
+      %{title: "Learn About Companion Planting", status: "active"},
+      %{title: "Build a Raised Bed", status: "available"},
+      %{title: "Start Traditional Composting", status: "completed"}
+    ]
+  end
 end

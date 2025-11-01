@@ -1536,132 +1536,70 @@ p { font-size: 12px; }
 
 /* ===== MORROWIND-STYLE JOURNAL ===== */
 /* Parchment texture - CSS-based (can be replaced with image) */
-.journal-page {
-  /* Base warm tan parchment color */
-  background-color: #D4A574;
-  /* CSS-based parchment texture using gradients and noise effect */
-  background-image:
-    /* Subtle horizontal fiber lines */
-    repeating-linear-gradient(
-      0deg,
-      rgba(180, 140, 90, 0.1) 0px,
-      transparent 1px,
-      transparent 3px,
-      rgba(180, 140, 90, 0.1) 4px,
-      transparent 5px
-    ),
-    /* Vertical fiber lines */
-    repeating-linear-gradient(
-      90deg,
-      rgba(180, 140, 90, 0.08) 0px,
-      transparent 1px,
-      transparent 4px,
-      rgba(180, 140, 90, 0.08) 5px,
-      transparent 6px
-    ),
-    /* Aged spots/stains */
-    radial-gradient(circle at 20% 30%, rgba(200, 160, 110, 0.4) 0px, transparent 50px),
-    radial-gradient(circle at 80% 70%, rgba(180, 140, 90, 0.3) 0px, transparent 40px),
-    radial-gradient(circle at 50% 90%, rgba(160, 120, 80, 0.25) 0px, transparent 35px),
-    /* Base parchment gradient */
-    linear-gradient(180deg, #D8AA7A 0%, #D0A070 50%, #D8AA7A 100%);
-  background-size:
-    100% 6px,
-    8px 100%,
-    200px 200px,
-    150px 150px,
-    120px 120px,
-    100% 100%;
-  background-position:
-    0 0,
-    0 0,
-    0 0,
-    0 0,
-    0 0,
-    0 0;
-  /* If image available, use it instead */
-  /* background-image: url('/images/parchment-texture.jpg'); */
-  background-size: cover;
-  background-repeat: no-repeat;
-  font-family: Georgia, 'Times New Roman', serif;
-  color: #2C1810; /* Dark brown ink */
-  min-height: 100%;
-  position: relative;
-  padding: 20px;
-  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.1);
-}
-
-/* Enhanced parchment if image is available */
-.journal-page.has-texture-image {
-  background-image: url('/images/parchment-texture.jpg');
-  background-size: cover;
-  background-color: #D4A574; /* Fallback color */
-}
-
-/* Book spine/binding - CSS-based leather texture */
-.book-spine {
-  width: 40px;
-  background-color: #3D2817; /* Dark brown leather base */
-  background-image:
-    /* Leather grain texture */
-    repeating-linear-gradient(
-      45deg,
-      rgba(50, 30, 15, 0.3) 0px,
-      transparent 2px,
-      transparent 4px,
-      rgba(50, 30, 15, 0.3) 6px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      rgba(40, 25, 12, 0.2) 0px,
-      transparent 3px,
-      transparent 6px,
-      rgba(40, 25, 12, 0.2) 9px
-    ),
-    /* Central shadow/depth effect */
-    linear-gradient(
-      90deg,
-      #2A1A0F 0%,
-      #3D2817 20%,
-      #452E1A 50%,
-      #3D2817 80%,
-      #2A1A0F 100%
-    );
-  background-size:
-    8px 8px,
-    12px 12px,
-    100% 100%;
-  position: relative;
-  box-shadow: 
-    inset -2px 0 8px rgba(0, 0, 0, 0.5), /* Left inner shadow */
-    inset 2px 0 8px rgba(0, 0, 0, 0.3);   /* Right inner shadow */
-  border-left: 1px solid #1A1008;
-  border-right: 1px solid #1A1008;
-}
-
-/* Enhanced spine if image is available */
-.book-spine.has-spine-image {
-  background-image: url('/images/book-spine.png');
-  background-size: cover;
-  background-color: #3D2817; /* Fallback color */
-}
-
-/* Book spread layout */
+/* Book spread layout with CSS-based parchment look */
 .book-spread {
   display: flex;
+  width: 100%;
   height: 100%;
-  gap: 0;
-  background: #5C4A37; /* Dark brown background between pages */
+  background: linear-gradient(to bottom, #f5e6d3 0%, #f0ddc0 50%, #f5e6d3 100%);
+  padding: 40px;
+  gap: 40px;
 }
 
-.book-spread .journal-page {
+.journal-page {
   flex: 1;
-  margin: 0;
+  padding: 40px 30px;
+  background: linear-gradient(135deg, 
+    #faf5ee 0%, 
+    #f5ead5 25%, 
+    #f0e5ca 50%, 
+    #f5ead5 75%, 
+    #faf5ee 100%
+  );
+  border: 1px solid #d4c4a8;
+  border-radius: 3px;
+  box-shadow: 
+    inset 0 0 50px rgba(212, 196, 168, 0.2),
+    0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #2a2a2a;
 }
 
-.book-spread .book-spine {
+.book-spine {
+  width: 20px;
+  background: linear-gradient(to right,
+    rgba(101, 67, 33, 0.3) 0%,
+    rgba(139, 90, 43, 0.5) 50%,
+    rgba(101, 67, 33, 0.3) 100%
+  );
+  border-left: 1px solid rgba(101, 67, 33, 0.4);
+  border-right: 1px solid rgba(101, 67, 33, 0.4);
+  box-shadow: 
+    inset 2px 0 4px rgba(0, 0, 0, 0.2),
+    inset -2px 0 4px rgba(0, 0, 0, 0.2);
   flex-shrink: 0;
-  height: 100%;
+}
+
+/* Minimal scrollbars */
+.journal-page::-webkit-scrollbar {
+  width: 8px;
+}
+
+.journal-page::-webkit-scrollbar-track {
+  background: rgba(212, 196, 168, 0.3);
+  border-radius: 4px;
+}
+
+.journal-page::-webkit-scrollbar-thumb {
+  background: rgba(139, 115, 85, 0.4);
+  border-radius: 4px;
+}
+
+.journal-page::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 115, 85, 0.6);
 }
 
 /* Journal text styling */
@@ -1670,38 +1608,116 @@ p { font-size: 12px; }
   margin: 0 auto;
   line-height: 1.6;
   font-size: 14px;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3); /* Subtle text depth */
 }
 
 .journal-title {
-  font-size: 24px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 20px;
   font-weight: bold;
-  color: #1A0F08;
-  margin-bottom: 20px;
+  color: #3d2817;
+  margin: 0 0 24px 0;
   text-align: center;
-  border-bottom: 2px solid rgba(0, 0, 0, 0.2);
-  padding-bottom: 10px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  border-bottom: 2px solid rgba(61, 40, 23, 0.3);
+  padding-bottom: 8px;
 }
 
 .journal-entry {
-  margin-bottom: 30px;
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.05); /* Very subtle white overlay */
-  border-left: 3px solid rgba(0, 0, 0, 0.2);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
 }
 
 .journal-date {
-  font-size: 12px;
-  color: #4A3320;
+  font-size: 14px;
+  font-weight: bold;
+  color: #654321;
+  margin-bottom: 6px;
   font-style: italic;
-  margin-bottom: 8px;
 }
 
 .journal-text {
-  color: #2C1810;
+  font-size: 13px;
+  color: #2a2a2a;
   line-height: 1.7;
-  text-align: justify;
+}
+
+.journal-search {
+  position: sticky;
+  bottom: 0;
+  padding: 16px 0;
+  background: linear-gradient(to bottom, 
+    rgba(212, 165, 116, 0) 0%,
+    rgba(212, 165, 116, 1) 20%
+  );
+}
+
+.parchment-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(101, 67, 33, 0.3);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+.parchment-input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.5);
+  border-color: rgba(101, 67, 33, 0.5);
+}
+
+.quest-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.parchment-button {
+  background: rgba(232, 203, 165, 0.7);
+  border: 1px solid rgba(101, 67, 33, 0.3);
+  padding: 6px 16px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 13px;
+  color: #2c2416;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.parchment-button:hover {
+  background: rgba(232, 203, 165, 0.9);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.parchment-button:active {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: translateY(1px);
+}
+
+.quest-section {
+  margin-bottom: 24px;
+}
+
+.quest-section-title {
+  font-size: 15px;
+  font-weight: bold;
+  color: #3d2817;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(61, 40, 23, 0.2);
+  padding-bottom: 4px;
+}
+
+.quest-entry {
+  font-size: 13px;
+  color: #2a2a2a;
+  line-height: 1.9;
+  margin-bottom: 6px;
+  padding: 2px 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.quest-entry:hover {
+  background: rgba(212, 175, 116, 0.2);
+  color: #654321;
 }
 
