@@ -25,6 +25,7 @@ import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/green_man_tavern"
 import ChatFormHook from "./hooks/chat_form_hook.js"
 import XyflowEditorHook from "./hooks/xyflow_editor.js"
+import PanelResizerHook from "./hooks/panel_resizer.js"
 
 // Initialize topbar directly (inline to avoid import issues)
 const topbar = {
@@ -94,6 +95,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
     ...colocatedHooks,
     ChatForm: ChatFormHook,
     XyflowEditor: XyflowEditorHook,
+    PanelResizer: PanelResizerHook,
     ThinkingDots: ThinkingDotsHook,
     ScrollableContent: ScrollableContentHook,
     redirect: {
