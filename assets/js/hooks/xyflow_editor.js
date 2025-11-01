@@ -55,11 +55,16 @@ const XyflowEditorHook = {
     this.nodes = [];
     this.edges = [];
     this.selectedNode = null;
-    this.selectedNodes = new Set();
-    this.isDraggingNode = false; // Flag to prevent bounds updates during drag
-    
-    // Load initial nodes, edges, and projects from data attributes
-    this.loadInitialData();
+      this.selectedNodes = new Set();
+      this.isDraggingNode = false; // Flag to prevent bounds updates during drag
+      this.isMarqueeSelecting = false; // Flag for marquee selection box
+      this.marqueeBox = null; // DOM element for selection box
+      this.marqueeStartX = 0;
+      this.marqueeStartY = 0;
+      this.isPanningCanvas = false; // Flag to distinguish canvas panning from marquee selection
+      
+      // Load initial nodes, edges, and projects from data attributes
+      this.loadInitialData();
     
     // Log container dimensions
     console.log("Container dimensions:", { width: this.el.offsetWidth, height: this.el.offsetHeight });
@@ -67,10 +72,12 @@ const XyflowEditorHook = {
     // Render the nodes
     this.renderNodes();
     
-    // Setup drag and drop
-    this.setupDragAndDrop();
-    // Setup toolbar action buttons
-    this.setupToolbarButtons();
+      // Setup drag and drop
+      this.setupDragAndDrop();
+      // Setup marquee selection
+      this.setupMarqueeSelection();
+      // Setup toolbar action buttons
+      this.setupToolbarButtons();
     
     // Setup library item drag handlers
     this.setupLibraryItemDrag();
@@ -260,6 +267,31 @@ const XyflowEditorHook = {
     this.canvas.appendChild(this.nodesContainer);
     
     this.container.appendChild(this.canvas);
+    
+    // Create marquee selection box (recreate if renderNodes() was called and cleared it)
+    // Place it in nodesContainer so it uses the same coordinate system as nodes
+    if (!this.marqueeBox || (!this.nodesContainer.contains(this.marqueeBox) && !this.canvas.contains(this.marqueeBox))) {
+      // Remove from old location if it exists
+      if (this.marqueeBox && this.marqueeBox.parentNode) {
+        this.marqueeBox.parentNode.removeChild(this.marqueeBox);
+      }
+      
+      this.marqueeBox = document.createElement('div');
+      this.marqueeBox.className = 'marquee-selection-box';
+      this.marqueeBox.style.position = 'absolute';
+      this.marqueeBox.style.border = '2px dashed #000';
+      this.marqueeBox.style.background = 'rgba(0, 0, 0, 0.1)';
+      this.marqueeBox.style.pointerEvents = 'none';
+      this.marqueeBox.style.zIndex = '1000';
+      this.marqueeBox.style.display = 'none';
+      
+      // Add to nodesContainer (same coordinate system as nodes)
+      if (this.nodesContainer) {
+        this.nodesContainer.appendChild(this.marqueeBox);
+      } else if (this.canvas) {
+        this.canvas.appendChild(this.marqueeBox);
+      }
+    }
 
     // Render each node
     this.nodes.forEach(node => {
@@ -386,12 +418,46 @@ const XyflowEditorHook = {
     let startX, startY, initialX, initialY;
     let dragScrollLeft = 0;
     let dragScrollTop = 0;
+    let selectedNodesInitialPositions = new Map(); // Store initial positions for multi-node drag
+    let dragStartMouseX = 0; // Track mouse position at drag start for cumulative offset
+    let dragStartMouseY = 0;
 
     element.addEventListener('mousedown', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       
+      // Check if this node is selected and if we have multiple nodes selected
+      const nodeId = element.dataset.nodeId;
+      const isNodeSelected = this.selectedNodes && this.selectedNodes.has(nodeId);
+      const hasMultipleSelected = this.selectedNodes && this.selectedNodes.size > 1;
+      
+      // If multiple nodes are selected and this node is one of them, prepare multi-node drag
+      if (hasMultipleSelected && isNodeSelected) {
+        selectedNodesInitialPositions.clear();
+        
+        // Store initial positions of all selected nodes
+        this.selectedNodes.forEach(selectedId => {
+          const selectedNodeEl = this.canvas.querySelector(`[data-node-id="${selectedId}"]`);
+          if (selectedNodeEl) {
+            const x = parseInt(selectedNodeEl.style.left) || 0;
+            const y = parseInt(selectedNodeEl.style.top) || 0;
+            selectedNodesInitialPositions.set(selectedId, { x, y });
+          }
+        });
+      } else if (!isNodeSelected) {
+        // If clicking on an unselected node, clear selection first
+        // (User can hold Shift to add to selection, but for now we'll just select this one)
+        this.clearSelection();
+        this.selectedNodes.add(nodeId);
+        this.syncCheckboxState(element);
+        this.updateSelectionCount();
+      }
+      
       isDragging = true;
       element.style.cursor = 'grabbing';
+      
+      // Store mouse position at drag start (for cumulative offset calculation)
+      dragStartMouseX = e.clientX;
+      dragStartMouseY = e.clientY;
       
       startX = e.clientX;
       startY = e.clientY;
@@ -411,22 +477,45 @@ const XyflowEditorHook = {
       this.isDraggingNode = true;
 
       e.preventDefault();
+      e.stopPropagation(); // Prevent marquee selection from starting
     });
 
     document.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
 
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-
-      const newX = parseInt(element.style.left) + dx;
-      const newY = parseInt(element.style.top) + dy;
-
-      element.style.left = `${newX}px`;
-      element.style.top = `${newY}px`;
-
-      startX = e.clientX;
-      startY = e.clientY;
+      const nodeId = element.dataset.nodeId;
+      const hasMultipleSelected = this.selectedNodes && this.selectedNodes.size > 1 && this.selectedNodes.has(nodeId);
+      
+      if (hasMultipleSelected && selectedNodesInitialPositions.size > 0) {
+        // Multi-node drag: use cumulative offset from drag start
+        const cumulativeDx = e.clientX - dragStartMouseX;
+        const cumulativeDy = e.clientY - dragStartMouseY;
+        
+        // Move all selected nodes by the same cumulative offset from their initial positions
+        selectedNodesInitialPositions.forEach((initialPos, selectedId) => {
+          const selectedNodeEl = this.canvas.querySelector(`[data-node-id="${selectedId}"]`);
+          if (selectedNodeEl) {
+            const newX = initialPos.x + cumulativeDx;
+            const newY = initialPos.y + cumulativeDy;
+            selectedNodeEl.style.left = `${newX}px`;
+            selectedNodeEl.style.top = `${newY}px`;
+          }
+        });
+      } else {
+        // Single node drag: use incremental offset (standard drag behavior)
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        const currentLeft = parseInt(element.style.left || '0');
+        const currentTop = parseInt(element.style.top || '0');
+        const newX = currentLeft + dx;
+        const newY = currentTop + dy;
+        element.style.left = `${newX}px`;
+        element.style.top = `${newY}px`;
+        
+        startX = e.clientX;
+        startY = e.clientY;
+      }
     });
 
     document.addEventListener('mouseup', () => {
@@ -435,23 +524,53 @@ const XyflowEditorHook = {
       isDragging = false;
       element.style.cursor = 'move';
 
-      // Send position update to server
       const nodeId = element.dataset.nodeId;
-      let x = parseInt(element.style.left);
-      let y = parseInt(element.style.top);
+      const hasMultipleSelected = this.selectedNodes && this.selectedNodes.size > 1 && this.selectedNodes.has(nodeId);
+      
+      if (hasMultipleSelected && selectedNodesInitialPositions.size > 0) {
+        // Multi-node drag: send position updates for all selected nodes
+        const updates = [];
+        selectedNodesInitialPositions.forEach((initialPos, selectedId) => {
+          const selectedNodeEl = this.canvas.querySelector(`[data-node-id="${selectedId}"]`);
+          if (selectedNodeEl) {
+            let x = parseInt(selectedNodeEl.style.left) || 0;
+            let y = parseInt(selectedNodeEl.style.top) || 0;
+            
+            // Snap to grid on drop
+            const snapped = snapToGrid({ x, y });
+            x = snapped.x;
+            y = snapped.y;
+            selectedNodeEl.style.left = `${x}px`;
+            selectedNodeEl.style.top = `${y}px`;
+            
+            updates.push({ node_id: selectedId, position_x: x, position_y: y });
+          }
+        });
+        
+        // Send all updates to server
+        updates.forEach(update => {
+          this.pushEvent('node_moved', update);
+        });
+        
+        selectedNodesInitialPositions.clear();
+      } else {
+        // Single node drag
+        let x = parseInt(element.style.left);
+        let y = parseInt(element.style.top);
 
-      // Snap to grid on drop
-      const snapped = snapToGrid({ x, y });
-      x = snapped.x;
-      y = snapped.y;
-      element.style.left = `${x}px`;
-      element.style.top = `${y}px`;
+        // Snap to grid on drop
+        const snapped = snapToGrid({ x, y });
+        x = snapped.x;
+        y = snapped.y;
+        element.style.left = `${x}px`;
+        element.style.top = `${y}px`;
 
-      this.pushEvent('node_moved', {
-        node_id: nodeId,
-        position_x: x,
-        position_y: y
-      });
+        this.pushEvent('node_moved', {
+          node_id: nodeId,
+          position_x: x,
+          position_y: y
+        });
+      }
 
       // Clear dragging flag
       this.isDraggingNode = false;
@@ -527,6 +646,248 @@ const XyflowEditorHook = {
         temp_id: tempId
       });
     });
+  },
+
+  setupMarqueeSelection() {
+    const container = this.container;
+    const scrollArea = container.closest('.canvas-scroll-area');
+    
+    let isMarqueeActive = false;
+    let startX = 0;
+    let startY = 0;
+    
+    // Create marquee selection box element (if it doesn't exist)
+    // Place it in nodesContainer so it uses the same coordinate system as nodes
+    if (!this.marqueeBox) {
+      this.marqueeBox = document.createElement('div');
+      this.marqueeBox.className = 'marquee-selection-box';
+      this.marqueeBox.style.position = 'absolute';
+      this.marqueeBox.style.border = '2px dashed #000';
+      this.marqueeBox.style.background = 'rgba(0, 0, 0, 0.1)';
+      this.marqueeBox.style.pointerEvents = 'none';
+      this.marqueeBox.style.zIndex = '1000';
+      this.marqueeBox.style.display = 'none';
+      
+      // Add to nodesContainer (same coordinate system as nodes)
+      if (this.nodesContainer) {
+        this.nodesContainer.appendChild(this.marqueeBox);
+      } else if (this.canvas) {
+        this.canvas.appendChild(this.marqueeBox);
+      }
+    }
+    
+    container.addEventListener('mousedown', (e) => {
+      // Only start marquee if clicking directly on canvas (not on a node, toolbar, etc.)
+      if (e.target.closest('.flow-node') || 
+          e.target.closest('.living-web-toolbar') ||
+          e.target.closest('.library-header') ||
+          e.target.closest('.library-content')) {
+        return;
+      }
+      
+      // Don't start marquee if user is holding a modifier key (for future multi-select)
+      // For now, we'll allow it, but can check e.shiftKey, e.ctrlKey, etc. later
+      
+      isMarqueeActive = true;
+      this.isMarqueeSelecting = true;
+      
+      // Get starting position relative to nodesContainer (accounting for transform and scroll)
+      const scrollLeft = scrollArea ? scrollArea.scrollLeft : 0;
+      const scrollTop = scrollArea ? scrollArea.scrollTop : 0;
+      
+      // Get the transform offset of nodesContainer (if any)
+      const nodesContainerTransform = this.getNodesContainerTransform();
+      
+      // Calculate position relative to the actual canvas coordinate system (where nodes are)
+      // Mouse position in viewport
+      const viewportX = e.clientX;
+      const viewportY = e.clientY;
+      
+      // Get canvas position in viewport
+      const canvasRect = this.canvas.getBoundingClientRect();
+      
+      // Convert to canvas coordinates (accounting for scroll)
+      const canvasX = viewportX - canvasRect.left + scrollLeft;
+      const canvasY = viewportY - canvasRect.top + scrollTop;
+      
+      // Account for nodesContainer transform offset (reverse the transform)
+      startX = canvasX - nodesContainerTransform.x;
+      startY = canvasY - nodesContainerTransform.y;
+      
+      this.marqueeStartX = startX;
+      this.marqueeStartY = startY;
+      
+      // Show and position marquee box
+      if (this.marqueeBox) {
+        this.marqueeBox.style.display = 'block';
+        this.marqueeBox.style.left = `${startX}px`;
+        this.marqueeBox.style.top = `${startY}px`;
+        this.marqueeBox.style.width = '0px';
+        this.marqueeBox.style.height = '0px';
+      }
+      
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+      if (!isMarqueeActive || !this.marqueeBox) return;
+      
+      // Calculate current position relative to nodesContainer (same coordinate system as nodes)
+      const scrollLeft = scrollArea ? scrollArea.scrollLeft : 0;
+      const scrollTop = scrollArea ? scrollArea.scrollTop : 0;
+      
+      // Get the transform offset of nodesContainer
+      const nodesContainerTransform = this.getNodesContainerTransform();
+      
+      // Calculate position in canvas coordinate system
+      const canvasRect = this.canvas.getBoundingClientRect();
+      const viewportX = e.clientX;
+      const viewportY = e.clientY;
+      
+      const canvasX = viewportX - canvasRect.left + scrollLeft;
+      const canvasY = viewportY - canvasRect.top + scrollTop;
+      
+      // Account for nodesContainer transform offset
+      const currentX = canvasX - nodesContainerTransform.x;
+      const currentY = canvasY - nodesContainerTransform.y;
+      
+      // Calculate rectangle bounds
+      const left = Math.min(startX, currentX);
+      const top = Math.min(startY, currentY);
+      const width = Math.abs(currentX - startX);
+      const height = Math.abs(currentY - startY);
+      
+      // Update marquee box
+      this.marqueeBox.style.left = `${left}px`;
+      this.marqueeBox.style.top = `${top}px`;
+      this.marqueeBox.style.width = `${width}px`;
+      this.marqueeBox.style.height = `${height}px`;
+    });
+    
+    document.addEventListener('mouseup', (e) => {
+      if (!isMarqueeActive) return;
+      
+      isMarqueeActive = false;
+      this.isMarqueeSelecting = false;
+      
+      // Hide marquee box
+      if (this.marqueeBox) {
+        this.marqueeBox.style.display = 'none';
+      }
+      
+      // Calculate final selection rectangle in node coordinate system
+      const scrollLeft = scrollArea ? scrollArea.scrollLeft : 0;
+      const scrollTop = scrollArea ? scrollArea.scrollTop : 0;
+      
+      // Get the transform offset of nodesContainer
+      const nodesContainerTransform = this.getNodesContainerTransform();
+      
+      // Calculate end position in canvas coordinates
+      const canvasRect = this.canvas.getBoundingClientRect();
+      const canvasX = e.clientX - canvasRect.left + scrollLeft;
+      const canvasY = e.clientY - canvasRect.top + scrollTop;
+      
+      // Convert to node coordinate system (accounting for transform)
+      const endX = canvasX - nodesContainerTransform.x;
+      const endY = canvasY - nodesContainerTransform.y;
+      
+      const left = Math.min(startX, endX);
+      const top = Math.min(startY, endY);
+      const right = Math.max(startX, endX);
+      const bottom = Math.max(startY, endY);
+      
+      // Find all nodes that intersect with selection rectangle
+      const selectedNodesInBox = [];
+      const nodeElements = this.canvas.querySelectorAll('.flow-node:not(.temp-node)');
+      
+      nodeElements.forEach(nodeEl => {
+        const nodeX = parseInt(nodeEl.style.left) || 0;
+        const nodeY = parseInt(nodeEl.style.top) || 0;
+        const nodeWidth = nodeEl.offsetWidth || 140;
+        const nodeHeight = nodeEl.offsetHeight || 80;
+        
+        const nodeLeft = nodeX;
+        const nodeRight = nodeX + nodeWidth;
+        const nodeTop = nodeY;
+        const nodeBottom = nodeY + nodeHeight;
+        
+        // Check if node intersects with selection rectangle
+        if (!(nodeRight < left || nodeLeft > right || nodeBottom < top || nodeTop > bottom)) {
+          const nodeId = nodeEl.dataset.nodeId;
+          if (nodeId) {
+            selectedNodesInBox.push(nodeId);
+          }
+        }
+      });
+      
+      // Update selection
+      if (selectedNodesInBox.length > 0) {
+        // Clear existing selection if not holding Shift (for future enhancement)
+        // For now, replace selection
+        this.clearSelection();
+        
+        // Add nodes in box to selection
+        selectedNodesInBox.forEach(nodeId => {
+          this.selectedNodes.add(nodeId);
+          
+          // Update checkbox and visual state
+          const nodeEl = this.canvas.querySelector(`[data-node-id="${nodeId}"]`);
+          if (nodeEl) {
+            this.syncCheckboxState(nodeEl);
+          }
+        });
+        
+        // Update selection count
+        this.updateSelectionCount();
+      }
+    });
+  },
+
+  clearSelection() {
+    // Clear all selections
+    this.selectedNodes.clear();
+    
+    // Update all node checkboxes and visual states
+    const nodeElements = this.canvas.querySelectorAll('.flow-node');
+    nodeElements.forEach(nodeEl => {
+      const checkbox = nodeEl.querySelector('.node-select-checkbox');
+      if (checkbox) {
+        checkbox.checked = false;
+      }
+      nodeEl.classList.remove('selected');
+      const category = nodeEl.dataset.category;
+      nodeEl.style.zIndex = '';
+      nodeEl.style.border = '2px solid #000';
+      nodeEl.style.background = getCategoryBackground(category);
+      nodeEl.style.boxShadow = '2px 2px 0 rgba(0,0,0,0.3)';
+    });
+    
+    this.updateSelectionCount();
+  },
+
+  getNodesContainerTransform() {
+    // Extract transform offset from nodesContainer's CSS transform
+    // Format: translate(Xpx, Ypx) or empty string
+    if (!this.nodesContainer) {
+      return { x: 0, y: 0 };
+    }
+    
+    const transform = this.nodesContainer.style.transform || '';
+    if (!transform) {
+      return { x: 0, y: 0 };
+    }
+    
+    // Parse translate(x, y) format
+    const match = transform.match(/translate\(([^,]+)px,\s*([^)]+)px\)/);
+    if (match) {
+      return {
+        x: parseFloat(match[1]) || 0,
+        y: parseFloat(match[2]) || 0
+      };
+    }
+    
+    return { x: 0, y: 0 };
   },
 
   // Toolbar buttons for actions on selected nodes
