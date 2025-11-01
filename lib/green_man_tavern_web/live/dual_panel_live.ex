@@ -880,17 +880,29 @@ defmodule GreenManTavernWeb.DualPanelLive do
      |> assign(:quest_search_term, term)}
   end
 
-  # Helper function to get character emoji icon
-  defp character_emoji(character_name) do
-    case character_name do
-      "The Student" -> "📜"
-      "The Grandmother" -> "🧶"
-      "The Farmer" -> "🚜"
-      "The Robot" -> "🤖"
-      "The Alchemist" -> "⚗️"
-      "The Survivalist" -> "🧭"
-      "The Hobo" -> "🚶"
-      _ -> "❓"
+    # Helper function to get character emoji icon
+    defp character_emoji(character_name) do
+      case character_name do
+        "The Student" -> "📜"
+        "The Grandmother" -> "🧶"
+        "The Farmer" -> "🚜"
+        "The Robot" -> "🤖"
+        "The Alchemist" -> "⚗️"
+        "The Survivalist" -> "🧭"
+        "The Hobo" -> "🚶"
+        _ -> "❓"
+      end
     end
+
+    # Render markdown content to HTML
+    # Only applies markdown rendering to character messages for readability
+    # User messages remain plain text
+    defp render_markdown(nil), do: ""
+    defp render_markdown(content) when is_binary(content) do
+      case Earmark.as_html(content) do
+        {:ok, html, _} -> Phoenix.HTML.raw(html)
+        {:error, _} -> Phoenix.HTML.html_escape(content)
+      end
+    end
+    defp render_markdown(_), do: ""
   end
-end

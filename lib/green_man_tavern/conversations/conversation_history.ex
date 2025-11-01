@@ -26,22 +26,7 @@ defmodule GreenManTavern.Conversations.ConversationHistory do
     |> validate_required([:user_id, :character_id, :message_type, :message_content])
     |> validate_inclusion(:message_type, ["user", "character"])
     |> validate_length(:message_content, max: 2000)
-    |> sanitize_message_content()
-  end
-
-  # Sanitize message content to prevent XSS attacks
-  defp sanitize_message_content(changeset) do
-    case get_change(changeset, :message_content) do
-      nil ->
-        changeset
-
-      content when is_binary(content) ->
-        # Escape HTML to prevent XSS
-        sanitized = Phoenix.HTML.html_escape(content) |> Phoenix.HTML.safe_to_string()
-        put_change(changeset, :message_content, sanitized)
-
-      _ ->
-        changeset
-    end
+    # Note: HTML escaping is handled at display time by HEEx templates for security
+    # This ensures raw content is stored, and proper escaping happens in the view layer
   end
 end
