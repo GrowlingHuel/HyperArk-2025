@@ -41,6 +41,13 @@
     flex: 1;
     overflow-y: auto;
   }
+  .panel-content.living-web-container {
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
 </style>
 
 <div class="dual-panel-container">
@@ -190,7 +197,7 @@
           Content
       <% end %>
     </div>
-    <div class="panel-content">
+    <div class={["panel-content", if(@right_panel_action == :living_web, do: "living-web-container", else: "")]}>
       <%= case @right_panel_action do %>
         <% :home -> %>
           <h2>Welcome to HyperArk</h2>
@@ -199,9 +206,9 @@
         <% :living_web -> %>
           <%= if assigns[:nodes] && assigns[:edges] do %>
             <style>
-              .living-web-content { flex: 1; display: flex; overflow: hidden; }
-              .living-web-library { width: 200px; background: #E8E8E8; border-right: 2px solid #000; overflow-y: auto; padding: 10px; font-family: 'Chicago', 'Geneva', sans-serif; }
-              .living-web-canvas { flex: 1; background: #F8F8F8; border: 2px solid #000; position: relative; min-height: 500px; overflow: hidden; }
+              .living-web-content { flex: 1; display: flex; overflow: hidden; height: 100%; min-height: 0; }
+              .living-web-library { width: 200px; background: #E8E8E8; border-right: 2px solid #000; overflow: hidden; display: flex; flex-direction: column; font-family: 'Chicago', 'Geneva', sans-serif; height: 100%; min-height: 0; }
+              .living-web-canvas { flex: 1; background: #F8F8F8; border: 2px solid #000; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; height: 100%; }
               #xyflow-container { 
                 width: 100%; 
                 height: 100%; 
@@ -217,7 +224,8 @@
                 overflow: hidden; 
               }
               .flow-canvas { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; }
-              .library-header { font-size: 11px; font-weight: bold; color: #000; text-transform: uppercase; letter-spacing: 1px; padding: 8px 0; border-bottom: 1px solid #000; margin-bottom: 10px; }
+              .library-header { font-size: 11px; font-weight: bold; color: #000; text-transform: uppercase; letter-spacing: 1px; padding: 8px 10px; border-bottom: 1px solid #000; height: 40px; display: flex; align-items: center; flex-shrink: 0; position: sticky; top: 0; background: #E8E8E8; z-index: 10; }
+              .library-content { flex: 1; overflow-y: auto; padding: 10px; min-height: 0; }
               .library-section { margin-bottom: 16px; }
               .library-section-title { font-size: 9px; font-weight: bold; color: #000; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 6px; background: #EEE; border: 1px solid #000; margin-bottom: 6px; }
               .library-item { display: flex; align-items: center; padding: 6px 8px; margin-bottom: 4px; background: #FFF; border: 1px solid #CCC; font-size: 11px; }
@@ -231,33 +239,35 @@
               <!-- Left Panel: Systems Library -->
               <div class="living-web-library">
                 <div class="library-header">SYSTEMS LIBRARY</div>
+                
+                <div class="library-content">
+                  <!-- MY SYSTEMS Section -->
+                  <div class="library-section">
+                    <div class="library-section-title">MY SYSTEMS</div>
+                    <div class="library-placeholder">(No composite systems yet)</div>
+                  </div>
 
-                <!-- MY SYSTEMS Section -->
-                <div class="library-section">
-                  <div class="library-section-title">MY SYSTEMS</div>
-                  <div class="library-placeholder">(No composite systems yet)</div>
-                </div>
-
-                <!-- Projects by Category -->
-                <%= for category <- ["food", "water", "waste", "energy"] do %>
-                  <% category_projects = Enum.filter(assigns[:projects] || [], & &1.category == category) %>
-                  <%= if length(category_projects) > 0 do %>
-                    <div class="library-section">
-                      <div class="library-section-title"><%= String.upcase(category) %></div>
-                      <%= for project <- category_projects do %>
-                        <div 
-                          class="library-item draggable-project-item" 
-                          draggable="true" 
-                          data-project-id={project.id}
-                          data-project-name={project.name}
-                        >
-                          <span class="library-icon">📦</span>
-                          <span class="library-name"><%= project.name %></span>
-                        </div>
-                      <% end %>
-                    </div>
+                  <!-- Projects by Category -->
+                  <%= for category <- ["food", "water", "waste", "energy"] do %>
+                    <% category_projects = Enum.filter(assigns[:projects] || [], & &1.category == category) %>
+                    <%= if length(category_projects) > 0 do %>
+                      <div class="library-section">
+                        <div class="library-section-title"><%= String.upcase(category) %></div>
+                        <%= for project <- category_projects do %>
+                          <div 
+                            class="library-item draggable-project-item" 
+                            draggable="true" 
+                            data-project-id={project.id}
+                            data-project-name={project.name}
+                          >
+                            <span class="library-icon">📦</span>
+                            <span class="library-name"><%= project.name %></span>
+                          </div>
+                        <% end %>
+                      </div>
+                    <% end %>
                   <% end %>
-                <% end %>
+                </div>
               </div>
 
               <!-- Right Panel: Canvas -->
@@ -366,7 +376,7 @@
                   data-edges={Jason.encode!(@edges)}
                   data-projects={Jason.encode!(projects_for_json(@projects))}
                   class="xyflow-editor"
-                  style="width: 100%; height: calc(100% - 40px); min-height: 460px; position: relative; background: #FFF; background-image: radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #CCCCCC 1px, transparent 1px); background-size: 20px 20px; background-position: 10px 10px, 0px 0px, 0px 0px;"
+                  style="width: 100%; flex: 1; min-height: 460px; position: relative; background: #FFF; background-image: radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #D4D4D4 0.75px, transparent 0.75px), radial-gradient(circle, #CCCCCC 1px, transparent 1px); background-size: 20px 20px; background-position: 10px 10px, 0px 0px, 0px 0px;"
                 >
                   <!-- XyFlow editor will render here -->
                 </div>
