@@ -34,6 +34,13 @@ export default {
       this.startDrag(e)
     })
 
+    // Double-click to reset to 50/50 split
+    this.resizer.addEventListener('dblclick', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      this.setPanelWidth('50%')
+    })
+
     // Prevent text selection while dragging
     this.resizer.style.userSelect = 'none'
     this.resizer.style.cursor = 'col-resize'
