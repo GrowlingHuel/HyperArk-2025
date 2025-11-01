@@ -68,8 +68,19 @@ export default {
     // Ensure width is a string with % unit
     const widthValue = typeof width === 'string' ? width : `${width}%`
     
+    // Extract percentage and enforce 50% maximum for left panel
+    const percentMatch = widthValue.match(/([\d.]+)%/)
+    let finalPercent = percentMatch ? parseFloat(percentMatch[1]) : 50
+    
+    // Enforce constraints: 15% minimum, 50% maximum for left panel
+    const minWidth = 15
+    const maxWidth = 50
+    finalPercent = Math.max(minWidth, Math.min(maxWidth, finalPercent))
+    
+    const finalWidth = `${finalPercent}%`
+    
     // Set left panel width
-    this.leftPanel.style.width = widthValue
+    this.leftPanel.style.width = finalWidth
     this.leftPanel.style.flexShrink = '0'
     this.leftPanel.style.flexGrow = '0'
     
@@ -81,11 +92,8 @@ export default {
     // Update title bars to match
     this.updateTitleBars()
 
-    // Extract percentage for localStorage
-    const percentMatch = widthValue.match(/([\d.]+)%/)
-    if (percentMatch) {
-      localStorage.setItem('panelLeftWidth', percentMatch[1])
-    }
+    // Save to localStorage (clamped value)
+    localStorage.setItem('panelLeftWidth', finalPercent.toString())
   },
 
   startDrag(e) {
@@ -116,9 +124,10 @@ export default {
     // Calculate new width
     let newWidth = this.startLeftWidth + deltaPercent
     
-    // Enforce minimum widths (15% minimum for each panel)
+    // Enforce constraints: 15% minimum, 50% maximum for left panel
+    // (Right panel can grow larger by making left panel smaller)
     const minWidth = 15
-    const maxWidth = 85
+    const maxWidth = 50  // Left panel cannot exceed 50%
     
     newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth))
     
