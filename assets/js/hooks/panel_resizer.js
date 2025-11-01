@@ -20,7 +20,9 @@ export default {
 
     // Load saved width preference or default to 50%
     const savedWidth = localStorage.getItem('panelLeftWidth')
-    const initialWidth = savedWidth ? `${savedWidth}%` : '50%'
+    const initialPercent = savedWidth ? parseFloat(savedWidth) : 50
+    this.currentWidth = initialPercent // Store in hook state
+    const initialWidth = `${initialPercent}%`
     
     // Set initial width
     this.setPanelWidth(initialWidth)
@@ -79,21 +81,24 @@ export default {
     
     const finalWidth = `${finalPercent}%`
     
-    // Set left panel width
-    this.leftPanel.style.width = finalWidth
-    this.leftPanel.style.flexShrink = '0'
-    this.leftPanel.style.flexGrow = '0'
+    // Set left panel width with !important to override CSS rules
+    this.leftPanel.style.setProperty('width', finalWidth, 'important')
+    this.leftPanel.style.setProperty('flex-shrink', '0', 'important')
+    this.leftPanel.style.setProperty('flex-grow', '0', 'important')
     
     // Right panel takes remaining space
-    this.rightPanel.style.width = 'auto'
-    this.rightPanel.style.flexGrow = '1'
-    this.rightPanel.style.flexShrink = '1'
+    this.rightPanel.style.setProperty('width', 'auto', 'important')
+    this.rightPanel.style.setProperty('flex-grow', '1', 'important')
+    this.rightPanel.style.setProperty('flex-shrink', '1', 'important')
 
     // Update title bars to match
     this.updateTitleBars()
 
     // Save to localStorage (clamped value)
     localStorage.setItem('panelLeftWidth', finalPercent.toString())
+    
+    // Also store in hook state for quick access
+    this.currentWidth = finalPercent
   },
 
   startDrag(e) {
@@ -176,10 +181,26 @@ export default {
     this.leftHeader = document.querySelector('.panel-header-left')
     this.rightHeader = document.querySelector('.panel-header-right')
     
-    // Re-apply width if we have saved preference
-    const savedWidth = localStorage.getItem('panelLeftWidth')
-    if (savedWidth) {
-      this.setPanelWidth(`${savedWidth}%`)
+    // Restore panel width if it was reset by LiveView update
+    // Check if current width matches what we expect (from localStorage or hook state)
+    if (this.leftPanel && this.rightPanel) {
+      const savedWidth = localStorage.getItem('panelLeftWidth')
+      const expectedPercent = savedWidth ? parseFloat(savedWidth) : (this.currentWidth || 50)
+      
+      // Check current computed width
+      const containerWidth = this.container.offsetWidth
+      const currentWidth = this.leftPanel.offsetWidth
+      const currentPercent = containerWidth > 0 ? (currentWidth / containerWidth) * 100 : 50
+      
+      // If width was reset (differs significantly from expected), restore it
+      // Use 2% tolerance to account for rounding errors
+      if (Math.abs(currentPercent - expectedPercent) > 2) {
+        console.log(`[PanelResizer] Width reset detected (${currentPercent}% vs ${expectedPercent}%), restoring...`)
+        this.setPanelWidth(`${expectedPercent}%`)
+      } else {
+        // Width is correct, just update title bars
+        this.updateTitleBars()
+      }
     }
   }
 }
