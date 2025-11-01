@@ -1,7 +1,7 @@
 <style>
   .dual-panel-container {
     display: flex;
-    height: calc(100vh - 50px);
+    height: calc(100vh - 35px);
     overflow: hidden;
     background: #CCCCCC;
     gap: 8px;
@@ -39,6 +39,10 @@
   .panel-content {
     padding: 12px;
     flex: 1;
+    overflow-y: hidden;
+    position: relative;
+  }
+  .panel-content.scrollable {
     overflow-y: auto;
   }
   .panel-content.living-web-container {
@@ -69,7 +73,7 @@
           Chat with {@selected_character.name}
       <% end %>
     </div>
-    <div class="panel-content">
+    <div class="panel-content" phx-hook="ScrollableContent" id="left-panel-content">
       <%= case @left_panel_view do %>
         <% :tavern_home -> %>
           <h2>Welcome to the Green Man Tavern</h2>
@@ -207,11 +211,17 @@
           Content
       <% end %>
     </div>
-    <div class={["panel-content", if(@right_panel_action == :living_web, do: "living-web-container", else: ""), if(@right_panel_action == :journal, do: "journal-container", else: "")]}>
+    <div 
+      class={["panel-content", if(@right_panel_action == :living_web, do: "living-web-container", else: ""), if(@right_panel_action == :journal, do: "journal-container", else: "")]}
+      phx-hook="ScrollableContent"
+      id="right-panel-content"
+    >
       <%= case @right_panel_action do %>
         <% :home -> %>
-          <h2>Welcome to HyperArk</h2>
-          <p>Navigate using the menu above to explore different areas of the application.</p>
+          <div id="welcome-content">
+            <h2>Welcome to HyperArk</h2>
+            <p>Navigate using the menu above to explore different areas of the application.</p>
+          </div>
         
         <% :living_web -> %>
           <%= if assigns[:nodes] && assigns[:edges] do %>

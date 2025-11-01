@@ -56,6 +56,37 @@ const ThinkingDotsHook = {
   }
 }
 
+// Hook to only show scrollbars when content actually overflows
+const ScrollableContentHook = {
+  mounted() {
+    this.checkAndSetScrollbar()
+    // Recheck on window resize and content updates
+    window.addEventListener('resize', () => this.checkAndSetScrollbar())
+    this.el.addEventListener('phx:update', () => this.checkAndSetScrollbar())
+  },
+  updated() {
+    this.checkAndSetScrollbar()
+  },
+  checkAndSetScrollbar() {
+    // Skip if this is a living-web-container or journal-container (they handle their own scrolling)
+    if (this.el.classList.contains('living-web-container') || this.el.classList.contains('journal-container')) {
+      return
+    }
+    
+    // Check if content actually overflows
+    const needsScroll = this.el.scrollHeight > this.el.clientHeight
+    
+    // Only enable scrolling if content overflows
+    if (needsScroll) {
+      this.el.style.overflowY = 'auto'
+      this.el.classList.add('scrollable')
+    } else {
+      this.el.style.overflowY = 'hidden'
+      this.el.classList.remove('scrollable')
+    }
+  }
+}
+
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
@@ -64,6 +95,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
     ChatForm: ChatFormHook,
     XyflowEditor: XyflowEditorHook,
     ThinkingDots: ThinkingDotsHook,
+    ScrollableContent: ScrollableContentHook,
     redirect: {
       mounted() {
         this.handleEvent("redirect", (data) => {
