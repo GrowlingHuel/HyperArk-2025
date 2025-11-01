@@ -29,6 +29,7 @@ defmodule GreenManTavernWeb.DualPanelLive do
       |> assign(:selected_character, nil)
       |> assign(:right_panel_action, :home)
       |> assign(:chat_messages, [])
+      |> assign(:character_messages, %{})
       |> assign(:current_message, "")
       |> assign(:is_loading, false)
       |> assign(:characters, Characters.list_characters())
@@ -92,21 +93,49 @@ defmodule GreenManTavernWeb.DualPanelLive do
       character ->
         user_id = socket.assigns.user_id
 
-        # Load recent conversation without altering right window
-        messages =
-          if user_id && character do
-            Conversations.get_recent_conversation(user_id, character.id, 20)
-            |> Enum.reverse()
-            |> Enum.map(fn conv ->
-              %{
-                id: conv.id,
-                type: String.to_atom(conv.message_type),
-                content: conv.message_content,
-                timestamp: conv.inserted_at
-              }
-            end)
+        # Store current messages for current character before switching
+        # This preserves any unsaved messages when switching between characters
+        current_character = socket.assigns[:selected_character]
+        current_messages = socket.assigns[:chat_messages] || []
+
+        # Maintain a map of character_id -> messages to preserve all conversations
+        character_messages = socket.assigns[:character_messages] || %{}
+
+        # If we're switching away from a character, save their current messages
+        updated_character_messages =
+          if current_character && current_messages != [] do
+            Map.put(character_messages, current_character.id, current_messages)
           else
-            []
+            character_messages
+          end
+
+        # Check if we have cached messages for this character
+        messages =
+          case Map.get(updated_character_messages, character.id) do
+            nil ->
+              # No cached messages - load from database
+              if user_id && character do
+                db_messages =
+                  Conversations.get_recent_conversation(user_id, character.id, 20)
+                  |> Enum.reverse()
+                  |> Enum.map(fn conv ->
+                    %{
+                      id: conv.id,
+                      type: String.to_atom(conv.message_type),
+                      content: conv.message_content,
+                      timestamp: conv.inserted_at
+                    }
+                  end)
+                # Cache the loaded messages
+                Map.put(updated_character_messages, character.id, db_messages)
+                db_messages
+              else
+                []
+              end
+
+            cached_messages ->
+              # Use cached messages (may include unsaved ones from socket)
+              cached_messages
           end
 
         {:noreply,
@@ -114,6 +143,7 @@ defmodule GreenManTavernWeb.DualPanelLive do
          |> assign(:selected_character, character)
          |> assign(:left_panel_view, :character_chat)
          |> assign(:chat_messages, messages)
+         |> assign(:character_messages, updated_character_messages)
          |> assign(:current_message, "")}
     end
   end
@@ -451,24 +481,35 @@ defmodule GreenManTavernWeb.DualPanelLive do
 
     new_messages = socket.assigns.chat_messages ++ [user_message]
 
+    # Update the character_messages cache to preserve this message when switching characters
+    character_messages = socket.assigns[:character_messages] || %{}
+    updated_character_messages =
+      if character do
+        Map.put(character_messages, character.id, new_messages)
+      else
+        character_messages
+      end
+
     # Update UI with user message and loading state
     socket =
       socket
       |> assign(:chat_messages, new_messages)
+      |> assign(:character_messages, updated_character_messages)
       |> assign(:current_message, "")
       |> assign(:is_loading, true)
 
     # Store user message in conversation history
     if user_id && character do
-      try do
-        Conversations.create_conversation_entry(%{
-          user_id: user_id,
-          character_id: character.id,
-          message_type: "user",
-          message_content: message
-        })
-      rescue
-        _ -> :ok
+      case Conversations.create_conversation_entry(%{
+        user_id: user_id,
+        character_id: character.id,
+        message_type: "user",
+        message_content: message
+      }) do
+        {:ok, _conv} ->
+          Logger.debug("[DualPanel] Saved user message to conversation_history")
+        {:error, changeset} ->
+          Logger.error("[DualPanel] Failed to save user message: #{inspect(changeset.errors)}")
       end
     end
 
@@ -537,18 +578,27 @@ defmodule GreenManTavernWeb.DualPanelLive do
 
             new_messages = socket.assigns.chat_messages ++ [character_response]
 
+            # Update the character_messages cache to preserve this message when switching characters
+            character_messages = socket.assigns[:character_messages] || %{}
+            updated_character_messages =
+              if character do
+                Map.put(character_messages, character.id, new_messages)
+              else
+                character_messages
+              end
+
             # Store character response in conversation history
             if user_id && character do
-              try do
-                Conversations.create_conversation_entry(%{
-                  user_id: user_id,
-                  character_id: character.id,
-                  message_type: "character",
-                  message_content: response
-                })
-                Logger.debug("[DualPanel] Saved AI response to conversation_history")
-              rescue
-                e -> Logger.error("[DualPanel] Failed to save AI response: #{inspect(e)}")
+              case Conversations.create_conversation_entry(%{
+                user_id: user_id,
+                character_id: character.id,
+                message_type: "character",
+                message_content: response
+              }) do
+                {:ok, _conv} ->
+                  Logger.debug("[DualPanel] Saved AI response to conversation_history")
+                {:error, changeset} ->
+                  Logger.error("[DualPanel] Failed to save AI response: #{inspect(changeset.errors)}")
               end
             end
 
@@ -557,7 +607,11 @@ defmodule GreenManTavernWeb.DualPanelLive do
               update_trust_level(user_id, character.id, message, response)
             end
 
-            {:noreply, socket |> assign(:chat_messages, new_messages) |> assign(:is_loading, false)}
+            {:noreply,
+             socket
+             |> assign(:chat_messages, new_messages)
+             |> assign(:character_messages, updated_character_messages)
+             |> assign(:is_loading, false)}
 
           {:error, reason} ->
             Logger.error("[DualPanel] ClaudeClient error: #{inspect(reason)}")
