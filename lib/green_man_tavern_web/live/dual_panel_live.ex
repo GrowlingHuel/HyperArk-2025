@@ -825,4 +825,18 @@ defmodule GreenManTavernWeb.DualPanelLive do
      |> assign(:user_quests, quests)
      |> assign(:quest_search_term, term)}
   end
+
+  # Helper function to get character emoji icon
+  defp character_emoji(character_name) do
+    case character_name do
+      "The Student" -> "📜"
+      "The Grandmother" -> "🧶"
+      "The Farmer" -> "🚜"
+      "The Robot" -> "🤖"
+      "The Alchemist" -> "⚗️"
+      "The Survivalist" -> "🧭"
+      "The Hobo" -> "🚶"
+      _ -> "❓"
+    end
+  end
 end
